@@ -2,8 +2,7 @@ import os
 import re
 import urllib
 import roman
-
-
+from html import escape
 
 #-----------------------------
 # Helper function
@@ -39,7 +38,7 @@ def FormatLink(url: str, text: str):
     # If the url points to a pdf, add '#view=Fit' to the end to force the PDF to scale to the page
     if url.lower().endswith(".pdf"):
         url+="#view=Fit"
-    return '<a href='+url+'>'+text+'</a>'
+    return '<a href='+url+'>'+UnicodeToHtml(text)+'</a>'
 
 
 #-------------------------------------------------------------
@@ -116,6 +115,13 @@ def GetHrefAndTextFromTag(tag):
 # Remove certain strings which amount to whitespace
 def RemoveHTMLDebris(s: str):
     return s.replace("<br>", "").replace("<BR>", "")
+
+
+#=====================================================================================
+# Convert the unicode of a str to a string which can be used in an HTML file
+def UnicodeToHtml(s: str):
+    # Convert the text to ascii and then used decode to turn it back into a str
+    return escape(s).encode('ascii', 'xmlcharrefreplace').decode()
 
 
 #=====================================================================================

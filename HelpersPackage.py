@@ -4,6 +4,7 @@ import urllib
 import roman
 
 
+
 #-----------------------------
 # Helper function
 # Try to make the input numeric
@@ -221,15 +222,15 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False):
 
 # Set the header for any subsequent log entries
 # Note that this header will only be printed once, and then only if there has been a log entry
-def LogSetFanzine(name: str):
+def LogSetHeader(name: str):
     global g_logHeader
     global g_logErrorHeader
-    global g_logLastFanzine
+    global g_logLastHeader
 
-    if g_logLastFanzine is None or name != g_logLastFanzine:
+    if g_logLastHeader is None or name != g_logLastHeader:
         g_logHeader=name
         g_logErrorHeader=name
-        g_logLastFanzine=name
+        g_logLastHeader=name
 
 
 def LogOpen(logfilename: str, errorfilename: str):
@@ -243,8 +244,8 @@ def LogOpen(logfilename: str, errorfilename: str):
     g_logHeader=None
     global g_logErrorHeader
     g_logErrorHeader=None
-    global g_logLastFanzine
-    g_logLastFanzine=None
+    global g_logLastHeader
+    g_logLastHeader=None
 
 
 def LogClose():

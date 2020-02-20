@@ -1,6 +1,6 @@
 import os
 import re
-import urllib
+import urllib.parse
 from typing import Union, Tuple, Optional, List
 
 import roman
@@ -125,7 +125,7 @@ def UnicodeToHtml(s: str) -> str:
 
 #=====================================================================================
 # Function to generate the proper kind of path.  (This may change depending on the target location of the output.)
-def RelPathToURL(relPath: str) -> str:
+def RelPathToURL(relPath: str) -> Optional[str]:
     if relPath is None:
         return None
     if relPath.startswith("http"):  # We don't want to mess with foreign URLs
@@ -271,7 +271,7 @@ def IsInt(arg) -> bool:
 
     # It's not an integer type.  See if it can be converted into an integer.  E.g., it's a string representation of a number
     try:
-        x=int(arg)  # We throw away the result -- all we're interested in is if the conversation can be done without throwing an error
+        int(arg)  # We throw away the result -- all we're interested in is if the conversation can be done without throwing an error
         return True
     except:
         return False

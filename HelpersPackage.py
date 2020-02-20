@@ -1,6 +1,8 @@
 import os
 import re
 import urllib
+from typing import Union, Tuple, Optional, List
+
 import roman
 from html import escape
 
@@ -8,7 +10,7 @@ from html import escape
 # Helper function
 # Try to make the input numeric
 # Note that if it fails, it returns what came in.
-def ToNumeric(val):
+def ToNumeric(val: Union[None, int, float, str]) ->Union[None, int, float]:
     if val is None:
         return None
 
@@ -33,7 +35,7 @@ def ToNumeric(val):
 
 #==================================================================================
 # Return a properly formatted link
-def FormatLink(url: str, text: str):
+def FormatLink(url: str, text: str) -> str:
     # TODO: Do we need to deal with turning blanks into %20 whatsits?
     # If the url points to a pdf, add '#view=Fit' to the end to force the PDF to scale to the page
     if url.lower().endswith(".pdf"):
@@ -42,7 +44,7 @@ def FormatLink(url: str, text: str):
 
 
 #-------------------------------------------------------------
-def CannonicizeColumnHeaders(header):
+def CannonicizeColumnHeaders(header: str) -> str:
     # 2nd item is the cannonical form
     translationTable={
                         "published" : "date",
@@ -80,7 +82,7 @@ def CannonicizeColumnHeaders(header):
 #-----------------------------------------
 # Find text bracketed by <b>...</b>
 # Return the contents of the first pair of brackets found and the remainder of the input string
-def FindBracketedText(s, b):
+def FindBracketedText(s: str, b: str) -> Tuple[str, str]:
     strlower=s.lower()
     l1=strlower.find("<"+b.lower())
     if l1 == -1:
@@ -94,39 +96,36 @@ def FindBracketedText(s, b):
         return "", ""
     return s[l1+1:l2], s[l2+3+len(b):]
 
-
-#=====================================================================================
-# Function to pull and href and accompanying text from a Tag
-# The structure is "<a href='URL'>LINKTEXT</a>
-# We want to extract the URL and LINKTEXT
-def GetHrefAndTextFromTag(tag):
-    try:
-        href=tag.contents[0].attrs.get("href", None)
-    except:
-        try:
-            href=tag.attrs.get("href")
-        except:
-            return tag, None
-
-    return tag.contents[0].string, href
-
-
 #=====================================================================================
 # Remove certain strings which amount to whitespace
-def RemoveHTMLDebris(s: str):
+def RemoveHTMLDebris(s: str) -> str:
     return s.replace("<br>", "").replace("<BR>", "")
 
 
 #=====================================================================================
+# Change"&nbsp;" to space
+def ChangeNBSPToSpace(s: Optional[str]) -> Union[None, str, List[str]]:
+    if s is None:
+        return None
+    if len(s) == 0:
+        return s
+
+    if isinstance(s, str):
+        return s.replace("&nbsp;", " ")
+
+    return [c.replace("&nbsp;", " ") for c in s]
+
+
+#=====================================================================================
 # Convert the unicode of a str to a string which can be used in an HTML file
-def UnicodeToHtml(s: str):
+def UnicodeToHtml(s: str) -> str:
     # Convert the text to ascii and then used decode to turn it back into a str
     return escape(s).encode('ascii', 'xmlcharrefreplace').decode()
 
 
 #=====================================================================================
 # Function to generate the proper kind of path.  (This may change depending on the target location of the output.)
-def RelPathToURL(relPath: str):
+def RelPathToURL(relPath: str) -> str:
     if relPath is None:
         return None
     if relPath.startswith("http"):  # We don't want to mess with foreign URLs
@@ -135,42 +134,16 @@ def RelPathToURL(relPath: str):
 
 
 #=====================================================================================
-# Simple function to name tags for debugging purposes
-def N(tag):
-    try:
-        return tag.__class__.__name__
-    except:
-        return "Something"
-
-
-#=====================================================================================
 # Function to find the index of a string in a list of strings
-def FindIndexOfStringInList(lst: list, s: str):
+def FindIndexOfStringInList(lst: List[str], s: str) -> Optional[int]:
     try:
         return lst.index(s)
     except:
         return None
 
-#=====================================================================================
-# Function to search recursively for the table containing the fanzines listing
-# flags is a dictionary of attributes and values to be matched, e.g., {"class" : "indextable", ...}
-# We must match all of them
-def LookForTable(soup, flags: dict):
-
-    tables=soup.find_all("table")
-    for table in tables:
-        ok=True
-        for key in flags.keys():
-            if key not in table.attrs or table.attrs[key] is None or table.attrs[key] != flags[key]:
-                ok=False
-                break
-        if ok:
-            return table
-    return None
-
 
 #==================================================================================
-def CreateFanacOrgAbsolutePath(fanacDir: str, s: str):
+def CreateFanacOrgAbsolutePath(fanacDir: str, s: str) -> str:
     return "http://www.fanac.org/fanzines/"+fanacDir+"/"+s
 
 
@@ -179,7 +152,7 @@ def CreateFanacOrgAbsolutePath(fanacDir: str, s: str):
 # We make it all lower case
 # We move leading "The ", "A " and "An " to the rear
 # We remove spaces and certain punctuation
-def CompressName(name: str):
+def CompressName(name: str) -> str:
     name=name.lower()
     if name.startswith("the "):
         name=name[:4]+"the"
@@ -191,14 +164,14 @@ def CompressName(name: str):
 
 
 #==================================================================================
-def CompareCompressedName(n1, n2):
+def CompareCompressedName(n1: str, n2: str) -> bool:
     return CompressName(n1) == CompressName(n2)
 
 
 #=============================================================================
 # Print the text to a log file open by the main program
 # If isError is set also print it to the error file.
-def Log(text: str, isError: bool=False, noNewLine: bool=False):
+def Log(text: str, isError: bool=False, noNewLine: bool=False) -> None:
     global g_logFile
     global g_errorFile
     global g_logHeader
@@ -228,7 +201,7 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False):
 
 # Set the header for any subsequent log entries
 # Note that this header will only be printed once, and then only if there has been a log entry
-def LogSetHeader(name: str):
+def LogSetHeader(name: str) -> None:
     global g_logHeader
     global g_logErrorHeader
     global g_logLastHeader
@@ -239,7 +212,7 @@ def LogSetHeader(name: str):
         g_logLastHeader=name
 
 
-def LogOpen(logfilename: str, errorfilename: str):
+def LogOpen(logfilename: str, errorfilename: str) -> None:
     global g_logFile
     g_logFile=open(logfilename, "w+")
 
@@ -254,21 +227,28 @@ def LogOpen(logfilename: str, errorfilename: str):
     g_logLastHeader=None
 
 
-def LogClose():
+def LogClose() -> None:
     global g_logFile
     g_logFile.close()
     global g_errorFile
     g_errorFile.close()
 
 
-def LogFailureAndRaiseIfMissing(fname: str):
+def LogFailureAndRaiseIfMissing(fname: str) -> None:
     if not os.path.exists(fname):
         Log("Fatal error: Can't find "+fname, isError=True)
         raise FileNotFoundError
 
+def CaseInsensitiveCompare(s1: str, s2: str) -> bool:
+    if s1 == s2:
+        return True
+    if s1 is None or s2 is None:
+        return False  # We already know that s1 and s2 are different
+    return s1.lower() == s2.lower()  # Now that we know that neither is None, we can do the lower case compare
+
 # =============================================================================
 #   Change the filename in a URL
-def ChangeFileInURL(url: str, newFileName: str):
+def ChangeFileInURL(url: str, newFileName: str) -> str:
     u=urllib.parse.urlparse(url)
     p=u[2].split("/")   # Split the path (which may include a filename) into components
     f=p[-1:][0].split(".")     # Split the last component of the path (which may be a filename) into stuff plus an extension
@@ -285,7 +265,7 @@ def ChangeFileInURL(url: str, newFileName: str):
 
 # =============================================================================
 # Check to see if an argument (int, float or string) is a number
-def IsInt(arg):
+def IsInt(arg) -> bool:
     if type(arg) is int:
         return True
 
@@ -299,13 +279,13 @@ def IsInt(arg):
 
 # =============================================================================
 # Check to see if an argument (int, float or string) is a number
-def IsNumeric(arg):
+def IsNumeric(arg) -> bool:
     if type(arg) in [float, int]:
         return True
 
     # It's not a numeric type.  See if it can be converted into a float.  E.g., it's a string representation of a number
     try:
-        x=float(arg)    # We throw away the result -- all we're interested in is if the conversation can be done without throwing an error
+        float(arg)    # We throw away the result -- all we're interested in is if the conversation can be done without throwing an error
         return True
     except:
         return False
@@ -315,7 +295,7 @@ def IsNumeric(arg):
 # =============================================================================
 # Read a list of lines in from a file
 # Strip leading and trailing whitespace and ignore lines which begin with a '#'
-def ReadList(filename: str, isFatal: bool=False):
+def ReadList(filename: str, isFatal: bool=False) -> Optional[List[str]]:
     if not os.path.exists(filename):
         if isFatal:
             Log("Fatal error: Can't find "+filename, isError=True)
@@ -340,7 +320,7 @@ def ReadList(filename: str, isFatal: bool=False):
 #   nnn-nnn
 #   nnn.nnn
 #   nnnaaa
-def InterpretNumber(inputstring: str):
+def InterpretNumber(inputstring: Optional[str]) -> Optional[int]:
     value=None
     if inputstring is not None:
         inputstring=inputstring.strip()

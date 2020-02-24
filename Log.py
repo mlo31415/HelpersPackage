@@ -1,5 +1,16 @@
 import os
 
+# The idea is that Log will print the log message to the console and also to a log file. Additionally, if the iserror flag is True,
+# it will print it to an errors file.
+# The log file and the error file are set up using LogOpen()
+# There is an additional unusual feature handy when dealing with processing of large amounts of data.
+#       The problem is that when processing a large amount of data,  the errors occur too deep for the code to know the
+#       line of input (or whatever) that produced the error.  One approach would be to log every line of input, but this may
+#       be unacceptably clumsy.
+#       To deal with this, use LogSetHeader to save a header string for each line processed.  This header string will only be
+#       output to the log if a Log call is made subsequently and it will only be output once no matter how many Logs happen until a new
+#       header is saved.
+
 #=============================================================================
 # Print the text to a log file open by the main program
 # If isError is set also print it to the error file.
@@ -30,6 +41,7 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False) -> None:
     print(text, file=g_logFile, end=newlinechar)
     if isError:
         print(text, file=g_errorFile, end=newlinechar)
+        LogFlush()
 
 
 #=============================================================================
@@ -60,6 +72,10 @@ def LogOpen(logfilename: str, errorfilename: str) -> None:
     g_logErrorHeader=None
     global g_logLastHeader
     g_logLastHeader=None
+
+def LogFlush() -> None:
+    g_logFile.flush()
+    g_errorFile.flush()
 
 
 #=============================================================================

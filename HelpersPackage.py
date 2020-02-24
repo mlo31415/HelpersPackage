@@ -231,7 +231,7 @@ def IsNumeric(arg) -> bool:
 def ReadList(filename: str, isFatal: bool=False) -> Optional[List[str]]:
     if not os.path.exists(filename):
         if isFatal:
-            Log("Fatal error: Can't find "+filename, isError=True)
+            Log("***Fatal error: Can't find "+filename, isError=True)
             raise FileNotFoundError
         print("ReadList can't open "+filename)
         return None

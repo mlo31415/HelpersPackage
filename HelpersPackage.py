@@ -12,7 +12,7 @@ from Log import Log
 # Helper function
 # Try to make the input numeric
 # Note that if it fails, it returns what came in.
-def ToNumeric(val: Union[None, int, float, str]) ->Union[None, int, float]:
+def ToNumeric(val: Union[None, int, float, str]) -> Union[None, int, float]:
     if val is None:
         return None
 
@@ -198,7 +198,7 @@ def ChangeFileInURL(url: str, newFileName: str) -> str:
 
 # =============================================================================
 # Check to see if an argument (int, float or string) is a number
-def IsInt(arg) -> bool:
+def IsInt(arg: any) -> bool:
     if type(arg) is int:
         return True
 
@@ -212,7 +212,7 @@ def IsInt(arg) -> bool:
 
 # =============================================================================
 # Check to see if an argument (int, float or string) is a number
-def IsNumeric(arg) -> bool:
+def IsNumeric(arg: any) -> bool:
     if type(arg) in [float, int]:
         return True
 

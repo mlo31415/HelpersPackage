@@ -36,6 +36,10 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False) -> None:
             print("----\n"+g_logErrorHeader, file=g_errorFile)
         g_logErrorHeader=None
 
+    if g_logFile is None and g_errorFile is None:
+        print("*** Log() called prior to call to LogOpen()", end=newlinechar)
+        print("*** text="+text, end=newlinechar)
+
     # Print the log entry itself
     print(text, end=newlinechar)
     print(text, file=g_logFile, end=newlinechar)
@@ -73,6 +77,8 @@ def LogOpen(logfilename: str, errorfilename: str) -> None:
     global g_logLastHeader
     g_logLastHeader=None
 
+
+#=============================================================================
 def LogFlush() -> None:
     g_logFile.flush()
     g_errorFile.flush()

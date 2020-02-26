@@ -5,7 +5,7 @@ import ctypes
 from tkinter import Tk, messagebox
 import urllib.parse
 from typing import Union, Tuple, Optional, List
-import Log
+from Log import Log, LogClose
 from html import escape
 
 #-----------------------------
@@ -91,7 +91,7 @@ def FindBracketedText(s: str, b: str) -> Tuple[str, str]:
         return "", ""
     l1=strlower.find(">", l1)
     if l1 == -1:
-        Log.Log("***Error: no terminating '>' found in "+strlower+"'", True)
+        Log("***Error: no terminating '>' found in "+strlower+"'", True)
         return "", ""
     l2=strlower.find("</"+b.lower()+">", l1+1)
     if l2 == -1:
@@ -244,14 +244,13 @@ def IsNumeric(arg: any) -> bool:
         return False
 
 
-
 # =============================================================================
 # Read a list of lines in from a file
 # Strip leading and trailing whitespace and ignore lines which begin with a '#'
 def ReadList(filename: str, isFatal: bool=False) -> Optional[List[str]]:
     if not os.path.exists(filename):
         if isFatal:
-            Log.Log("***Fatal error: Can't find "+filename, isError=True)
+            Log("***Fatal error: Can't find "+filename, isError=True)
             raise FileNotFoundError
         print("ReadList can't open "+filename)
         return None
@@ -325,7 +324,7 @@ def InterpretNumber(inputstring: Optional[str]) -> Optional[int]:
                 value=InterpretRoman(m.groups()[0])
         if value is None:
             if inputstring is not None and len(inputstring) > 0:
-                Log.Log("*** Uninterpretable number: '"+str(inputstring)+"'", True)
+                Log("*** Uninterpretable number: '"+str(inputstring)+"'", True)
     return value
 
 
@@ -344,5 +343,9 @@ def MessageBox(s: str) -> None:
 # Title names the app
 # msg is the error message
 def Bailout(e: Exception, msg: str, title: str):
+    Log("exception: "+str(e), isError=True)
+    Log("   title: "+title, isError=True)
+    Log("   msg: "+msg, isError=True)
+    LogClose()
     ctypes.windll.user32.MessageBoxW(0, msg, title, 1)
     raise e

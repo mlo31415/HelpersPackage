@@ -1,5 +1,8 @@
 import os
 
+import HelpersPackage
+#from HelpersPackage import MessageBox
+
 # The idea is that Log will print the log message to the console and also to a log file. Additionally, if the iserror flag is True,
 # it will print it to an errors file.
 # The log file and the error file are set up using LogOpen()
@@ -65,7 +68,10 @@ def LogSetHeader(name: str) -> None:
 #=============================================================================
 def LogOpen(logfilename: str, errorfilename: str) -> None:
     global g_logFile
-    g_logFile=open(logfilename, "w+")
+    try:
+        g_logFile=open(logfilename, "w+")
+    except Exception as e:
+        HelpersPackage.MessageBox("Exception in LogOpen("+logfilename+")  Exception="+str(e))
 
     global g_errorFile
     g_errorFile=open(errorfilename, "w+", buffering=1)

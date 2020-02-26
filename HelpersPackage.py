@@ -1,12 +1,13 @@
 import os
 import re
+import sys
+import ctypes
+from tkinter import Tk, messagebox
 import urllib.parse
 from typing import Union, Tuple, Optional, List
-
+import Log
 import roman
 from html import escape
-
-from Log import Log
 
 #-----------------------------
 # Helper function
@@ -46,39 +47,39 @@ def FormatLink(url: str, text: str) -> str:
 
 
 #-------------------------------------------------------------
-def CannonicizeColumnHeaders(header: str) -> str:
+def CanonicizeColumnHeaders(header: str) -> str:
     # 2nd item is the cannonical form
     translationTable={
-                        "published" : "date",
-                        "editors" : "editor",
-                        "zine" : "issue",
-                        "fanzine" : "issue",
-                        "mo." : "month",
-                        "mon" : "month",
-                        "quartermonth" : "month",
-                        "quarter" : "month",
-                        "season" : "month",
-                        "notes" : "notes",
-                        "no." : "number",
-                        "no,": "number",
-                        "num" : "number",
-                        "#" : "number",
-                        "page" : "pages",
-                        "pages" : "pages",
-                        "pp," : "pages",
-                        "pub" : "publisher",
-                        "vol" : "volume",
-                        "volume" : "volume",
-                        "volumenumber" : "volnum",
-                        "vol#" : "volnum",
-                        "vol.#" : "volnum",
-                        "wholenum" : "whole",
-                        "year" : "year",
+                        "published" : "Date",
+                        "editors" : "Editor",
+                        "zine" : "Issue",
+                        "fanzine" : "Issue",
+                        "mo." : "Month",
+                        "mon" : "Month",
+                        "quartermonth" : "Month",
+                        "quarter" : "Month",
+                        "season" : "Month",
+                        "notes" : "Notes",
+                        "no." : "Number",
+                        "no,": "Number",
+                        "num" : "Number",
+                        "#" : "Number",
+                        "page" : "Pages",
+                        "pages" : "Pages",
+                        "pp," : "Pages",
+                        "pub" : "Publisher",
+                        "vol" : "Volume",
+                        "volume" : "Volume",
+                        "volumenumber" : "Vol+Num",
+                        "vol#" : "Vol+Num",
+                        "vol.#" : "Vol+Num",
+                        "wholenum" : "Whole",
+                        "year" : "Year",
                       }
     try:
         return translationTable[header.replace(" ", "").replace("/", "").lower()]
     except:
-        return header.lower()
+        return header[0].upper()+header[1:]
 
 
 #-----------------------------------------
@@ -91,17 +92,37 @@ def FindBracketedText(s: str, b: str) -> Tuple[str, str]:
         return "", ""
     l1=strlower.find(">", l1)
     if l1 == -1:
-        Log("***Error: no terminating '>' found in "+strlower+"'", True)
+        Log.Log("***Error: no terminating '>' found in "+strlower+"'", True)
         return "", ""
     l2=strlower.find("</"+b.lower()+">", l1+1)
     if l2 == -1:
         return "", ""
     return s[l1+1:l2], s[l2+3+len(b):]
 
+
 #=====================================================================================
-# Remove certain strings which amount to whitespace
+# Remove certain strings which amount to whitespace in html
 def RemoveHTMLDebris(s: str) -> str:
     return s.replace("<br>", "").replace("<BR>", "")
+
+
+#=====================================================================================
+# Contents is a list of strings.
+# This removes a leading block of lines tagged with <s>
+# Textlines is the list of strings removed.
+def ConsumeHTML(contents: List[str], textLines: List[str], s: str) -> bool:
+    if len(contents) == 0:
+        return False
+
+    found=False
+    s=s.lower()
+    if contents[0].lower().startswith("<"+s+">"):
+        while len(contents) > 0 and not contents[0].lower().endswith("</"+s+">") and not contents[0].lower().endswith("<"+s+">"):
+            found=True
+            textLines.append(contents[0])
+            del contents[0]  # Consume the line
+
+    return found
 
 
 #=====================================================================================
@@ -231,7 +252,7 @@ def IsNumeric(arg: any) -> bool:
 def ReadList(filename: str, isFatal: bool=False) -> Optional[List[str]]:
     if not os.path.exists(filename):
         if isFatal:
-            Log("***Fatal error: Can't find "+filename, isError=True)
+            Log.Log("***Fatal error: Can't find "+filename, isError=True)
             raise FileNotFoundError
         print("ReadList can't open "+filename)
         return None
@@ -284,5 +305,24 @@ def InterpretNumber(inputstring: Optional[str]) -> Optional[int]:
                 value=roman.fromRoman(m.groups()[0])
         if value is None:
             if inputstring is not None and len(inputstring) > 0:
-                Log("*** Uninterpretable number: '"+str(inputstring)+"'", True)
+                Log.Log("*** Uninterpretable number: '"+str(inputstring)+"'", True)
     return value
+
+
+# =============================================================================
+# Display a message box (needed only for the built/packaged version)
+# User sparingly, since the messagebox must be closed by hand and can be annoying.
+# It does nothing in the debug version
+def MessageBox(s: str) -> None:
+ if sys.gettrace() is None:      # This is an incantation which detects the presence of a debugger
+    root = Tk()
+    root.withdraw()
+    messagebox.showinfo(title=None, message="Finished!")
+
+
+# =============================================================================
+# Title names the app
+# msg is the error message
+def Bailout(e: Exception, msg: str, title: str):
+    ctypes.windll.user32.MessageBoxW(0, msg, title, 1)
+    raise e

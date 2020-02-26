@@ -6,7 +6,6 @@ from tkinter import Tk, messagebox
 import urllib.parse
 from typing import Union, Tuple, Optional, List
 import Log
-import roman
 from html import escape
 
 #-----------------------------
@@ -269,6 +268,27 @@ def ReadList(filename: str, isFatal: bool=False) -> Optional[List[str]]:
 
 
 # =============================================================================
+# Interpret a string of Roman numerals into an int
+# Better to use roman.fromRoman() if you can, but roman is not supported by Pyinstaller
+def InterpretRoman(s: str) -> Optional[int]:
+    values={"m":1000, "d":500, "c":100, "l":50, "x":10, "v":5, "i":1}
+    val=0
+    lastv=0     # Holds the value of the last character processed -- needed for inversions like "XIX"
+    s=s.lower().replace(" ", "")[::-1]  # The [::-1] is Python magic which reverses a string
+    for c in s:
+        if c not in values.keys():
+            return None
+        v=values[c]
+        if v < lastv:
+            val=val-v
+            continue
+        val=val+v
+        lastv=v
+
+    return val
+
+
+# =============================================================================
 # Try to interpret a string as an integer
 #   nnn
 #   nnn-nnn
@@ -302,7 +322,7 @@ def InterpretNumber(inputstring: Optional[str]) -> Optional[int]:
             p=re.compile("^([IVXLC]+)$")        # roman numeral characters
             m=p.match(inputstring)
             if m is not None and len(m.groups()) == 1:
-                value=roman.fromRoman(m.groups()[0])
+                value=InterpretRoman(m.groups()[0])
         if value is None:
             if inputstring is not None and len(inputstring) > 0:
                 Log.Log("*** Uninterpretable number: '"+str(inputstring)+"'", True)

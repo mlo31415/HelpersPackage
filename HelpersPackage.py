@@ -81,7 +81,7 @@ def CanonicizeColumnHeaders(header: str) -> str:
         return header[0].upper()+header[1:]
 
 
-#-----------------------------------------
+#=====================================================================================
 # Find text bracketed by <b>...</b>
 # Return the contents of the first pair of brackets found and the remainder of the input string
 def FindBracketedText(s: str, b: str) -> Tuple[str, str]:
@@ -100,28 +100,20 @@ def FindBracketedText(s: str, b: str) -> Tuple[str, str]:
 
 
 #=====================================================================================
-# Remove certain strings which amount to whitespace in html
-def RemoveHTMLDebris(s: str) -> str:
-    return s.replace("<br>", "").replace("<BR>", "")
+# Do a case-insensitive replace, replacing old with new
+def CaseInsensitiveReplace(input: str, old: str, new: str) -> str:
+    loc=input.lower().find(old.lower())
+    if loc == -1:
+        return input
+    if loc == 0:
+        return new+input[loc+len(old):]
+    return input[:loc]+new+input[loc++len(old)]
 
 
 #=====================================================================================
-# Contents is a list of strings.
-# This removes a leading block of lines tagged with <s>
-# Textlines is the list of strings removed.
-def ConsumeHTML(contents: List[str], textLines: List[str], s: str) -> bool:
-    if len(contents) == 0:
-        return False
-
-    found=False
-    s=s.lower()
-    if contents[0].lower().startswith("<"+s+">"):
-        while len(contents) > 0 and not contents[0].lower().endswith("</"+s+">") and not contents[0].lower().endswith("<"+s+">"):
-            found=True
-            textLines.append(contents[0])
-            del contents[0]  # Consume the line
-
-    return found
+# Remove certain strings which amount to whitespace in html
+def RemoveHTMLDebris(s: str) -> str:
+    return s.replace("<br>", "").replace("<BR>", "")
 
 
 #=====================================================================================
@@ -342,7 +334,7 @@ def MessageBox(s: str) -> None:
 # =============================================================================
 # Title names the app
 # msg is the error message
-def Bailout(e: Exception, msg: str, title: str):
+def Bailout(e, msg: str, title: str) -> None:
     Log("exception: "+str(e), isError=True)
     Log("   title: "+title, isError=True)
     Log("   msg: "+msg, isError=True)

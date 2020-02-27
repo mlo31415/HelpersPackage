@@ -64,8 +64,9 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False) -> None:
 
     # Print the log entry itself
     print(text, end=newlinechar)
-    print(text, file=g_logFile, end=newlinechar)
-    if isError:
+    if g_logFile is not None and isinstance(g_logFile, io.TextIOWrapper):
+        print(text, file=g_logFile, end=newlinechar)
+    if isError and g_logErrorFile is not None and isinstance(g_logErrorFile, io.TextIOWrapper):
         print(text, file=g_logErrorFile, end=newlinechar)
         LogFlush()
 

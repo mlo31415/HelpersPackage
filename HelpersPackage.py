@@ -66,6 +66,7 @@ def CanonicizeColumnHeaders(header: str) -> str:
                         "page" : "Pages",
                         "pages" : "Pages",
                         "pp," : "Pages",
+                        "pp." : "Pages",
                         "pub" : "Publisher",
                         "vol" : "Volume",
                         "volume" : "Volume",
@@ -220,6 +221,14 @@ def IsInt(arg: any) -> bool:
         return True
     except:
         return False
+
+
+# =============================================================================
+# Convert a string to Int or None w/o throwing exception
+def Int(val: str) -> Optional[int]:
+    if IsInt(val):
+        return int(val)
+    return None
 
 
 # =============================================================================

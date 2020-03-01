@@ -1,7 +1,8 @@
 import os
 import io
+import sys
+from tkinter import Tk, messagebox
 
-import HelpersPackage
 #from HelpersPackage import MessageBox
 
 # The idea is that Log will print the log message to the console and also to a log file. Additionally, if the iserror flag is True,
@@ -32,13 +33,13 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False) -> None:
         try:
             g_logFile=open(g_logFile, "w+")
         except Exception as e:
-            HelpersPackage.MessageBox("Exception in LogOpen("+g_logFile+")  Exception="+str(e))
+            MessageBox("Exception in LogOpen("+g_logFile+")  Exception="+str(e))
 
     if isError and g_logErrorFile is not None and isinstance(g_logErrorFile, str):
         try:
             g_logErrorFile=open(g_logErrorFile, "w+", buffering=1)
         except Exception as e:
-            HelpersPackage.MessageBox("Exception in LogOpen("+g_logFile+")  Exception="+str(e))
+            MessageBox("Exception in LogOpen("+g_logFile+")  Exception="+str(e))
 
     # We allow the user to specify that the file is not terminated with a new line, allowing several log calls
     # to go to the same output line.
@@ -130,3 +131,14 @@ def LogFailureAndRaiseIfMissing(fname: str) -> None:
     if not os.path.exists(fname):
         Log("Fatal error: Can't find "+fname, isError=True)
         raise FileNotFoundError
+
+
+# =============================================================================
+# Display a message box (needed only for the built/packaged version)
+# User sparingly, since the messagebox must be closed by hand and can be annoying.
+# It does nothing in the debug version
+def MessageBox(s: str) -> None:
+ if sys.gettrace() is None:      # This is an incantation which detects the presence of a debugger
+    root = Tk()
+    root.withdraw()
+    messagebox.showinfo(title=None, message="Finished!")

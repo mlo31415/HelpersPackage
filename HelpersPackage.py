@@ -1,12 +1,13 @@
 import os
-import re
 import sys
 import ctypes
 from tkinter import Tk, messagebox
 import urllib.parse
 from typing import Union, Tuple, Optional, List
-from Log import Log, LogClose
 from html import escape
+import re
+
+from Log import Log, LogClose
 
 #-----------------------------
 # Helper function
@@ -183,6 +184,24 @@ def CompareCompressedName(n1: str, n2: str) -> bool:
     return CompressName(n1) == CompressName(n2)
 
 
+#==================================================================================
+# Compare two titles: Ignore case and ignore fstart or end position of [a, an, the]
+def CompareTitles(name1: str, name2: str) -> bool:
+    if name1 is None and name2 is None:
+        return True
+    if name1 is None or name2 is None:
+        return False
+    name1=name1.lower()
+    if name1.startswith("the "):
+        name1=name1[4:]+", the"
+    name2=name2.lower()
+    if name2.startswith("the "):
+        name2=name2[4:]+", the"
+    if name1 == name2:
+        return True
+    return False
+
+
 #=============================================================================
 def CaseInsensitiveCompare(s1: str, s2: str) -> bool:
     if s1 == s2:
@@ -327,6 +346,23 @@ def InterpretNumber(inputstring: Optional[str]) -> Optional[int]:
             if inputstring is not None and len(inputstring) > 0:
                 Log("*** Uninterpretable number: '"+str(inputstring)+"'", True)
     return value
+
+
+# =============================================================================
+# Nibble away at a line by applying the pattern with two capture groups to the line
+# We return a tuple:
+#       The line with the matched portion removed
+#       Capture group 1
+#       Capture group 2
+def Match2AndRemove(inputstr: str, pattern: str) -> Tuple[str, Optional[str], Optional[str]]:
+    m=re.match(pattern, inputstr)         # Do we match the pattern?
+    if m is not None and len(m.groups()) > 0:
+        g0=m.groups()[0]                    # There may be either 1 or two groups, but we need to return two matches
+        g1=None
+        if len(m.groups()) > 1:
+            g1=m.groups()[1]
+        return re.sub(pattern, "", inputstr), g0, g1  # And delete the matched text
+    return inputstr, None, None
 
 
 # =============================================================================

@@ -5,6 +5,8 @@ from tkinter import Tk, messagebox
 import urllib.parse
 from typing import Union, Tuple, Optional, List
 from html import escape
+from contextlib import suppress
+
 import re
 
 from Log import Log, LogClose
@@ -27,10 +29,8 @@ def ToNumeric(val: Union[None, int, float, str]) -> Union[None, int, float]:
     try:
         return int(val)
     except:
-        try:
+        with suppress(Exception):
             return float(val)
-        except:
-            pass
 
     # If nothing works, return None
     return None
@@ -206,6 +206,8 @@ def CompareTitles(name1: str, name2: str) -> bool:
 def CaseInsensitiveCompare(s1: str, s2: str) -> bool:
     if s1 == s2:
         return True
+    if (s1 is None and s2 == "") or (s2 == None and s1 == ""):
+        return True
     if s1 is None or s2 is None:
         return False  # We already know that s1 and s2 are different
     return s1.lower() == s2.lower()  # Now that we know that neither is None, we can do the lower case compare
@@ -235,11 +237,11 @@ def IsInt(arg: any) -> bool:
         return True
 
     # It's not an integer type.  See if it can be converted into an integer.  E.g., it's a string representation of a number
-    try:
+    with suppress(Exception):
         int(arg)  # We throw away the result -- all we're interested in is if the conversation can be done without throwing an error
         return True
-    except:
-        return False
+
+    return False
 
 
 # =============================================================================
@@ -257,11 +259,11 @@ def IsNumeric(arg: any) -> bool:
         return True
 
     # It's not a numeric type.  See if it can be converted into a float.  E.g., it's a string representation of a number
-    try:
+    with suppress(Exception):
         float(arg)    # We throw away the result -- all we're interested in is if the conversation can be done without throwing an error
         return True
-    except:
-        return False
+
+    return False
 
 
 # =============================================================================

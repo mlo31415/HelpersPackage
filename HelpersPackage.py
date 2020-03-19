@@ -310,44 +310,46 @@ def InterpretRoman(s: str) -> Optional[int]:
 
 
 # =============================================================================
-# Try to interpret a string as an integer
+# Try to interpret a fairely messy string suh as those found in fanzine serial numbers as an integer
 #   nnn
 #   nnn-nnn
 #   nnn.nnn
 #   nnnaaa
 def InterpretNumber(inputstring: Optional[str]) -> Optional[int]:
-    value=None
-    if inputstring is not None:
-        inputstring=inputstring.strip()
-        if IsInt(inputstring):  # Simple integer
-            value=int(inputstring)
-        if value is None:
-            # nn-nn (Hyphenated integers which usually means a range of numbers)
-            p=re.compile("^([0-9]+)-([0-9]+)$")  # nnn + dash + nnn
-            m=p.match(inputstring)
-            if m is not None and len(m.groups()) == 2:
-                value=int(m.groups()[0])        # We just sorta ignore n2...
-        if value is None:
-            # nn.nn (Decimal number)
-            p=re.compile("^([0-9]+.[0-9]+)$")   # nnn.nnn
-            m=p.match(inputstring)
-            if m is not None and len(m.groups()) == 1:
-                value=float(m.groups()[0])      # Note that this returns a float
-        if value is None:
-            # nnaa (integer followed by letter)
-            p=re.compile("^([0-9]+)\s?([a-zA-Z]+)$")  # nnn + optional space + nnn
-            m=p.match(inputstring)
-            if m is not None and len(m.groups()) == 2:
-                value=int(m.groups()[0])
-        if value is None:
-            p=re.compile("^([IVXLC]+)$")        # roman numeral characters
-            m=p.match(inputstring)
-            if m is not None and len(m.groups()) == 1:
-                value=InterpretRoman(m.groups()[0])
-        if value is None:
-            if inputstring is not None and len(inputstring) > 0:
-                Log("*** Uninterpretable number: '"+str(inputstring)+"'", True)
-    return value
+    if inputstring is None:
+        return None
+
+    inputstring=inputstring.strip()
+    if IsInt(inputstring):  # Simple integer
+        return int(inputstring)
+
+    # nn-nn (Hyphenated integers which usually means a range of numbers)
+    p=re.compile("^([0-9]+)-([0-9]+)$")  # nnn + dash + nnn
+    m=p.match(inputstring)
+    if m is not None and len(m.groups()) == 2:
+        return int(m.groups()[0])        # We just sorta ignore n2...
+
+    # nn.nn (Decimal number)
+    p=re.compile("^([0-9]+.[0-9]+)$")   # nnn.nnn
+    m=p.match(inputstring)
+    if m is not None and len(m.groups()) == 1:
+        return int(float(m.groups()[0]))
+
+    # nnaa (integer followed by letter)
+    p=re.compile("^([0-9]+)\s?([a-zA-Z]+)$")  # nnn + optional space + nnn
+    m=p.match(inputstring)
+    if m is not None and len(m.groups()) == 2:
+        return int(m.groups()[0])
+    
+    # roman numeral characters
+    p=re.compile("^([IVXLC]+)$")
+    m=p.match(inputstring)
+    if m is not None and len(m.groups()) == 1:
+        return InterpretRoman(m.groups()[0])
+
+    if inputstring is not None and len(inputstring) > 0:
+        Log("*** Uninterpretable number: '"+str(inputstring)+"'", True)
+    return None
 
 
 # =============================================================================

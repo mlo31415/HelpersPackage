@@ -103,13 +103,13 @@ def FindBracketedText(s: str, b: str) -> Tuple[str, str]:
 
 #=====================================================================================
 # Do a case-insensitive replace, replacing old with new
-def CaseInsensitiveReplace(input: str, old: str, new: str) -> str:
-    loc=input.lower().find(old.lower())
+def CaseInsensitiveReplace(s: str, old: str, new: str) -> str:
+    loc=s.lower().find(old.lower())
     if loc == -1:
-        return input
+        return s
     if loc == 0:
-        return new+input[loc+len(old):]
-    return input[:loc]+new+input[loc++len(old)]
+        return new+s[loc+len(old):]
+    return s[:loc]+new+s[loc++len(old)]
 
 
 #=====================================================================================
@@ -185,7 +185,7 @@ def CompareCompressedName(n1: str, n2: str) -> bool:
 
 
 #==================================================================================
-# Compare two titles: Ignore case and ignore fstart or end position of [a, an, the]
+# Compare two titles: Ignore case and ignore start or end position of [a, an, the]
 def CompareTitles(name1: str, name2: str) -> bool:
     if name1 is None and name2 is None:
         return True
@@ -206,7 +206,7 @@ def CompareTitles(name1: str, name2: str) -> bool:
 def CaseInsensitiveCompare(s1: str, s2: str) -> bool:
     if s1 == s2:
         return True
-    if (s1 is None and s2 == "") or (s2 == None and s1 == ""):
+    if (s1 is None and s2 == "") or (s2 is None and s1 == ""):
         return True
     if s1 is None or s2 is None:
         return False  # We already know that s1 and s2 are different
@@ -377,7 +377,7 @@ def MessageBox(s: str) -> None:
  if sys.gettrace() is None:      # This is an incantation which detects the presence of a debugger
     root = Tk()
     root.withdraw()
-    messagebox.showinfo(title=None, message="Finished!")
+    messagebox.showinfo(title=None, message=s)
 
 
 # =============================================================================

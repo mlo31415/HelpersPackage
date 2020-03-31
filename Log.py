@@ -2,6 +2,7 @@ import os
 import io
 import sys
 from tkinter import Tk, messagebox
+import datetime
 
 #from HelpersPackage import MessageBox
 
@@ -88,7 +89,21 @@ def LogSetHeader(name: str) -> None:
 
 #=============================================================================
 # This really doesn't do the open, but just caches the filenames.  They'll be opened by Log() only if needed.
-def LogOpen(logfilename: str, errorfilename: str) -> None:
+def LogOpen(logfilename: str, errorfilename: str, dated: bool=False) -> None:
+
+    if dated:
+        # If dated is True, we insert a datestring at the end of the filename
+        d=datetime.datetime.now().strftime("%Y-%m-%d %H.%M.%S")
+        fname, ext=os.path.splitext(logfilename)
+        if ext is None or ext == "":    # If there was no extension, add .txt
+            ext=".txt"
+        logfilename=fname+" "+d+ext
+
+        fname, ext=os.path.splitext(errorfilename)
+        if ext is None or ext == "":
+            ext=".txt"
+        errorfilename=fname+" "+d+ext
+
     global g_logFile
     g_logFile=logfilename
 

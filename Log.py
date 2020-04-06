@@ -20,7 +20,7 @@ import datetime
 #=============================================================================
 # Print the text to a log file open by the main program
 # If isError is set also print it to the error file.
-def Log(text: str, isError: bool=False, noNewLine: bool=False) -> None:
+def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True) -> None:
     global g_logFile
     global g_logErrorFile
     global g_logHeader
@@ -32,13 +32,13 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False) -> None:
     # Now, if the file is needed, we open the files and store the file handle in that global instead.
     if g_logFile is not None and isinstance(g_logFile, str):
         try:
-            g_logFile=open(g_logFile, "w+")
+            g_logFile=open(g_logFile, "w+", encoding='utf-8')
         except Exception as e:
             MessageBox("Exception in LogOpen("+g_logFile+")  Exception="+str(e))
 
     if isError and g_logErrorFile is not None and isinstance(g_logErrorFile, str):
         try:
-            g_logErrorFile=open(g_logErrorFile, "w+", buffering=1)
+            g_logErrorFile=open(g_logErrorFile, "w+", buffering=1, encoding='utf-8')
         except Exception as e:
             MessageBox("Exception in LogOpen("+g_logFile+")  Exception="+str(e))
 
@@ -50,13 +50,15 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False) -> None:
 
     # If this is the first log entry for this header, print it and then clear it so it's not printed again
     if g_logHeader is not None:
-        print(g_logHeader)
+        if Print:
+            print(g_logHeader)
         print("\n"+g_logHeader, file=g_logFile)
     g_logHeader=None
 
     if isError:
         # If this is an error entry and is the first error entry for this header, print the header and then clear it so it's not printed again
         if g_logErrorHeader is not None:
+            print("----\n"+g_logErrorHeader)    # We ignore the Print parameter for error messages
             print("----\n"+g_logErrorHeader, file=g_logErrorFile)
         g_logErrorHeader=None
 
@@ -65,12 +67,13 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False) -> None:
         print("*** text="+text, end=newlinechar)
 
     # Print the log entry itself
-    print(text, end=newlinechar)
+    if Print:
+        print(text, end=newlinechar)
     if g_logFile is not None and isinstance(g_logFile, io.TextIOWrapper):
         print(text, file=g_logFile, end=newlinechar)
     if isError and g_logErrorFile is not None and isinstance(g_logErrorFile, io.TextIOWrapper):
         print(text, file=g_logErrorFile, end=newlinechar)
-        LogFlush()
+        LogFlush()  # Always flush after an error message
 
 
 #=============================================================================

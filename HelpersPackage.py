@@ -4,15 +4,32 @@ import ctypes
 from tkinter import Tk, messagebox
 import urllib.parse
 from typing import Union, Tuple, Optional, List
-from html import escape
+from html import escape, unescape
 from contextlib import suppress
-
 import re
 
 from Log import Log, LogClose
 
-#-----------------------------
-# Helper function
+
+#=======================================================
+# Locate all matches to the pattern and remove them
+# If numGroups>1, the list is a list of lists
+# Return a list of matched strings and the remnant of the input string
+def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: int=1) -> Tuple[List[str], str]:
+    p=re.compile(pattern)
+    found=[]
+    while True:
+        m=p.search(inputstr)
+        if m is None:
+            return found, inputstr
+        # When numGroups is zero we just replace the text without saving it.
+        if numGroups == 1:
+            found.append(m.groups()[0])
+        elif numGroups > 1:
+            found.append(m.groups())
+        inputstr=p.sub(replacement, inputstr, 1)
+
+#=======================================================
 # Try to make the input numeric
 # Note that if it fails, it returns what came in.
 def ToNumeric(val: Union[None, int, float, str]) -> Union[None, int, float]:
@@ -395,7 +412,7 @@ def Bailout(e, msg: str, title: str) -> None:
 # =============================================================================
 # Convert page names to legal Windows filename
 # The characters illegal in Windows filenams will be replaced by ";xxx;" where xxx is a plausible name for the illegal character.
-def WikiPageNameToFilename(pname: str) -> str:
+def WikiPagenameToWindowsFilename(pname: str) -> str:
     # "Con" is a special case because it's a reserved Windows (DOS, actually) filename
     if pname.lower() == "con":
         pname=";"+pname+";" # And now handle it normally
@@ -432,7 +449,10 @@ def WikiPageNameToFilename(pname: str) -> str:
     # Now handle special characters
     return s.replace("*", ";star;").replace("/", ";slash;").replace("?", ";ques;").replace('"', ";quot;").replace("<", ";lt;").replace(">", ";gt;").replace("\\", ";back;").replace("|", ";bar;").replace(":", ";colon;")
 
-def FileNameToWikiPageName(fname: str) -> str:
+
+# =============================================================================
+# Convert a local Windows site file name to a wiki page name
+def WindowsFilenameToWikiPagename(fname: str) -> str:
     # First undo the handling of special characters
     fname=fname.replace(";star;", "*").replace(";slash;", "/").replace(";ques;", "?").replace(";quot;", '"').replace(";lt;", "<").replace(";gt;", ">").replace(";back;", "\\").replace(";bar;", "|").replace(";colon;", ":")
 
@@ -467,3 +487,38 @@ def FileNameToWikiPageName(fname: str) -> str:
 
     return s
 
+# =============================================================================
+# Turn a page name to and from  Wiki canonical form
+# Capitalize the first character and turn spaces to underscores
+
+subst={
+    "&": "%26",
+    "?": "%3F"
+    }
+
+def WikiPagenameToWikiUrlname(s: str) -> str:
+    if len(s) == 0:
+        return s
+    out=""
+    for c in s:
+        if c == " ":
+            out+="_"
+        elif c in subst.keys():
+            out+=subst[c]
+        else:
+            out+=c
+
+    return out[0].upper()+out[1:]
+
+# Turn underscores to spaces
+# Note that Mediawiki canonicalization is not reversable.  We will turn underscores to spaces, but otherwise do nothing.
+def WikiUrlnameToWikiPagename(s: str) -> str:
+    for key, val in subst.items():
+        s=s.replace(val, key)
+    return s.replace("_", " ")
+
+
+# Convert a Mediawiki redirect to a page name
+def WikiRedirectToPagename(s: str) -> str:
+    s=s[0].upper()+s[1:]
+    return unescape(s).replace("  ", " ")

@@ -30,6 +30,19 @@ def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: i
         inputstr=p.sub(replacement, inputstr, 1)
 
 #=======================================================
+# Locate and return a chunk of text bounded by two patterns
+def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str) -> Optional[str]:
+    m=re.search(startpattern, source)
+    if m is None:
+        return None
+    loc=m.span()[1]
+    m=re.search(endpattern, source[loc:])
+    if m is None:
+        return None
+    return source[loc:loc+m.span()[0]]
+
+
+#=======================================================
 # Try to make the input numeric
 # Note that if it fails, it returns what came in.
 def ToNumeric(val: Union[None, int, float, str]) -> Union[None, int, float]:
@@ -522,3 +535,27 @@ def WikiUrlnameToWikiPagename(s: str) -> str:
 def WikiRedirectToPagename(s: str) -> str:
     s=s[0].upper()+s[1:]
     return unescape(s).replace("  ", " ")
+
+# Extract the link from a bracketed name
+# Take [[stuff] or [[stuff|display text]] and return stuff
+def WikiExtractLink(s: str) -> str:
+    s=s.replace("[", "").replace("]", "")   # Ignore brackets
+    return s.split("|")[0]
+
+#-----------------------------------------------------------------
+# Split a string into a list of string.  The split is done on *spans* of the input characters.
+def SplitOnSpan(chars: str, s: str) -> List[str]:
+    pattern=re.compile("["+chars+"]")
+    # replace the matched span of <chars> with a single char from the span string
+    return [x for x in re.sub(pattern, chars[0], s).split(chars[0]) if len(x) > 0]
+
+#------------------------------------------------------------------
+# Split a really long string of output for printing as text.
+def SplitOutput(f, s: str):
+    strs=s.split(",")
+    while len(strs) > 0:
+        out=""
+        while (len(strs) > 0 and (len(out)+len(strs[0])) < 80 or (len(out) == 0 and len(strs[0]) >= 80)):
+            out=out+strs[0].strip()+", "
+            del strs[0]
+        f.write("    "+out+"\n")

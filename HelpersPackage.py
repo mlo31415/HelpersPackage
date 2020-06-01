@@ -70,11 +70,31 @@ def ToNumeric(val: Union[None, int, float, str]) -> Union[None, int, float]:
 # Return a properly formatted link
 def FormatLink(url: str, text: str) -> str:
     # TODO: Do we need to deal with turning blanks into %20 whatsits?
+
+    # If a null URL is provided, don't return a hyperlink
+    if url is None or url == "":
+        return text
+
     # If the url points to a pdf, add '#view=Fit' to the end to force the PDF to scale to the page
     if url.lower().endswith(".pdf"):
         url+="#view=Fit"
-    return '<a href='+url+'>'+UnicodeToHtml(text)+'</a>'
+    return '<a href="'+url+'">'+UnicodeToHtml(text)+'</a>'
 
+#==================================================================================
+# Take a string and strip out all hrefs, retaining all the text.
+def UnformatLinks(s: str) -> str:
+    if s is None or s == "":
+        return s
+
+    try:
+        # Convert substrings of the form '<a href="'(stuff1)'>'(stuff2)'</a>'  to (stuff2)
+        s=re.sub('(<a\s+href=".+?">)(.+?)(</a>)', "\\2", s)
+
+        # And then there are Mediawiki redirects
+        s=re.sub('(<a\s+class=".+?">)(.+?)(</a>)', "\\2", s)
+        return s
+    except:
+        pass
 
 #-------------------------------------------------------------
 def CanonicizeColumnHeaders(header: str) -> str:
@@ -132,6 +152,36 @@ def FindBracketedText(s: str, b: str) -> Tuple[str, str]:
 
 
 #=====================================================================================
+# Remove a matched pair of <brackets> <containing anything> from a string, returning the inside
+def StripExternalTags(s: str)-> Optional[str]:
+    m=re.match("^<.*>(.*)</.*>$", s)
+    if m is None:
+        return None
+    return m.groups()[0]
+
+
+#=====================================================================================
+# Take the input, find the text surrounded by <tag> and </tag> and substitute the replacement
+def SubstituteHTML(input: str, tag: str, replacement: str) -> str:
+    t="<"+tag+">"
+    loc=input.find(t)
+    if loc == -1:
+        return input
+    t2="</"+tag+">"
+    loc2=input.find(t2, loc+2)
+    if loc2 == -1:
+        return input
+    return input[:loc]+t+replacement+t2+input[loc2+len(t2):]
+
+#=====================================================================================
+# If needed, prepend http://
+def PrependHTTP(input: str) -> str:
+    if input.lower().startswith("http://"):
+        return input
+    return "http://"+input
+
+
+#=====================================================================================
 # Do a case-insensitive replace, replacing old with new
 def CaseInsensitiveReplace(s: str, old: str, new: str) -> str:
     loc=s.lower().find(old.lower())
@@ -146,6 +196,12 @@ def CaseInsensitiveReplace(s: str, old: str, new: str) -> str:
 # Remove certain strings which amount to whitespace in html
 def RemoveHTMLDebris(s: str) -> str:
     return s.replace("<br>", "").replace("<BR>", "")
+
+#=====================================================================================
+# Remove all html tags (or at least those which have been an issue
+def RemoveAllHTMLTags(s: str) -> str:
+    vv=re.sub('(</?[a-zA-Z]+>)', "", s)
+    return vv
 
 
 #=====================================================================================

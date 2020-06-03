@@ -75,10 +75,14 @@ def FormatLink(url: str, text: str) -> str:
     if url is None or url == "":
         return text
 
+    url=UnicodeToHtml(url)
+    url=url.replace("#", "%23")   # '#' can't be part of an href as it is misinterpreted
+
     # If the url points to a pdf, add '#view=Fit' to the end to force the PDF to scale to the page
     if url.lower().endswith(".pdf"):
         url+="#view=Fit"
-    return '<a href="'+url+'">'+UnicodeToHtml(text)+'</a>'
+
+    return '<a href="'+url+'">'+text+'</a>'
 
 #==================================================================================
 # Take a string and strip out all hrefs, retaining all the text.

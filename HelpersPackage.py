@@ -366,9 +366,8 @@ def ReadList(filename: str, isFatal: bool=False) -> Optional[List[str]]:
             raise FileNotFoundError
         print("ReadList can't open "+filename)
         return None
-    f=open(filename, "r")
-    lst=f.readlines()
-    f.close()
+    with open(filename, "r") as f:
+        lst=f.readlines()
 
     lst=[l.strip() for l in lst]  # Strip leading and trailing whitespace
     lst=[l for l in lst if len(l)>0 and l[0]!= "#"]   # Drop empty lines and lines starting with "#"

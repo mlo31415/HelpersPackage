@@ -7,8 +7,29 @@ from typing import Union, Tuple, Optional, List
 from html import escape, unescape
 from contextlib import suppress
 import re
+import wx
 
 from Log import Log, LogClose
+
+
+# This is used:
+#   with ModalDialogManager(dialog object, object's init arguments...) as dlg
+#       dlg.ShowModal()
+#       etc.
+#   It deals with dlg.destroy()
+
+class ModalDialogManager():
+    def __init__(self, name: wx.Dialog, *args, **kargs):
+        self._name: wx.Dialog=name
+        self._args=args
+        self._kargs=kargs
+
+    def __enter__(self):
+        self._dlg=self._name(*self._args, **self._kargs)
+        return self._dlg
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self._dlg.destroy()
 
 
 #=======================================================

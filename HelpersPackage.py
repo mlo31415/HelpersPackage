@@ -29,7 +29,7 @@ class ModalDialogManager():
         return self._dlg
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        self._dlg.destroy()
+        self._dlg.Destroy()
 
 
 #=======================================================
@@ -204,6 +204,12 @@ def PrependHTTP(input: str) -> str:
     if input.lower().startswith("http://"):
         return input
     return "http://"+input
+
+
+# =====================================================================================
+# If needed, remove http://
+def RemoveHTTP(input: str) -> str:
+    return input.replace("http://", "", 1).replace("HTTP://", "", 1)
 
 
 #=====================================================================================

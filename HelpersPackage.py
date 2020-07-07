@@ -348,6 +348,21 @@ def ChangeFileInURL(url: str, newFileName: str) -> str:
 
 
 # =============================================================================
+# Case insensitive check if a file's extension is in a list of extensions
+# The extension can be either a string or a list of strings. Leading '.' optional
+def ExtensionMatches(file: str, ext: Union[str, List[str]]) -> bool:
+    file=os.path.splitext(file.lower())
+    if type(ext) is str:
+        ext=[ext]
+    for ex in ext:
+        if ex[0] != ".":
+            ex="."+ex   # Add a leading '.' if necessary
+        if file[1] == ex.lower():
+            return True
+    return False
+
+
+# =============================================================================
 # Check to see if an argument (int, float or string) is a number
 def IsInt(arg: any) -> bool:
     if type(arg) is int:

@@ -1,6 +1,7 @@
 import os
 import sys
 import ctypes
+import unicodedata
 from tkinter import Tk, messagebox
 import urllib.parse
 from typing import Union, Tuple, Optional, List
@@ -75,8 +76,8 @@ def FormatLink(url: str, text: str) -> str:
     if url is None or url == "":
         return text
 
+    url=url.replace("#", "%23")  # '#' can't be part of an href as it is misinterpreted
     url=UnicodeToHtml(url)
-    #url=url.replace("#", "%23")   # '#' can't be part of an href as it is misinterpreted
 
     # If the url points to a pdf, add '#view=Fit' to the end to force the PDF to scale to the page
     if url.lower().endswith(".pdf"):
@@ -189,6 +190,13 @@ def PrependHTTP(input: str) -> str:
 # If needed, remove http://
 def RemoveHTTP(input: str) -> str:
     return input.replace("http://", "", 1).replace("HTTP://", "", 1)
+
+
+#=====================================================================================
+# Remove the accents, unlats, etc from characters
+def RemoveAccents(input: str) -> str:
+    nfkd_form = unicodedata.normalize('NFKD', input)
+    return u"".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 
 #=====================================================================================

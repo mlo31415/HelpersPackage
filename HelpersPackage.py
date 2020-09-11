@@ -591,7 +591,6 @@ def WindowsFilenameToWikiPagename(fname: str) -> str:
 # =============================================================================
 # Turn a page name to and from  Wiki canonical form
 # Capitalize the first character and turn spaces to underscores
-
 subst={
     "&": "%26",
     "?": "%3F"
@@ -611,6 +610,7 @@ def WikiPagenameToWikiUrlname(s: str) -> str:
 
     return out[0].upper()+out[1:]
 
+#-----------------------------------------------------------------
 # Turn underscores to spaces
 # Note that Mediawiki canonicalization is not reversable.  We will turn underscores to spaces, but otherwise do nothing.
 def WikiUrlnameToWikiPagename(s: str) -> str:
@@ -619,16 +619,18 @@ def WikiUrlnameToWikiPagename(s: str) -> str:
     return s.replace("_", " ")
 
 
+#-----------------------------------------------------------------
 # Convert a Mediawiki redirect to a page name
 def WikiRedirectToPagename(s: str) -> str:
     s=s[0].upper()+s[1:]
     return unescape(s).replace("  ", " ")
 
+#-----------------------------------------------------------------
 # Extract the link from a bracketed name
-# Take [[stuff] or [[stuff|display text]] and return stuff
+# Take [[stuff] or [[stuff|display text]] or [[stuff#substuff]] and return stuff
 def WikiExtractLink(s: str) -> str:
     s=s.replace("[", "").replace("]", "")   # Ignore brackets
-    return s.split("|")[0]
+    return s.split("|")[0].split("#")[0]
 
 #-----------------------------------------------------------------
 # Split a string into a list of string.  The split is done on *spans* of the input characters.

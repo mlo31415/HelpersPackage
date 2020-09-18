@@ -491,8 +491,8 @@ def Match2AndRemove(inputstr: str, pattern: str) -> Tuple[str, Optional[str], Op
 # Display a message box (needed only for the built/packaged version)
 # User sparingly, since the messagebox must be closed by hand and can be annoying.
 # It does nothing in the debug version
-def MessageBox(s: str) -> None:
- if sys.gettrace() is None:      # This is an incantation which detects the presence of a debugger
+def MessageBox(s: str, ignoredebugger: bool=False) -> None:
+ if sys.gettrace() is None or ignoredebugger:      # This is an incantation which detects the presence of a debugger
     root = Tk()
     root.withdraw()
     messagebox.showinfo(title=None, message=s)

@@ -228,6 +228,14 @@ def RemoveAllHTMLTags(s: str) -> str:
 
 
 #=====================================================================================
+# Remove all html tags (or at least those which have been an issue
+# This one is more aggressive
+def RemoveAllHTMLTags2(s: str) -> str:
+    vv=re.sub('(</?[a-zA-Z0-9]+>)', "", s)
+    return vv
+
+
+#=====================================================================================
 # Change"&nbsp;" to space
 def ChangeNBSPToSpace(s: Optional[str]) -> Union[None, str, List[str]]:
     if s is None:

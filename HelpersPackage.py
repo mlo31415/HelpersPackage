@@ -307,6 +307,27 @@ def CompareTitles(name1: str, name2: str) -> bool:
 
 
 #=============================================================================
+# Remove leading and trailing articles
+# "The Hobbit" --> "Hobbit"
+# "Odyssey, The" --> "Odyssey"
+# Also, "A" and "An"
+def RemoveArticles(name: str) -> str:
+    lname=name.lower()
+    if lname[:4] == "the ":
+        return name[4:]
+    if lname[-5:] == ", the":
+        return name[:-5]
+    if lname[:3] == "an ":
+        return name[3:]
+    if lname[-4:] == ", an":
+        return name[:-4]
+    if lname[:2] == "a ":
+        return name[2:]
+    if lname[-3:] == ", a":
+        return name[:-3]
+    return name
+
+#=============================================================================
 def CaseInsensitiveCompare(s1: str, s2: str) -> bool:
     if s1 == s2:
         return True

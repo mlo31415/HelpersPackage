@@ -69,7 +69,7 @@ def ToNumeric(val: Union[None, int, float, str]) -> Union[None, int, float]:
 
 #==================================================================================
 # Return a properly formatted link
-def FormatLink(url: str, text: str) -> str:
+def FormatLink(url: str, text: str, ForceHTTP: bool=False) -> str:
     # TODO: Do we need to deal with turning blanks into %20 whatsits?
 
     # If a null URL is provided, don't return a hyperlink
@@ -82,6 +82,10 @@ def FormatLink(url: str, text: str) -> str:
     # If the url points to a pdf, add '#view=Fit' to the end to force the PDF to scale to the page
     if url.lower().endswith(".pdf"):
         url+="#view=Fit"
+
+    if ForceHTTP:
+        if not url.lower().startswith("http"):
+            url="https://"+url
 
     return '<a href="'+url+'">'+text+'</a>'
 
@@ -214,6 +218,7 @@ def CaseInsensitiveReplace(s: str, old: str, new: str) -> str:
 # Remove certain strings which amount to whitespace in html
 def RemoveHTMLDebris(s: str) -> str:
     return s.replace("<br>", "").replace("<BR>", "")
+
 
 #=====================================================================================
 # Remove all html tags (or at least those which have been an issue

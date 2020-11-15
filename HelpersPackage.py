@@ -76,7 +76,10 @@ def FormatLink(url: str, text: str, ForceHTTP: bool=False) -> str:
     if url is None or url == "":
         return text
 
-    url=url.replace("#", "%23")  # '#' can't be part of an href as it is misinterpreted
+    # '#' can't be part of an href as it is misinterpreted
+    # But it *can* be part of a link to an anchor on a page.  So if it's a local link (no '/' or '\' in URL) don't convert the # to %23
+    if '/' in url or '\\' in url:
+        url=url.replace("#", "%23")
     url=UnicodeToHtml(url)
 
     # If the url points to a pdf, add '#view=Fit' to the end to force the PDF to scale to the page

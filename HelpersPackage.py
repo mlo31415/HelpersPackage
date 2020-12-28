@@ -69,7 +69,7 @@ def ToNumeric(val: Union[None, int, float, str]) -> Union[None, int, float]:
 
 #==================================================================================
 # Return a properly formatted link
-def FormatLink(url: str, text: str, ForceHTTP: bool=False) -> str:
+def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=False) -> str:
     # TODO: Do we need to deal with turning blanks into %20 whatsits?
 
     # If a null URL is provided, don't return a hyperlink
@@ -88,6 +88,9 @@ def FormatLink(url: str, text: str, ForceHTTP: bool=False) -> str:
 
     if ForceHTTP:
         if not url.lower().startswith("http"):
+            url="http://"+url
+    elif ForceHTTPS:
+        if not url.lower().startswith("https"):
             url="https://"+url
 
     return '<a href="'+url+'">'+text+'</a>'
@@ -188,15 +191,22 @@ def SubstituteHTML(input: str, tag: str, replacement: str) -> str:
 #=====================================================================================
 # If needed, prepend http://
 def PrependHTTP(input: str) -> str:
-    if input.lower().startswith("http://"):
+    if input.lower().startswith("http://") or input.lower().startswith("https://"):
         return input
     return "http://"+input
+
+#=====================================================================================
+# If needed, prepend https://
+def PrependHTTPS(input: str) -> str:
+    if input.lower().startswith("http://") or input.lower().startswith("https://"):
+        return input
+    return "https://"+input
 
 
 # =====================================================================================
 # If needed, remove http://
 def RemoveHTTP(input: str) -> str:
-    return input.replace("http://", "", 1).replace("HTTP://", "", 1)
+    return input.replace("http://", "", 1).replace("HTTP://", "", 1).replace("https://", "", 1).replace("HTTPS://", "", 1)
 
 
 #=====================================================================================
@@ -266,7 +276,7 @@ def RelPathToURL(relPath: str) -> Optional[str]:
         return None
     if relPath.startswith("http"):  # We don't want to mess with foreign URLs
         return None
-    return "http://www.fanac.org/"+os.path.normpath(os.path.join("fanzines", relPath)).replace("\\", "/")
+    return "https://www.fanac.org/"+os.path.normpath(os.path.join("fanzines", relPath)).replace("\\", "/")
 
 
 #=====================================================================================
@@ -280,7 +290,7 @@ def FindIndexOfStringInList(lst: List[str], s: str) -> Optional[int]:
 
 #==================================================================================
 def CreateFanacOrgAbsolutePath(fanacDir: str, s: str) -> str:
-    return "http://www.fanac.org/fanzines/"+fanacDir+"/"+s
+    return "https://www.fanac.org/fanzines/"+fanacDir+"/"+s
 
 
 #==================================================================================

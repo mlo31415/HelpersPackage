@@ -675,9 +675,10 @@ def WikiRedirectToPagename(s: str) -> str:
 #-----------------------------------------------------------------
 # Extract the link from a bracketed name
 # Take [[stuff] or [[stuff|display text]] or [[stuff#substuff]] and return stuff
+# If there are no brackets, just return the input
 def WikiExtractLink(s: str) -> str:
     s=s.replace("[", "").replace("]", "")   # Ignore brackets
-    return s.split("|")[0].split("#")[0]
+    return s.split("|")[0].split("#")[0].strip()
 
 #-----------------------------------------------------------------
 # Split a string into a list of string.  The split is done on *spans* of the input characters.

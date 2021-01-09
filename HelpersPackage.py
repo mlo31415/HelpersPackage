@@ -32,15 +32,15 @@ def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: i
 
 #=======================================================
 # Locate and return a chunk of text bounded by two patterns
-def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str) -> Optional[str]:
+def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str) -> Tuple[Optional[str], str]:
     m=re.search(startpattern, source)
     if m is None:
-        return None
+        return None, source
     loc=m.span()[1]
     m=re.search(endpattern, source[loc:])
     if m is None:
-        return None
-    return source[loc:loc+m.span()[0]]
+        return None, source
+    return source[loc:loc+m.span()[0]], source[loc+m.span()[1]+1:]
 
 
 #=======================================================
@@ -674,10 +674,16 @@ def WikiRedirectToPagename(s: str) -> str:
 
 #-----------------------------------------------------------------
 # Extract the link from a bracketed name
+# If there are brackets, ignore everything outside the brackets
 # Take [[stuff] or [[stuff|display text]] or [[stuff#substuff]] and return stuff
 # If there are no brackets, just return the input
 def WikiExtractLink(s: str) -> str:
-    s=s.replace("[", "").replace("]", "")   # Ignore brackets
+    b1=s.find("]]")
+    b2=s.find("[[")
+    if b2 > b1 > 0:
+        s=s[b1+2:b2]
+    else:
+        return s
     return s.split("|")[0].split("#")[0].strip()
 
 #-----------------------------------------------------------------

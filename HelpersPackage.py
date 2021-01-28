@@ -77,14 +77,19 @@ def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=Fals
         return text
 
     # '#' can't be part of an href as it is misinterpreted
-    # But it *can* be part of a link to an anchor on a page.  So if it's a local link (no '/' or '\' in URL) don't convert the # to %23
-    if '/' in url or '\\' in url:
+    # But it *can* be part of a link to an anchor on a page or a part of a pdf reference.
+    # So if it's a local link (no '/' or '\' in URL) or the file is a pdf, don't convert the # to %23
+    if ('/' in url or '\\' in url) and ".pdf" not in url:
         url=url.replace("#", "%23")
     url=UnicodeToHtml(url)
 
     # If the url points to a pdf, add '#view=Fit' to the end to force the PDF to scale to the page
-    if url.lower().endswith(".pdf"):
-        url+="#view=Fit"
+    if ".pdf" in url:
+        # Note that if there's already a #whatzit at the end, this gets added as &view=Fit and not as #view=Fit
+        if ".pdf#" in url:
+            url+="&view=Fit"
+        else:
+            url+="#view=Fit"
 
     if ForceHTTP:
         if not url.lower().startswith("http"):

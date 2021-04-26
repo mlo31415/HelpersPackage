@@ -696,10 +696,8 @@ def WikiRedirectToPagename(s: str) -> str:
 def WikiExtractLink(s: str) -> str:
     b1=s.find("]]")
     b2=s.find("[[")
-    if b2 > b1 > 0:
+    if b1 > b2 > -1:
         s=s[b1+2:b2]
-    else:
-        return s
     return s.split("|")[0].split("#")[0].strip()
 
 #-----------------------------------------------------------------

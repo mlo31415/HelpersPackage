@@ -14,13 +14,18 @@ from Log import Log, LogClose
 
 #=======================================================
 # Locate all matches to the pattern and remove them
-# If numGroups>1, the list is a list of lists
+# Numgroups is the number of matching groups in the pattern
+#   If numGroups=0, we just replace the matched text without returning it
+#   If numGroups=1, the output list is a list of strings matched
+#   If numGroups>1, the output list is a list of lists, with the sublist being whatever is matched by the groups -- we don't necessarily return everything that has been matched
 # Return a list of matched strings and the remnant of the input string
-def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: int=1) -> Tuple[List[str], str]:
-    p=re.compile(pattern)
+def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: int=1, caseinsensntive=False) -> Tuple[List[str], str]:
     found=[]
     while True:
-        m=p.search(inputstr)
+        if caseinsensntive:
+            m=re.search(pattern, inputstr, )
+        else:
+            m=re.search(pattern, inputstr)
         if m is None:
             return found, inputstr
         # When numGroups is zero we just replace the text without saving it.
@@ -28,7 +33,8 @@ def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: i
             found.append(m.groups()[0])
         elif numGroups > 1:
             found.append(m.groups())
-        inputstr=p.sub(replacement, inputstr, 1)
+
+        inputstr=re.sub(pattern, replacement, inputstr, 1, flags=re.IGNORECASE)
 
 #=======================================================
 # Locate and return a chunk of text bounded by two patterns

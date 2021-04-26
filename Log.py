@@ -70,7 +70,10 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True) -> No
     if Print:
         print(text, end=newlinechar)
     if g_logFile is not None and isinstance(g_logFile, io.TextIOWrapper):
-        print(text, file=g_logFile, end=newlinechar)
+        try:
+            print(text, file=g_logFile, end=newlinechar)
+        except:
+            pass
     if isError and g_logErrorFile is not None and isinstance(g_logErrorFile, io.TextIOWrapper):
         print(text, file=g_logErrorFile, end=newlinechar)
         LogFlush()  # Always flush after an error message

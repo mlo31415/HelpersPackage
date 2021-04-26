@@ -23,7 +23,7 @@ def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: i
     found=[]
     while True:
         if caseinsensntive:
-            m=re.search(pattern, inputstr, )
+            m=re.search(pattern, inputstr, re.IGNORECASE)
         else:
             m=re.search(pattern, inputstr)
         if m is None:

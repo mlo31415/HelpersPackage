@@ -75,6 +75,9 @@ def ToNumeric(val: Union[None, int, float, str]) -> Union[None, int, float]:
 
 #==================================================================================
 # Return a properly formatted link
+# Depending on flags, the URL may get 'https://' or 'http://' prepended.
+# If it is a PDF it will get view=Fit appended
+# PDFs may have #page=nn attached
 def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=False) -> str:
     # TODO: Do we need to deal with turning blanks into %20 whatsits?
 
@@ -84,9 +87,11 @@ def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=Fals
 
     # '#' can't be part of an href as it is misinterpreted
     # But it *can* be part of a link to an anchor on a page or a part of a pdf reference.
-    # So if it's a local link (no '/' or '\' in URL) or the file is a pdf, don't convert the # to %23
-    if ('/' in url or '\\' in url) and ".pdf" not in url:
-        url=url.replace("#", "%23")
+    # Look for #s in a URL *before* a .pdf extension and convert them to %23s
+    if '#' in url:
+        m=re.match("(.*)(\.pdf.*)", url, re.IGNORECASE)
+        if m is not None:
+            url=m.groups()[0].replace("#", "%23")+m.groups()[1]
     url=UnicodeToHtml(url)
 
     # If the url points to a pdf, add '#view=Fit' to the end to force the PDF to scale to the page

@@ -37,6 +37,25 @@ def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: i
         inputstr=re.sub(pattern, replacement, inputstr, 1, flags=re.IGNORECASE)
 
 #=======================================================
+# When a python program has been frozen using Pyinstaller, some of its resource files may be frozen with it
+# PyiResourcePath takes a path *relative to the python source files* and turns it into the resource path if we're running frozen.
+def PyiResourcePath(relative_path):
+    frozen=getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
+
+    # If we're not frozen, just use the local path
+    if not frozen:
+        return os.path.join(sys.path[0], relative_path)
+
+    # Get absolute path to resource, works for dev and for PyInstaller
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path=getattr(sys, '_MEIPASS', False)
+    except Exception:
+        base_path=os.environ.get("_MEIPASS2", os.path.abspath("."))
+
+    return os.path.join(base_path, relative_path)
+
+#=======================================================
 # Locate and return a chunk of text bounded by two patterns
 def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str) -> Tuple[Optional[str], str]:
     m=re.search(startpattern, source)

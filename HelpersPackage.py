@@ -187,18 +187,14 @@ def CanonicizeColumnHeaders(header: str) -> str:
 # Find text bracketed by <b>...</b>
 # Return the contents of the first pair of brackets found and the remainder of the input string
 def FindBracketedText(s: str, b: str) -> Tuple[str, str]:
-    strlower=s.lower()
-    l1=strlower.find("<"+b.lower())
-    if l1 == -1:
-        return "", ""
-    l1=strlower.find(">", l1)
-    if l1 == -1:
-        Log("***Error: no terminating '>' found in "+strlower+"'", True)
-        return "", ""
-    l2=strlower.find("</"+b.lower()+">", l1+1)
-    if l2 == -1:
-        return "", ""
-    return s[l1+1:l2], s[l2+3+len(b):]
+
+    pattern="<"+b+">(.*?)</"+b+">"
+    m=re.search(pattern, s,  re.DOTALL)
+    if m is None:
+        return "", s
+    match=RemoveAllHTMLTags(m.groups()[0])
+    s2=re.sub(pattern, "", s, count=1)
+    return match, s2
 
 
 #=====================================================================================

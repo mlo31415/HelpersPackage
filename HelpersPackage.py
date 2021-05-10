@@ -267,7 +267,7 @@ def RemoveHTMLDebris(s: str) -> str:
 #=====================================================================================
 # Remove all html tags (or at least those which have been an issue
 def RemoveAllHTMLTags(s: str) -> str:
-    vv=re.sub('(</?[a-zA-Z]+>)', "", s)
+    vv=re.sub('(</?[a-zA-Z0-9]+>)', "", s)
     return vv
 
 

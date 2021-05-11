@@ -40,10 +40,9 @@ def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: i
 # When a python program has been frozen using Pyinstaller, some of its resource files may be frozen with it
 # PyiResourcePath takes a path *relative to the python source files* and turns it into the resource path if we're running frozen.
 def PyiResourcePath(relative_path):
-    frozen=getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
 
     # If we're not frozen, just use the local path
-    if not frozen:
+    if not getattr(sys, 'frozen', False) or not hasattr(sys, '_MEIPASS'):
         return os.path.join(sys.path[0], relative_path)
 
     # Get absolute path to resource, works for dev and for PyInstaller

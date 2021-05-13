@@ -510,7 +510,7 @@ def InterpretRoman(s: str) -> Optional[int]:
 
 
 # =============================================================================
-# Try to interpret a fairely messy string suh as those found in fanzine serial numbers as an integer
+# Try to interpret a fairly messy string such as those found in fanzine serial numbers as a number (decimal or integer)
 #   nnn
 #   nnn-nnn
 #   nnn.nnn

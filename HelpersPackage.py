@@ -19,21 +19,25 @@ from Log import Log, LogClose
 #   If numGroups=1, the output list is a list of strings matched
 #   If numGroups>1, the output list is a list of lists, with the sublist being whatever is matched by the groups -- we don't necessarily return everything that has been matched
 # Return a list of matched strings and the remnant of the input string
-def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: int=1, caseinsensntive=False) -> Tuple[List[str], str]:
-    found=[]
+def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: int=1, caseinsensitive=False) -> Tuple[List[str], str]:
+    found: Optional[List[str], List[List[str]]]=[]
+    # Keep looping and removing matched material until the match fails
     while True:
-        if caseinsensntive:
+        # Look for a match
+        if caseinsensitive:
             m=re.search(pattern, inputstr, re.IGNORECASE)
         else:
             m=re.search(pattern, inputstr)
+        # If none is found, return the results
         if m is None:
             return found, inputstr
+        # We found something. Append it to the list of found snippets
         # When numGroups is zero we just replace the text without saving it.
         if numGroups == 1:
             found.append(m.groups()[0])
         elif numGroups > 1:
             found.append(m.groups())
-
+        # Replace the found text
         inputstr=re.sub(pattern, replacement, inputstr, 1, flags=re.IGNORECASE)
 
 #=======================================================

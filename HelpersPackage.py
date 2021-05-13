@@ -530,26 +530,24 @@ def InterpretNumber(inputstring: Optional[str]) -> Union[None, int, float]:
         return int(inputstring)
 
     # nn-nn (Hyphenated integers which usually means a range of numbers)
-    p=re.compile("^([0-9]+)-([0-9]+)$")  # nnn + dash + nnn
-    m=p.match(inputstring)
+    # nnn + dash + nnn
+    m=re.match("^([0-9]+)-([0-9]+)$", inputstring)
     if m is not None and len(m.groups()) == 2:
         return int(m.groups()[0])        # We just sorta ignore n2...
 
     # nn.nn (Decimal number)
-    p=re.compile("^([0-9]+.[0-9]+)$")   # nnn.nnn
-    m=p.match(inputstring)
+    m=re.match("^([0-9]+.[0-9]+)$", inputstring)
     if m is not None and len(m.groups()) == 1:
         return int(float(m.groups()[0]))
 
     # nnaa (integer followed by letter)
-    p=re.compile("^([0-9]+)\s?([a-zA-Z]+)$")  # nnn + optional space + nnn
-    m=p.match(inputstring)
+    # nnn + optional space + nnn
+    m=re.match("^([0-9]+)\s?([a-zA-Z]+)$", inputstring)
     if m is not None and len(m.groups()) == 2:
         return int(m.groups()[0])
     
     # roman numeral characters
-    p=re.compile("^([IVXLC]+)$")
-    m=p.match(inputstring)
+    m=re.match("^([IVXLC]+)$", inputstring)
     if m is not None and len(m.groups()) == 1:
         return InterpretRoman(m.groups()[0])
 

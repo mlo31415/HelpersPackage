@@ -554,7 +554,9 @@ def InterpretNumber(inputstring: Optional[str]) -> Union[None, int, float]:
     # roman numeral characters
     m=re.match("^([IVXLC]+)$", inputstring)
     if m is not None and len(m.groups()) == 1:
-        return InterpretRoman(m.groups()[0])
+        val=InterpretRoman(m.groups()[0])
+        if val is not None:
+            return val
 
     if inputstring is not None and len(inputstring) > 0:
         Log("*** Uninterpretable number: '"+str(inputstring)+"'", True)

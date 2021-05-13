@@ -515,7 +515,13 @@ def InterpretRoman(s: str) -> Optional[int]:
 #   nnn-nnn
 #   nnn.nnn
 #   nnnaaa
-def InterpretNumber(inputstring: Optional[str]) -> Optional[int]:
+def InterpretInteger(inputstring: Optional[str]) -> Optional[int]:
+    num=InterpretNumber(inputstring)
+    if num is None:
+        return None
+    return int(num)
+
+def InterpretNumber(inputstring: Optional[str]) -> Union[None, int, float]:
     if inputstring is None:
         return None
 

@@ -531,7 +531,7 @@ def InterpretNumber(inputstring: Optional[str]) -> Union[None, int, float]:
 
     # nn-nn (Hyphenated integers which usually means a range of numbers)
     # nnn + dash + nnn
-    m=re.match("^([0-9]+)-([0-9]+)$", inputstring)
+    m=re.match("^([0-9]+)\s*-\s*([0-9]+)$", inputstring)
     if m is not None and len(m.groups()) == 2:
         return int(m.groups()[0])        # We just sorta ignore n2...
 

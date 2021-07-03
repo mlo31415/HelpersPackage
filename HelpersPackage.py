@@ -762,6 +762,8 @@ def WikiUrlnameToWikiPagename(s: str) -> str:
 # Convert a Mediawiki redirect to a page name
 def WikiRedirectToPagename(s: str) -> str:
     s=s[0].upper()+s[1:]
+    if "#" in s:        # Ignore references to anchors within a page  [[page#anchor]]
+        s=s.split("#")[0]
     return unescape(s).replace("  ", " ")
 
 #-----------------------------------------------------------------

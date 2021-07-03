@@ -21,6 +21,10 @@ import datetime
 # Print the text to a log file open by the main program
 # If isError is set also print it to the error file.
 def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True) -> None:
+    """
+
+    :rtype: object
+    """
     global g_logFile
     global g_logErrorFile
     global g_logHeader

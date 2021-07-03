@@ -146,9 +146,15 @@ def UnformatLinks(s: str) -> str:
 
         # And then there are Mediawiki redirects
         s=re.sub('(<a\s+class=".+?">)(.+?)(</a>)', "\\2", s)
-        return s
     except:
         pass
+    return s
+
+
+#-------------------------------------------------------------
+# Change the 1st character to uppercase and leave the rest alonw
+def CapitalizeFirstChar(s: str) -> str:
+    return s[0].upper()+s[1:]
 
 #-------------------------------------------------------------
 def CanonicizeColumnHeaders(header: str) -> str:

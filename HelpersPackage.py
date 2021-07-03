@@ -794,4 +794,4 @@ def SplitOutput(f, s: str):
         while (len(strs) > 0 and (len(out)+len(strs[0])) < 80 or (len(out) == 0 and len(strs[0]) >= 80)):
             out=out+strs[0].strip()+", "
             del strs[0]
-        f.write("    "+out+"\n")
+        f.write(f"    {out}\n")

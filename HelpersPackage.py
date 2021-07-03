@@ -716,6 +716,39 @@ def WikiPagenameToWikiUrlname(s: str) -> str:
 
     return out[0].upper()+out[1:]
 
+
+#-----------------------------------------------------------------
+# Break a Mediawiki link into its components
+# [[link#anchor|display text]] --> (link, anchor, display text)
+# Make sure that link[0] is upper case
+# The brackets are optional. (Inputs of [[link#anchor|display text]] and link#anchor|display text give the same result)
+def WikiLinkSplit(s: str) -> Tuple[str, str, str]:
+    link=""
+    anchor=""
+    text=""
+    m=re.match("(?:\[\[)?"
+               "([^|#\]]+)"
+               "(#[^|\]]*)*"
+               "(\|[^]]*)*"
+               "(?:]])?", s)
+    # Optional "[["
+    # A string not containing "#", "|" or "]" (the link)
+    # An optional string beginning with "#" and not containing "|" or "]" (the anchor)
+    # An optional string beginning with "|" and not containing "]" (the display text)
+    # Optional "]]"
+    if m is not None:
+        for val in m.groups():
+            if val is None:
+                continue
+            elif val[0] == "#":
+                anchor=val[1:]
+            elif val[0] == "|":
+                text=val[1:]
+            else:
+                link=val[0].upper()+val[1:]
+    return (link, anchor, text)
+
+
 #-----------------------------------------------------------------
 # Turn underscores to spaces
 # Note that Mediawiki canonicalization is not reversable.  We will turn underscores to spaces, but otherwise do nothing.

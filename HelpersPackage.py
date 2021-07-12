@@ -192,6 +192,15 @@ def CanonicizeColumnHeaders(header: str) -> str:
     except:
         return header[0].upper()+header[1:]
 
+#=====================================================================================
+# Scan for text bracketed by <bra>...</bra>
+# Return True/False and remaining text after <bra> </bra> is removed
+# Return the whole string if brackets not found
+def ScanForBracketedText(s: str, bra: str) -> Tuple[bool, str]:
+    m=re.match(f"\w*<{bra}>(.*)</{bra}>\w*$", s)
+    if m is None:
+        return False, s
+    return True, m.groups()[0]
 
 #=====================================================================================
 # Find text bracketed by <b>...</b>

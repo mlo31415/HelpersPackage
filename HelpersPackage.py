@@ -625,6 +625,19 @@ def Bailout(e, msg: str, title: str) -> None:
     raise e
 
 
+#=============================================================================
+# Convert a page name to the old Wikidot canonical format:
+#   1st character is upper case, all others are lower case
+#   All spans of non-alphanumeric characters are replaced by a single hyphen
+def WikidotCononicizeName(name: str) -> str:
+    if len(name) == 0:
+        return name
+    elif len(name) == 1:
+        return name.upper()
+    name=name[0].upper()+name[1:].lower()
+    name=re.sub("[^a-zA-Z0-9]+", "-", name)
+    return name
+
 # =============================================================================
 # Convert page names to legal Windows filename
 # The characters illegal in Windows filenams will be replaced by ";xxx;" where xxx is a plausible name for the illegal character.

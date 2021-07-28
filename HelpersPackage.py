@@ -784,9 +784,17 @@ def WikiUrlnameToWikiPagename(s: str) -> str:
 # Convert a Mediawiki redirect to a page name
 def WikiRedirectToPagename(s: str) -> str:
     s=s[0].upper()+s[1:]
-    if "#" in s:        # Ignore references to anchors within a page  [[page#anchor]]
-        s=s.split("#")[0]
+    m=re.match("[^&]+(#)[^;]+$", s)        # First look for aaa#bbb where a does not contain an & and by does not contain a ;.  This is definitely a reference to an anchor
+    if m is not None and len(m.regs) > 1:
+        s=s[:m.regs[1][0]]       # Clip the reference at the #, leaving just the page name
+        return s.replace("  ", " ")
+    # Now we can deal with special characters
     return unescape(s).replace("  ", " ")
+
+    # Note that this does not handle the case where we have an anchor jump *and* special characters
+    # m=re.search("[^&]#[^\d]+[^;]", s)       # Search for a # that isn't in something of the form &#nnn; (a unicode character escape)
+    # if m is not None:
+    #     s=s[:m.start()+1]       # Clip the reference at the #, leaving just the page name
 
 #-----------------------------------------------------------------
 # Extract the link from a bracketed name

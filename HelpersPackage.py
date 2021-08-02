@@ -629,13 +629,18 @@ def Bailout(e, msg: str, title: str) -> None:
 # Convert a page name to the old Wikidot canonical format:
 #   1st character is upper case, all others are lower case
 #   All spans of non-alphanumeric characters are replaced by a single hyphen
-def WikidotCononicizeName(name: str) -> str:
+def WikidotCanonicizeName(name: str) -> str:
     if len(name) == 0:
         return name
     elif len(name) == 1:
         return name.upper()
     name=name[0].upper()+name[1:].lower()
     name=re.sub("[^a-zA-Z0-9]+", "-", name)
+    # Wikidot does not start or end URLs with hyphens
+    if name[0] == "-" and len(name) > 1:
+        name=name[1:]
+    if name[-1] == "-" and len(name) > 1:
+        name=name[:-1]
     return name
 
 # =============================================================================

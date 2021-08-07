@@ -20,15 +20,16 @@ import datetime
 #=============================================================================
 # Print the text to a log file open by the main program
 # If isError is set also print it to the error file.
-def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True) -> None:
+def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear=False) -> None:
     """
 
     :rtype: object
     """
     global g_logFile
     global g_logErrorFile
-    global g_logHeader
-    global g_logErrorHeader
+    global g_logHeaderPrint
+    global g_logHeaderFile
+    global g_logHeaderError
 
     # We don't actually create the log files until there's something written to them
     # LogOpen stores the names of the output files in g_logFile and g_errorFile.
@@ -46,6 +47,12 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True) -> No
         except Exception as e:
             MessageBox("Exception in LogOpen("+g_logFile+")  Exception="+str(e))
 
+    # If Clear=True, then we clear pre-existing headers
+    if Clear:
+        g_logHeaderPrint=""
+        g_logHeaderFile=""
+        g_logHeaderError=""
+
     # We allow the user to specify that the file is not terminated with a new line, allowing several log calls
     # to go to the same output line.
     newlinechar="\n"
@@ -53,18 +60,18 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True) -> No
         newlinechar=" "
 
     # If this is the first log entry for this header, print it and then clear it so it's not printed again
-    if g_logHeader is not None:
-        if Print:
-            print(g_logHeader)
-        print("\n"+g_logHeader, file=g_logFile)
-    g_logHeader=None
-
+    if Print:
+        if g_logHeaderPrint != "":
+            print(g_logHeaderPrint)
+            g_logHeaderPrint=""
+    if g_logHeaderFile != "":
+        print("\n"+g_logHeaderFile, file=g_logFile)
+        g_logHeaderFile=""
     if isError:
         # If this is an error entry and is the first error entry for this header, print the header and then clear it so it's not printed again
-        if g_logErrorHeader is not None:
-            print("----\n"+g_logErrorHeader)    # We ignore the Print parameter for error messages
-            print("----\n"+g_logErrorHeader, file=g_logErrorFile)
-        g_logErrorHeader=None
+        if g_logHeaderError != "":
+            print("----\n"+g_logHeaderError, file=g_logErrorFile)
+        g_logHeaderError=""
 
     if g_logFile is None and g_logErrorFile is None:
         print("*** Log() called prior to call to LogOpen()", end=newlinechar)
@@ -87,13 +94,16 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True) -> No
 # Set the header for any subsequent log entries
 # Note that this header will only be printed once, and then only if there has been a log entry
 def LogSetHeader(name: str) -> None:
-    global g_logHeader
-    global g_logErrorHeader
+    global g_logHeaderPrint
+    global g_logHeaderFile
+    global g_logHeaderError
     global g_logLastHeader
 
-    if g_logLastHeader is None or name != g_logLastHeader:
-        g_logHeader=name
-        g_logErrorHeader=name
+    # If we're setting a header which is a new header, we reset all the header variables
+    if g_logLastHeader == "" or name != g_logLastHeader:
+        g_logHeaderPrint=name
+        g_logHeaderFile=name
+        g_logHeaderError=name
         g_logLastHeader=name
 
 
@@ -120,13 +130,14 @@ def LogOpen(logfilename: str, errorfilename: str, dated: bool=False) -> None:
     global g_logErrorFile
     g_logErrorFile=errorfilename
 
-    global g_logHeader
-    g_logHeader=None
-    global g_logErrorHeader
-    g_logErrorHeader=None
+    global g_logHeaderPrint
+    g_logHeaderPrint=""
+    global g_logHeaderError
+    g_logHeaderError=""
+    global g_logHeaderFile
+    g_logHeaderFile=""
     global g_logLastHeader
-    g_logLastHeader=None
-
+    g_logLastHeader=""
 
 #=============================================================================
 def LogFlush() -> None:

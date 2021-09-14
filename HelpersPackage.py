@@ -519,7 +519,7 @@ def ReadListAsDict(filename: str, isFatal: bool=False) -> DefaultDict[str, str]:
     for line in lines:
         ret=line.split("=", maxsplit=1)
         if len(ret) == 2:
-            dict[ret[0]]=ret[2]
+            dict[ret[0]]=ret[1]
     return dict
 
 

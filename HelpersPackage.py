@@ -4,9 +4,10 @@ import ctypes
 import unicodedata
 from tkinter import Tk, messagebox
 import urllib.parse
-from typing import Union, Tuple, Optional, List
+from typing import Union, Tuple, Optional, List, DefaultDict
 from html import escape, unescape
 from contextlib import suppress
+from collections import defaultdict
 import re
 
 from Log import Log, LogClose
@@ -495,9 +496,9 @@ def IsNumeric(arg: any) -> bool:
 def ReadList(filename: str, isFatal: bool=False) -> Optional[List[str]]:
     if not os.path.exists(filename):
         if isFatal:
-            Log("***Fatal error: Can't find "+filename, isError=True)
+            Log(f"***Fatal error: Can't find {filename}", isError=True)
             raise FileNotFoundError
-        print("ReadList can't open "+filename)
+        Log(f"ReadList can't find {filename}")
         return None
     with open(filename, "r") as f:
         lst=f.readlines()
@@ -508,6 +509,19 @@ def ReadList(filename: str, isFatal: bool=False) -> Optional[List[str]]:
     lst=[l for l in lst if l.find(" #") == -1] + [l[:l.find(" #")].strip() for l in lst if l.find(" #") > 0]    # (all members not containing " #") +(the rest with the trailing # stripped)
 
     return lst
+
+
+# =============================================================================
+# Read a file using ReadList and then parse lines from name=value pairs to a defaultdict
+def ReadListAsDict(filename: str, isFatal: bool=False) -> DefaultDict[str, str]:
+    dict=defaultdict(str)
+    lines=ReadList(filename, isFatal=isFatal)
+    for line in lines:
+        ret=line.split("=", maxsplit=1)
+        if len(ret) == 2:
+            dict[ret[0]]=ret[2]
+    return dict
+
 
 
 # =============================================================================
@@ -600,6 +614,7 @@ def Match2AndRemove(inputstr: str, pattern: str) -> Tuple[str, Optional[str], Op
             g1=m.groups()[1]
         return re.sub(pattern, "", inputstr), g0, g1  # And delete the matched text
     return inputstr, None, None
+
 
 
 # =============================================================================

@@ -196,7 +196,8 @@ def LogFailureAndRaiseIfMissing(fname: str) -> None:
 # User sparingly, since the messagebox must be closed by hand and can be annoying.
 # It does nothing in the debug version
 def MessageBox(s: str) -> None:
- if sys.gettrace() is None:      # This is an incantation which detects the presence of a debugger
-    root = Tk()
-    root.withdraw()
-    messagebox.showinfo(title=None, message="Finished!")
+    Log(f'MessageBox({s}) called.')
+    if sys.gettrace() is None:      # This is an incantation which detects the presence of a debugger
+        root = Tk()
+        root.withdraw()
+        messagebox.showinfo(title=None, message="Finished!")

@@ -18,6 +18,15 @@ import datetime
 #       header is saved.
 
 #=============================================================================
+# If Log has not been initialized, initialize it using default log names
+def LogCheck() -> None:
+    try:
+        g_logFile
+    except NameError:
+        LogOpen("Log.txt", "Log Erros.txt")
+
+
+#=============================================================================
 # Print the text to a log file open by the main program
 # If isError is set also print it to the error file.
 def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear=False) -> None:
@@ -30,6 +39,8 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
     global g_logHeaderPrint
     global g_logHeaderFile
     global g_logHeaderError
+
+    LogCheck()
 
     # We don't actually create the log files until there's something written to them
     # LogOpen stores the names of the output files in g_logFile and g_errorFile.
@@ -91,6 +102,12 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
 
 
 #=============================================================================
+# Shortcut to calling Log(...isError=True) to log an error
+def LogError(text: str) -> None:
+    Log(text, isError=True)
+
+
+#=============================================================================
 # Set the header for any subsequent log entries
 # Note that this header will only be printed once, and then only if there has been a log entry
 def LogSetHeader(name: str) -> None:
@@ -98,6 +115,8 @@ def LogSetHeader(name: str) -> None:
     global g_logHeaderFile
     global g_logHeaderError
     global g_logLastHeader
+
+    LogCheck()
 
     # If we're setting a header which is a new header, we reset all the header variables
     if g_logLastHeader == "" or name != g_logLastHeader:
@@ -141,6 +160,7 @@ def LogOpen(logfilename: str, errorfilename: str, dated: bool=False) -> None:
 
 #=============================================================================
 def LogFlush() -> None:
+    LogCheck()
     global g_logFile
     if g_logFile is not None and isinstance(g_logFile, io.TextIOWrapper):
         g_logFile.flush()
@@ -152,6 +172,7 @@ def LogFlush() -> None:
 #=============================================================================
 # Needed only if you want to close the log files before program termination.
 def LogClose() -> None:
+    LogCheck()
     global g_logFile
     if g_logFile is not None and isinstance(g_logFile, io.TextIOWrapper):
         g_logFile.close()
@@ -164,6 +185,7 @@ def LogClose() -> None:
 # Check to see if a filename exists.  If it doesn't, log the fact and raise an exception
 # If it does exiats, return doing notning.
 def LogFailureAndRaiseIfMissing(fname: str) -> None:
+    LogCheck()
     if not os.path.exists(fname):
         Log("Fatal error: Can't find "+fname, isError=True)
         raise FileNotFoundError

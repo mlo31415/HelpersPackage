@@ -203,10 +203,11 @@ def ScanForBracketedText(s: str, bra: str) -> Tuple[bool, str]:
         return False, s
     return True, m.groups()[0]
 
+
 #=====================================================================================
 # Find text bracketed by <b>...</b>
 # Return the contents of the first pair of brackets found and the remainder of the input string
-def FindBracketedText(s: str, b: str, stripHtml: bool=True) -> Tuple[str, str]:
+def FindWikiBracketedText(s: str, b: str, stripHtml: bool=True) -> Tuple[str, str]:
 
     pattern="<"+b+">(.*?)</"+b+">"
     m=re.search(pattern, s,  re.DOTALL)
@@ -220,11 +221,31 @@ def FindBracketedText(s: str, b: str, stripHtml: bool=True) -> Tuple[str, str]:
 
 
 #=====================================================================================
+# Find text bracketed by [[]]
+# Return the contents of the first pair of brackets found
+def FindWikiBracketedText(s: str) -> str:
+
+    m=re.search("\[\[(:?.+)]]", s)
+    if m is None:
+        return ""
+    return m.groups()[0]
+
+
+#=====================================================================================
 # Remove a matched pair of <brackets> <containing anything> from a string, returning the inside
 def StripExternalTags(s: str)-> Optional[str]:
     m=re.match("^<.*>(.*)</.*>$", s)
     if m is None:
         return None
+    return m.groups()[0]
+
+
+#=====================================================================================
+# Remove a matched pair of <brackets> <containing anything> from a string, returning the inside
+def StripWikiBrackets(s: str)-> str:
+    m=re.match("^\[\[(.*)]]$", s)
+    if m is None:
+        return s
     return m.groups()[0]
 
 

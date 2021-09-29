@@ -2,7 +2,7 @@ import os
 import io
 import sys
 from tkinter import Tk, messagebox
-import datetime
+from datetime import datetime
 
 #from HelpersPackage import MessageBox
 
@@ -29,7 +29,7 @@ def LogCheck() -> None:
 #=============================================================================
 # Print the text to a log file open by the main program
 # If isError is set also print it to the error file.
-def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear=False) -> None:
+def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear=False, Flush=False, timestamp=False) -> None:
     """
 
     :rtype: object
@@ -41,6 +41,9 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
     global g_logHeaderError
 
     LogCheck()
+
+    if timestamp:
+        text=f"{datetime.now():%H:%M:%S}: "+text
 
     # We don't actually create the log files until there's something written to them
     # LogOpen stores the names of the output files in g_logFile and g_errorFile.
@@ -94,6 +97,8 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
     if g_logFile is not None and isinstance(g_logFile, io.TextIOWrapper):
         try:
             print(text, file=g_logFile, end=newlinechar)
+            if Flush:
+                LogFlush()
         except:
             pass
     if isError and g_logErrorFile is not None and isinstance(g_logErrorFile, io.TextIOWrapper):
@@ -132,7 +137,7 @@ def LogOpen(logfilename: str, errorfilename: str, dated: bool=False) -> None:
 
     if dated:
         # If dated is True, we insert a datestring at the end of the filename
-        d=datetime.datetime.now().strftime("%Y-%m-%d %H.%M.%S")
+        d=datetime.now().strftime("%Y-%m-%d %H.%M.%S")
         fname, ext=os.path.splitext(logfilename)
         if ext is None or ext == "":    # If there was no extension, add .txt
             ext=".txt"

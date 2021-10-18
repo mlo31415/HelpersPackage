@@ -207,7 +207,7 @@ def ScanForBracketedText(s: str, bra: str) -> Tuple[bool, str]:
 #=====================================================================================
 # Find text bracketed by <b>...</b>
 # Return the contents of the first pair of brackets found and the remainder of the input string
-def FindWikiBracketedText(s: str, b: str, stripHtml: bool=True) -> Tuple[str, str]:
+def FindBracketedText(s: str, b: str, stripHtml: bool=True) -> Tuple[str, str]:
 
     pattern="<"+b+">(.*?)</"+b+">"
     m=re.search(pattern, s,  re.DOTALL)

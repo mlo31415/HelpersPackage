@@ -1,10 +1,11 @@
+from __future__ import annotations
 import os
 import sys
 import ctypes
 import unicodedata
 from tkinter import Tk, messagebox
 import urllib.parse
-from typing import Union, Tuple, Optional, List, DefaultDict
+from typing import Union, Optional, DefaultDict
 from html import escape, unescape
 from contextlib import suppress
 from collections import defaultdict
@@ -20,8 +21,8 @@ from Log import Log, LogClose
 #   If numGroups=1, the output list is a list of strings matched
 #   If numGroups>1, the output list is a list of lists, with the sublist being whatever is matched by the groups -- we don't necessarily return everything that has been matched
 # Return a list of matched strings and the remnant of the input string
-def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: int=1, caseinsensitive=False) -> Tuple[List[str], str]:
-    found: Optional[List[str], List[List[str]]]=[]
+def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: int=1, caseinsensitive: bool=False) -> tuple[list[str], str]:
+    found: Optional[list[str], list[list[str]]]=[]
     # Keep looping and removing matched material until the match fails
     while True:
         # Look for a match
@@ -62,7 +63,7 @@ def PyiResourcePath(relative_path):
 
 #=======================================================
 # Locate and return a chunk of text bounded by two patterns
-def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str) -> Tuple[Optional[str], str]:
+def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str) -> tuple[Optional[str], str]:
     m=re.search(startpattern, source)
     if m is None:
         return None, source
@@ -197,7 +198,7 @@ def CanonicizeColumnHeaders(header: str) -> str:
 # Scan for text bracketed by <bra>...</bra>
 # Return True/False and remaining text after <bra> </bra> is removed
 # Return the whole string if brackets not found
-def ScanForBracketedText(s: str, bra: str) -> Tuple[bool, str]:
+def ScanForBracketedText(s: str, bra: str) -> tuple[bool, str]:
     m=re.match(f"\w*<{bra}>(.*)</{bra}>\w*$", s)
     if m is None:
         return False, s
@@ -207,7 +208,7 @@ def ScanForBracketedText(s: str, bra: str) -> Tuple[bool, str]:
 #=====================================================================================
 # Find text bracketed by <b>...</b>
 # Return the contents of the first pair of brackets found and the remainder of the input string
-def FindBracketedText(s: str, b: str, stripHtml: bool=True) -> Tuple[str, str]:
+def FindBracketedText(s: str, b: str, stripHtml: bool=True) -> tuple[str, str]:
 
     pattern="<"+b+">(.*?)</"+b+">"
     m=re.search(pattern, s,  re.DOTALL)
@@ -324,7 +325,7 @@ def RemoveAllHTMLTags2(s: str) -> str:
 
 #=====================================================================================
 # Change"&nbsp;" to space
-def ChangeNBSPToSpace(s: Optional[str]) -> Union[None, str, List[str]]:
+def ChangeNBSPToSpace(s: Optional[str]) -> Union[None, str, list[str]]:
     if s is None:
         return None
     if len(s) == 0:
@@ -355,7 +356,7 @@ def RelPathToURL(relPath: str) -> Optional[str]:
 
 #=====================================================================================
 # Function to find the index of a string in a list of strings
-def FindIndexOfStringInList(lst: List[str], s: str) -> Optional[int]:
+def FindIndexOfStringInList(lst: list[str], s: str) -> Optional[int]:
     try:
         return lst.index(s)
     except:
@@ -465,7 +466,7 @@ def ChangeFileInURL(url: str, newFileName: str) -> str:
 # =============================================================================
 # Case insensitive check if a file's extension is in a list of extensions
 # The extension can be either a string or a list of strings. Leading '.' optional
-def ExtensionMatches(file: str, ext: Union[str, List[str]]) -> bool:
+def ExtensionMatches(file: str, ext: Union[str, list[str]]) -> bool:
     file=os.path.splitext(file.lower())
     if type(ext) is str:
         ext=[ext]
@@ -516,7 +517,7 @@ def IsNumeric(arg: any) -> bool:
 # =============================================================================
 # Read a list of lines in from a file
 # Strip leading and trailing whitespace and ignore lines which begin with a '#'
-def ReadList(filename: str, isFatal: bool=False) -> Optional[List[str]]:
+def ReadList(filename: str, isFatal: bool=False) -> Optional[list[str]]:
     if not os.path.exists(filename):
         if isFatal:
             Log(f"***Fatal error: Can't find {filename}", isError=True)
@@ -628,7 +629,7 @@ def InterpretNumber(inputstring: Optional[str]) -> Union[None, int, float]:
 #       The line with the matched portion removed
 #       Capture group 1
 #       Capture group 2
-def Match2AndRemove(inputstr: str, pattern: str) -> Tuple[str, Optional[str], Optional[str]]:
+def Match2AndRemove(inputstr: str, pattern: str) -> tuple[str, Optional[str], Optional[str]]:
     m=re.match(pattern, inputstr)         # Do we match the pattern?
     if m is not None and len(m.groups()) > 0:
         g0=m.groups()[0]                    # There may be either 1 or two groups, but we need to return two matches
@@ -787,7 +788,7 @@ def WikiPagenameToWikiUrlname(s: str) -> str:
 # [[link#anchor|display text]] --> (link, anchor, display text)
 # Make sure that link[0] is upper case
 # The brackets are optional. (Inputs of [[link#anchor|display text]] and link#anchor|display text give the same result)
-def WikiLinkSplit(s: str) -> Tuple[str, str, str]:
+def WikiLinkSplit(s: str) -> tuple[str, str, str]:
     link=""
     anchor=""
     text=""
@@ -849,7 +850,7 @@ def WikiExtractLink(s: str) -> str:
 
 #-----------------------------------------------------------------
 # Split a string into a list of string.  The split is done on *spans* of the input characters.
-def SplitOnSpan(chars: str, s: str) -> List[str]:
+def SplitOnSpan(chars: str, s: str) -> list[str]:
     pattern=re.compile("["+chars+"]")
     # replace the matched span of <chars> with a single char from the span string
     return [x for x in re.sub(pattern, chars[0], s).split(chars[0]) if len(x) > 0]

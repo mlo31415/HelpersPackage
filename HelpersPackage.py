@@ -4,6 +4,8 @@ import sys
 import ctypes
 import unicodedata
 from tkinter import Tk, messagebox
+from tkinter.simpledialog import askstring
+import tkinter
 import urllib.parse
 from typing import Union, Optional, DefaultDict
 from html import escape, unescape
@@ -650,6 +652,16 @@ def MessageBox(s: str, ignoredebugger: bool=False) -> None:
     root = Tk()
     root.withdraw()
     messagebox.showinfo(title=None, message=s)
+
+# =============================================================================
+# Display a message box (needed only for the built/packaged version)
+# User sparingly, since the messagebox must be closed by hand and can be annoying.
+# It does nothing in the debug version
+def MessageBoxInput(s: str, ignoredebugger: bool=False) -> None:
+ if sys.gettrace() is None or ignoredebugger:      # This is an incantation which detects the presence of a debugger
+    root = Tk()
+    root.withdraw()
+    return tkinter.simpledialog.askstring("xxx", s)
 
 
 # =============================================================================

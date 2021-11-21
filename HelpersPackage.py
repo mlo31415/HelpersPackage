@@ -501,6 +501,13 @@ def Int(val: str) -> Optional[int]:
         return int(val)
     return None
 
+# Convert a string to integer, returning 0 when uninterpretable
+def Int0(val: str) -> int:
+    ret=Int(val)
+    if ret is None:
+        ret=0
+    return ret
+
 
 # =============================================================================
 # Check to see if an argument (int, float or string) is a number

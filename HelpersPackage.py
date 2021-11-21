@@ -664,7 +664,7 @@ def MessageBox(s: str, ignoredebugger: bool=False) -> None:
 # Display a message box (needed only for the built/packaged version)
 # User sparingly, since the messagebox must be closed by hand and can be annoying.
 # It does nothing in the debug version
-def MessageBoxInput(s: str, ignoredebugger: bool=False) -> None:
+def MessageBoxInput(s: str, ignoredebugger: bool=False) -> str:
  if sys.gettrace() is None or ignoredebugger:      # This is an incantation which detects the presence of a debugger
     root = Tk()
     root.withdraw()

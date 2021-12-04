@@ -524,6 +524,17 @@ def IsNumeric(arg: any) -> bool:
 
 
 # =============================================================================
+# Return true iff a path points to a file which is writeable
+def IsFileWriteable(pathname: str) -> bool:
+    return os.path.exists(pathname) and os.path.isfile(pathname) and os.access(pathname, os.W_OK)
+
+# =============================================================================
+# Return true iff a path points to a file which exists, but is read-only
+def IsFileReadonly(pathname: str) -> bool:
+    return os.path.exists(pathname) and os.path.isfile(pathname) and not os.access(pathname, os.W_OK)
+
+
+# =============================================================================
 # Read a list of lines in from a file
 # Strip leading and trailing whitespace and ignore lines which begin with a '#'
 def ReadList(filename: str, isFatal: bool=False) -> Optional[list[str]]:

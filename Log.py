@@ -93,7 +93,10 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
 
     # Print the log entry itself
     if Print:
-        print(text, end=newlinechar)
+        if text.endswith(newlinechar):
+            print(text, end="") # Don't add a newline to lines already having one
+        else:
+            print(text, end=newlinechar)
     if g_logFile is not None and isinstance(g_logFile, io.TextIOWrapper):
         try:
             print(text, file=g_logFile, end=newlinechar)

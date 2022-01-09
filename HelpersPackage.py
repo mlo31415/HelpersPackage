@@ -105,7 +105,7 @@ def ToNumeric(val: Union[None, int, float, str]) -> Union[None, int, float]:
 # Depending on flags, the URL may get 'https://' or 'http://' prepended.
 # If it is a PDF it will get view=Fit appended
 # PDFs may have #page=nn attached
-def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=False) -> str:
+def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=False, QuoteChars=False) -> str:
     # TODO: Do we need to deal with turning blanks into %20 whatsits?
 
     # If a null URL is provided, don't return a hyperlink
@@ -120,6 +120,9 @@ def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=Fals
         if m is not None:
             url=m.groups()[0].replace("#", "%23")+m.groups()[1]
     url=UnicodeToHtml(url)
+
+    if QuoteChars:
+        url=urllib.parse.quote(url)
 
     # If the url points to a pdf, add '#view=Fit' to the end to force the PDF to scale to the page
     if ".pdf" in url:
@@ -137,6 +140,9 @@ def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=Fals
             url="https://"+url
 
     return '<a href="'+url+'">'+text+'</a>'
+
+def FormatLink2(url: str, text: str, ForceHTTP: bool=False) -> str:
+    return FormatLink(url, text, ForceHTTP=ForceHTTP, ForceHTTPS=not ForceHTTP, QuoteChars=True)
 
 #==================================================================================
 # Take a string and strip out all hrefs, retaining all the text.

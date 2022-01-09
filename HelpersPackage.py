@@ -508,6 +508,9 @@ def Int0(val: str) -> int:
         ret=0
     return ret
 
+def ZeroIfNone(x: Optional[int]):
+    return 0 if x is None else x
+
 
 # =============================================================================
 # Check to see if an argument (int, float or string) is a number

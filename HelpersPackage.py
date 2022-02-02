@@ -365,11 +365,18 @@ def RelPathToURL(relPath: str) -> Optional[str]:
 
 #=====================================================================================
 # Function to find the index of a string in a list of strings
-def FindIndexOfStringInList(lst: list[str], s: str) -> Optional[int]:
-    try:
-        return lst.index(s)
-    except:
-        return None
+def FindIndexOfStringInList(lst: list[str], s: str, IgnoreCase=False) -> Optional[int]:
+    if not IgnoreCase:
+        try:
+            return lst.index(s)
+        except:
+            return None
+
+    # Do it the hard way
+    for i, item in enumerate(lst):
+        if item.lower() == s.lower():
+            return i
+    return None
 
 
 #==================================================================================

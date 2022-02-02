@@ -168,12 +168,13 @@ def CapitalizeFirstChar(s: str) -> str:
 
 #-------------------------------------------------------------
 def CanonicizeColumnHeaders(header: str) -> str:
-    # 2nd item is the cannonical form
+    # 2nd item is the cannonical form for fanac.org and fancyclopedia series tables
     translationTable={
                         "published" : "Date",
                         "editors" : "Editor",
                         "zine" : "Issue",
                         "fanzine" : "Issue",
+                        "apa mailing" : "Mailing",
                         "mo." : "Month",
                         "mon" : "Month",
                         "quartermonth" : "Month",

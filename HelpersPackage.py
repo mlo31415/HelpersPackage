@@ -840,7 +840,7 @@ def WikiPagenameToWikiUrlname(s: str) -> str:
         else:
             out+=c
 
-    return out[0].upper()+out[1:]
+    return out[0].upper()+(out[1:] if len(out) > 1 else "")
 
 
 #-----------------------------------------------------------------

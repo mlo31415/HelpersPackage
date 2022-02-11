@@ -921,7 +921,7 @@ def SplitOutput(f, s: str):
     strs=s.split(",")
     while len(strs) > 0:
         out=""
-        while (len(strs) > 0 and (len(out)+len(strs[0])) < 80 or (len(out) == 0 and len(strs[0]) >= 80)):
+        while len(strs) > 0 and (len(out)+len(strs[0])) < 80 or (len(out) == 0 and len(strs[0]) >= 80):
             out=out+strs[0].strip()+", "
             del strs[0]
         f.write(f"    {out}\n")

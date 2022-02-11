@@ -872,7 +872,7 @@ def WikiLinkSplit(s: str) -> tuple[str, str, str]:
                 text=val[1:]
             else:
                 link=val[0].upper()+val[1:]
-    return (link, anchor, text)
+    return link, anchor, text
 
 
 #-----------------------------------------------------------------

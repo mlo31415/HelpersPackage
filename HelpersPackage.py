@@ -198,6 +198,8 @@ def CanonicizeColumnHeaders(header: str) -> str:
                         "wholenum" : "Whole",
                         "year" : "Year",
                       }
+    if len(header) == 0:
+        return ""
     try:
         return translationTable[header.replace(" ", "").replace("/", "").lower()]
     except:

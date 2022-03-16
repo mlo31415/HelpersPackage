@@ -35,9 +35,15 @@ def AddMissingMetadata(file: str, newmetadata: dict[str, str]):
 
 # =============================================================================
 # Get the file's page count if it's a pdf
+# Bonus: Return 1 if it's a .jpd, png, or gif.
 def GetPdfPageCount(pathname: str) -> Optional[int]:
+    if ExtensionMatches(pathname, ".jog" or ExtensionMatches(pathname, ".png") or ExtensionMatches(pathname, ".gif")):
+        return 1
+
     if not ExtensionMatches(pathname, ".pdf"):
         return None
+
+    # So it claims to be a PDF.  Try to get its page count.
     try:
         with open(pathname, 'rb') as fl:
             reader=PdfFileReader(fl)

@@ -23,7 +23,7 @@ def LogCheck() -> None:
     try:
         g_logFile
     except NameError:
-        LogOpen("Log.txt", "Log Erros.txt")
+        LogOpen("Log.txt", "Log Errors.txt")
 
 
 #=============================================================================
@@ -165,6 +165,7 @@ def LogOpen(logfilename: str, errorfilename: str, dated: bool=False) -> None:
     g_logHeaderFile=""
     global g_logLastHeader
     g_logLastHeader=""
+
 
 #=============================================================================
 def LogFlush() -> None:

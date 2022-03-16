@@ -12,6 +12,7 @@ from html import escape, unescape
 from contextlib import suppress
 from collections import defaultdict
 import re
+import stat
 
 from Log import Log, LogClose
 
@@ -204,6 +205,7 @@ def CanonicizeColumnHeaders(header: str) -> str:
         return translationTable[header.replace(" ", "").replace("/", "").lower()]
     except:
         return header[0].upper()+header[1:]
+
 
 #=====================================================================================
 # Scan for text bracketed by <bra>...</bra>
@@ -579,10 +581,26 @@ def IsNumeric(arg: any) -> bool:
 def IsFileWriteable(pathname: str) -> bool:
     return os.path.exists(pathname) and os.path.isfile(pathname) and os.access(pathname, os.W_OK)
 
+
 # =============================================================================
 # Return true iff a path points to a file which exists, but is read-only
 def IsFileReadonly(pathname: str) -> bool:
     return os.path.exists(pathname) and os.path.isfile(pathname) and not os.access(pathname, os.W_OK)
+
+
+# =============================================================================
+# Set or reset a file's read-only status
+def SetReadOnlyFlag(pathname: str, flag: bool) -> None:
+    if os.path.exists(pathname):
+        if os.path.isfile(pathname):
+            writeable=os.access(pathname, os.W_OK)
+            if writeable and not flag or not writeable and flag:    # If it's already in the desired state, we're done
+                return
+            if flag:
+                os.chmod(pathname, stat.S_IREAD | stat.S_IRGRP | stat.S_IROTH)  # Set read-only
+            else:
+                os.chmod(pathname, stat.S_IREAD | stat.S_IWRITE | stat.S_IRGRP |stat.S_IWGRP | stat.S_IROTH | stat.S_IWOTH)  # Set Read/write
+
 
 
 # =============================================================================

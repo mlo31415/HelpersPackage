@@ -233,6 +233,25 @@ def FindBracketedText(s: str, b: str, stripHtml: bool=True) -> tuple[str, str]:
 
 
 #=====================================================================================
+# Find first text bracketed by <anything>...</anything>
+# Return a tuple consisting of:
+#   Any leading material
+#   The name of the first pair of brackets found
+#   The contents of the first pair of brackets found
+#   Rhe remainder of the input string
+def FindAnyBracketedText(s: str) -> tuple[str, str, str, str]:
+
+    pattern=r"^(.*?)<(.+?)>(.*?)<\/\2>\s*"
+    m=re.search(pattern, s,  re.DOTALL)
+    if m is None:
+        return "", "", "", s
+
+    x=m.group(1), m.group(2), m.group(3), s[m.regs[0][1]:]
+    return x
+
+
+
+#=====================================================================================
 # Find text bracketed by [[]]
 # Return the contents of the first pair of brackets found
 def FindWikiBracketedText(s: str) -> str:

@@ -29,7 +29,7 @@ def LogCheck() -> None:
 #=============================================================================
 # Print the text to a log file open by the main program
 # If isError is set also print it to the error file.
-def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear=False, Flush=False, timestamp=False) -> None:
+def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear=False, Flush=True, timestamp=False) -> None:
     """
 
     :rtype: object

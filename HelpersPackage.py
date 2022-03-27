@@ -369,6 +369,11 @@ def RemoveAllHTMLTags2(s: str) -> str:
 
 
 #=====================================================================================
+# Turn some whitespace escape characters into spaces
+def RemoveFunnyWhitespace(s: str) -> str:
+    return s.replace("\xc2\xa0", " ").replace(u"\u00A0", " ")
+
+#=====================================================================================
 # Change"&nbsp;" to space
 def ChangeNBSPToSpace(s: Optional[str]) -> Union[None, str, list[str]]:
     if s is None:

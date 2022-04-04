@@ -25,7 +25,7 @@ from Log import Log, LogClose
 #   If numGroups>1, the output list is a list of lists, with the sublist being whatever is matched by the groups -- we don't necessarily return everything that has been matched
 # Return a list of matched strings and the remnant of the input string
 def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: int=1, caseinsensitive: bool=False) -> tuple[list[str], str]:
-    found: Optional[list[str], list[list[str]]]=[]
+    found: list[str] | list[list[str]]=[]
     # Keep looping and removing matched material until the match fails
     while True:
         # Look for a match

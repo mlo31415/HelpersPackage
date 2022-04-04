@@ -740,20 +740,20 @@ def Match2AndRemove(inputstr: str, pattern: str) -> tuple[str, Optional[str], Op
 # User sparingly, since the messagebox must be closed by hand and can be annoying.
 # It does nothing in the debug version
 def MessageBox(s: str, ignoredebugger: bool=False) -> None:
- if sys.gettrace() is None or ignoredebugger:      # This is an incantation which detects the presence of a debugger
-    root = Tk()
-    root.withdraw()
-    messagebox.showinfo(title=None, message=s)
+    if not DebuggerIsRunning() or ignoredebugger:
+        root = Tk()
+        root.withdraw()
+        messagebox.showinfo(title=None, message=s)
 
 # =============================================================================
 # Display a message box (needed only for the built/packaged version)
 # User sparingly, since the messagebox must be closed by hand and can be annoying.
 # It does nothing in the debug version
 def MessageBoxInput(s: str, ignoredebugger: bool=False) -> str:
- if sys.gettrace() is None or ignoredebugger:      # This is an incantation which detects the presence of a debugger
-    root = Tk()
-    root.withdraw()
-    return tkinter.simpledialog.askstring("xxx", s)
+    if not DebuggerIsRunning() or ignoredebugger:
+        root = Tk()
+        root.withdraw()
+        return tkinter.simpledialog.askstring("xxx", s)
 
 
 # =============================================================================

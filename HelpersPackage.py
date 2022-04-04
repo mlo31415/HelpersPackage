@@ -246,7 +246,7 @@ def FindAnyBracketedText(s: str) -> tuple[str, str, str, str]:
     pattern=r"^(.*?)<(.+?)>(.*?)<\/\2>\s*"
     m=re.search(pattern, s,  re.DOTALL)
     if m is None:
-        return "", "", "", s
+        return s, "", "", ""
 
     x=m.group(1), m.group(2), m.group(3), s[m.regs[0][1]:]
     return x

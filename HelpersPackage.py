@@ -757,6 +757,12 @@ def MessageBoxInput(s: str, ignoredebugger: bool=False) -> str:
 
 
 # =============================================================================
+# Are we running under a debugger?
+def DebuggerIsRunning() -> bool:
+    return sys.gettrace() is not None   # This is an incantation which detects the presence of a debugger
+
+
+# =============================================================================
 # Title names the app
 # msg is the error message
 def Bailout(e, msg: str, title: str) -> None:

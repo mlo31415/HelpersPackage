@@ -734,6 +734,13 @@ def Match2AndRemove(inputstr: str, pattern: str) -> tuple[str, Optional[str], Op
     return inputstr, None, None
 
 
+# =============================================================================
+# Call Log (with isError=True) and then call MessageBox with the error
+# This should only be called if logging is in use!
+def MessageLog(s: str) -> None:
+    Log(s, isError=True)
+    MessageBox(s)
+
 
 # =============================================================================
 # Display a message box (needed only for the built/packaged version)

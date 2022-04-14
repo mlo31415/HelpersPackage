@@ -770,6 +770,16 @@ def DebuggerIsRunning() -> bool:
 
 
 # =============================================================================
+# Select a file based on debugger presence
+# If debugger is present, use path/fname.  If running as exe, use just fname
+# This allows program to be debugged in their own directories, but all run from the same directory
+def SelectFileBasedOnDebugger(path: str, fname: str) -> str:
+    if not DebuggerIsRunning():
+        return fname
+    return os.path.join(path, fname)
+
+
+# =============================================================================
 # Title names the app
 # msg is the error message
 def Bailout(e, msg: str, title: str) -> None:

@@ -628,11 +628,48 @@ def ReadList(filename: str, isFatal: bool=False) -> Optional[list[str]]:
 
     return lst
 
-
 # =============================================================================
 # Read a file using ReadList and then parse lines from name=value pairs to a defaultdict
 def ReadListAsDict(filename: str, isFatal: bool=False) -> DefaultDict[str, str]:
     dict=defaultdict(str)
+    lines=ReadList(filename, isFatal=isFatal)
+    for line in lines:
+        ret=line.split("=", maxsplit=1)
+        if len(ret) == 2:
+            dict[ret[0]]=ret[1]
+    return dict
+
+
+# =============================================================================
+# A wrapper for dict that returns None if item not present.
+# With this class you can write parms[key, strdefault] and it will return strdefault if key is not a key
+class ParmDict():
+    def __init__(self):
+        self._parms=defaultdict(None)
+
+    # Get an item.  Returns None if key does not exist and no default value is specified.
+    # Call as parms[key] or parms[key, strdefault]
+    def __getitem__(self, key: str | tuple[str, str]) -> Optional[str]:
+        if type(key) is tuple:
+            if not self._parms[key[0]]:
+                return key[1]
+            return self._parms[key[0]]
+        return self._parms[key]
+
+    def __setitem__(self, key: str, val: str) -> None:
+        self._parms[key]=val
+
+    def __len__(self) -> int:
+        return len(self._parms)
+
+    def Exists(self, item: str) -> bool:
+        return item in self._parms.keys()
+
+
+# =============================================================================
+# Read a file using ReadList and then parse lines from name=value pairs to a defaultdict
+def ReadListAsParmDict(filename: str, isFatal: bool=False) -> ParmDict:
+    dict=ParmDict()
     lines=ReadList(filename, isFatal=isFatal)
     for line in lines:
         ret=line.split("=", maxsplit=1)

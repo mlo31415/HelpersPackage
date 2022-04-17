@@ -142,12 +142,14 @@ def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=Fals
 
     return '<a href="'+url+'">'+text+'</a>'
 
+
 def FormatLink2(url: str, text: str, ForceHTTP: bool=False) -> str:
     return FormatLink(url, text, ForceHTTP=ForceHTTP, ForceHTTPS=not ForceHTTP, QuoteChars=True)
 
+
 #==================================================================================
 # Take a string and strip out all hrefs, retaining all the text.
-def UnformatLinks(s: str) -> str:
+def UnformatLinks(s: str) -> Optional[str]:
     if s is None or s == "":
         return s
 
@@ -645,16 +647,18 @@ def ReadListAsDict(filename: str, isFatal: bool=False) -> DefaultDict[str, str]:
 # With this class you can write parms[key, strdefault] and it will return strdefault if key is not a key
 class ParmDict():
     def __init__(self):
-        self._parms=defaultdict(None)
+        self._parms={}
 
     # Get an item.  Returns None if key does not exist and no default value is specified.
-    # Call as parms[key] or parms[key, strdefault]
+    # Call as parms[key] or parms[key, defaultvalue]
     def __getitem__(self, key: str | tuple[str, str]) -> Optional[str]:
         if type(key) is tuple:
             if not self._parms[key[0]]:
                 return key[1]
             return self._parms[key[0]]
-        return self._parms[key]
+        if key in self._parms.keys():
+            return self._parms[key]
+        return None
 
     def __setitem__(self, key: str, val: str) -> None:
         self._parms[key]=val

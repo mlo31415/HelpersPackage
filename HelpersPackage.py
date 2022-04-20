@@ -616,7 +616,7 @@ def SetReadOnlyFlag(pathname: str, flag: bool) -> None:
 def ReadList(filename: str, isFatal: bool=False) -> Optional[list[str]]:
     if not os.path.exists(filename):
         if isFatal:
-            Log(f"***Fatal error: Can't find {os.getcwd()}/{filename}", isError=True)
+            MessageLog(f"***Fatal error: Can't find {os.getcwd()}/{filename}")
             raise FileNotFoundError
         Log(f"ReadList can't find {os.getcwd()}/{filename}")
         return None

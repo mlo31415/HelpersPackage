@@ -339,6 +339,12 @@ def RemoveAccents(s: str) -> str:
 
 
 #=====================================================================================
+# Most non-alphanumeric characters can't be used in filenames with Jack's software on fanac.org. Turn runs of those characters into a single underscore
+def RemoveScaryCharacters(name: str) -> str:
+    return RemoveAccents("".join(re.sub("[?*&%$#@'><:;,.{}\][=+)(^!\s]+", "_", name)))
+
+
+#=====================================================================================
 # Do a case-insensitive replace, replacing old with new
 def CaseInsensitiveReplace(s: str, old: str, new: str) -> str:
     loc=s.lower().find(old.lower())

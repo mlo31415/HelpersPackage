@@ -651,20 +651,32 @@ def ReadListAsDict(filename: str, isFatal: bool=False) -> DefaultDict[str, str]:
 # =============================================================================
 # A wrapper for dict that returns None if item not present.
 # With this class you can write parms[key, strdefault] and it will return strdefault if key is not a key
+# If CaseInsensntive=True, then keys are stored with case, but are queried case-insentively
 class ParmDict():
-    def __init__(self):
-        self._parms={}
+    def __init__(self, CaseInsensntiveCompare=False):
+        self._parms: dict={}
+        self._CaseInsensntiveCompare=CaseInsensntiveCompare
 
     # Get an item.  Returns None if key does not exist and no default value is specified.
     # Call as parms[key] or parms[key, defaultvalue]
     def __getitem__(self, key: str | tuple[str, str]) -> Optional[str]:
         if type(key) is tuple:
-            if not self._parms[key[0]]:
-                return key[1]
-            return self._parms[key[0]]
-        if key in self._parms.keys():
-            return self._parms[key]
-        return None
+            val=self.GetItem(key[0])
+            if val is None:
+                val=key[1]
+            return val
+        return self.GetItem(key)
+
+    def GetItem(self, key: str) -> Optional[str]:
+        if self._CaseInsensntiveCompare:
+            rslt=[v for k, v in self._parms if k.lower() == key.lower()]
+            if len(rslt) == 0:
+                return None
+            return rslt[0]
+
+        if key not in self._parms.keys():
+            return None
+        return self._parms[key]
 
     def __setitem__(self, key: str, val: str) -> None:
         self._parms[key]=val
@@ -672,8 +684,38 @@ class ParmDict():
     def __len__(self) -> int:
         return len(self._parms)
 
-    def Exists(self, item: str) -> bool:
-        return item in self._parms.keys()
+
+    def __iterate_kv(self):
+        for item in self._parms.items():
+            yield item
+
+    def __iter__(self):
+        for key_var in self.__iterate_kv():
+            yield key_var[0]
+
+    def keys(self):
+        return self.__iter__()
+
+    def values(self):
+        for key_var in self.__iterate_kv():
+            yield key_var[1]
+
+    def items(self):
+        return self.__iterate_kv()
+
+    def Exists(self, key: str) -> bool:
+        if self._CaseInsensntiveCompare:
+            key=key.lower()
+        return key in self._parms.keys()
+
+    def AppendLines(self, lines: list[str]) -> None:
+        for line in lines:
+            m=re.match("^([a-zA-Z0-9_ ]+)=(.*)$", line)
+            if m:
+                self[m.groups()[0].strip()]=m.groups()[1].strip()
+
+    def Lines(self) -> list[str]:
+        return [f"{key} = {val}\n" for key, val in self.items()]
 
 
 # =============================================================================

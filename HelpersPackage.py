@@ -679,6 +679,12 @@ class ParmDict():
         return self._parms[key]
 
     def __setitem__(self, key: str, val: str) -> None:
+        if self._CaseInsensntiveCompare:
+            for k, v in self._parms.items():
+                if k.lower() == key.lower(): #If the key wasn't present, we eventually fall through to the case sensitive branch.
+                    self._parms[k]=val  # We use the old key (case doesn;t matter!) so we don;t have to delete it and then add the new key
+                    return
+
         self._parms[key]=val
 
     def __len__(self) -> int:
@@ -869,7 +875,7 @@ def SelectFileBasedOnDebugger(path: str, fname: str) -> str:
 
 
 # =============================================================================
-# Title names the app
+# Text names the app
 # msg is the error message
 def Bailout(e, msg: str, title: str) -> None:
     Log("exception: "+str(e), isError=True)

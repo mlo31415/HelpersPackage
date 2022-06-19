@@ -679,9 +679,9 @@ def ReadListAsDict(filename: str, isFatal: bool=False) -> DefaultDict[str, str]:
 # With this class you can write parms[key, strdefault] and it will return strdefault if key is not a key
 # If CaseInsensntive=True, then keys are stored with case, but are queried case-insentively
 class ParmDict():
-    def __init__(self, CaseInsensntiveCompare=False):
+    def __init__(self, CaseInsensitiveCompare=False):
         self._parms: dict={}
-        self._CaseInsensntiveCompare=CaseInsensntiveCompare
+        self._CaseInsensitiveCompare=CaseInsensitiveCompare
 
     # Get an item.  Returns None if key does not exist and no default value is specified.
     # Call as parms[key] or parms[key, defaultvalue]
@@ -694,8 +694,8 @@ class ParmDict():
         return self.GetItem(key)
 
     def GetItem(self, key: str) -> Optional[str]:
-        if self._CaseInsensntiveCompare:
-            rslt=[v for k, v in self._parms if k.lower() == key.lower()]
+        if self._CaseInsensitiveCompare:
+            rslt=[v for k, v in self._parms.items() if k.lower() == key.lower()]
             if len(rslt) == 0:
                 return None
             return rslt[0]
@@ -705,7 +705,7 @@ class ParmDict():
         return self._parms[key]
 
     def __setitem__(self, key: str, val: str) -> None:
-        if self._CaseInsensntiveCompare:
+        if self._CaseInsensitiveCompare:
             for k, v in self._parms.items():
                 if k.lower() == key.lower(): #If the key wasn't present, we eventually fall through to the case sensitive branch.
                     self._parms[k]=val  # We use the old key (case doesn;t matter!) so we don;t have to delete it and then add the new key
@@ -736,7 +736,7 @@ class ParmDict():
         return self.__iterate_kv()
 
     def Exists(self, key: str) -> bool:
-        if self._CaseInsensntiveCompare:
+        if self._CaseInsensitiveCompare:
             key=key.lower()
         return key in self._parms.keys()
 

@@ -478,6 +478,14 @@ def CompressName(name: str) -> str:
 def CompareCompressedName(n1: str, n2: str) -> bool:
     return CompressName(n1) == CompressName(n2)
 
+#==================================================================================
+# Compare two directory paths.  Convery them to canonical form (lc, all "/")
+def ComparePathsCanonical(p1: str, p2: str) -> bool:
+    p1=os.path.abspath(p1).lower().replace("\\", "/")
+    p2=os.path.abspath(p2).lower().replace("\\", "/")
+
+    return p1 == p2
+
 
 #==================================================================================
 # Compare two titles: Ignore case and ignore start or end position of [a, an, the]

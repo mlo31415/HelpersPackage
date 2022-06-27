@@ -685,6 +685,7 @@ class ParmDict():
 
     # Get an item.  Returns None if key does not exist and no default value is specified.
     # Call as parms[key] or parms[key, defaultvalue]
+    # parms[key] returns None if key is not found
     def __getitem__(self, key: str | tuple[str, str]) -> Optional[str]:
         if type(key) is tuple:
             val=self.GetItem(key[0])

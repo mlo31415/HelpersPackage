@@ -842,6 +842,16 @@ def InterpretNumber(inputstring: Optional[str]) -> Union[None, int, float]:
 
 
 # =============================================================================
+# Take a possibly ragged list of lists of strings and make all rows the length of the longest by padding with empty strings
+def SquareUpMatrix(m: list[list[str]]) -> list[list[str]]:
+    lmax=max([len(r) for r in m])
+    for r in m:
+        if len(r) < lmax:
+            r.extend([""]*(lmax-len(r)))
+    return m
+
+
+# =============================================================================
 # Nibble away at a line by applying the pattern with two capture groups to the line
 # We return a tuple:
 #       The line with the matched portion removed

@@ -710,7 +710,7 @@ class ParmDict():
     def __setitem__(self, key: str, val: str) -> None:
         if self._CaseInsensitiveCompare:
             for k, v in self._parms.items():
-                if k.lower() == key.lower(): #If the key wasn't present, we eventually fall through to the case sensitive branch.
+                if k.lower() == key.lower(): # If the key wasn't present, we eventually fall through to the case sensitive branch.
                     self._parms[k]=val  # We use the old key (case doesn;t matter!) so we don;t have to delete it and then add the new key
                     return
 
@@ -741,6 +741,10 @@ class ParmDict():
     def Exists(self, key: str) -> bool:
         if self._CaseInsensitiveCompare:
             key=key.lower()
+            for k in self._parms.keys():
+                if key == k.lower():
+                    return True
+            return False
         return key in self._parms.keys()
 
     def AppendLines(self, lines: list[str]) -> None:
@@ -850,6 +854,15 @@ def SquareUpMatrix(m: list[list[str]]) -> list[list[str]]:
             r.extend([""]*(lmax-len(r)))
     return m
 
+
+# =============================================================================
+# Take a possibly ragged list of lists of strings and remove any rows filled only with spaces
+def RemoveEmptyRowsFromMatrix(m: list[list[str]]) -> list[list[str]]:
+    out: list[list[str]]=[]
+    for r in m:
+        if len("".join(r).strip()) > 0:
+            out.append(r)
+    return out
 
 # =============================================================================
 # Nibble away at a line by applying the pattern with two capture groups to the line

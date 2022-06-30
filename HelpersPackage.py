@@ -714,7 +714,7 @@ class ParmDict():
                     self._parms[k]=val  # We use the old key (case doesn;t matter!) so we don;t have to delete it and then add the new key
                     return
 
-        self._parms[key]=val
+        self._parms[key.strip()]=val
 
     def __len__(self) -> int:
         return len(self._parms)

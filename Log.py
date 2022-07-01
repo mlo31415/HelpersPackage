@@ -2,6 +2,8 @@ import os
 import io
 import sys
 from tkinter import Tk, messagebox
+import platform
+
 from datetime import datetime
 
 #from HelpersPackage import MessageBox
@@ -30,15 +32,14 @@ def LogCheck() -> None:
 # Print the text to a log file open by the main program
 # If isError is set also print it to the error file.
 def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear=False, Flush=True, timestamp=False) -> None:
-    """
-
-    :rtype: object
-    """
     global g_logFile
+    global g_logFileName
     global g_logErrorFile
+    global g_logErrorFileName
     global g_logHeaderPrint
     global g_logHeaderFile
     global g_logHeaderError
+    global g_errorLogged         # True if anything is logged to the error log
 
     LogCheck()
 
@@ -49,17 +50,17 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
     # LogOpen stores the names of the output files in g_logFile and g_errorFile.
     # (If those globals don't contain strings, then they were probably never initialized.)
     # Now, if the file is needed, we open the files and store the file handle in that global instead.
-    if g_logFile is not None and isinstance(g_logFile, str):
+    if g_logFile is None and g_logFileName is not None:
         try:
-            g_logFile=open(g_logFile, "w+", encoding='utf-8')
+            g_logFile=open(g_logFileName, "w+", encoding='utf-8')
         except Exception as e:
-            MessageBox("Exception in LogOpen("+g_logFile+")  Exception="+str(e))
+            MessageBox("Exception in LogOpen("+g_logFileName+")  Exception="+str(e))
 
-    if isError and g_logErrorFile is not None and isinstance(g_logErrorFile, str):
+    if isError and g_logErrorFile is None and g_logErrorFileName is not None:
         try:
-            g_logErrorFile=open(g_logErrorFile, "w+", buffering=1, encoding='utf-8')
+            g_logErrorFile=open(g_logErrorFileName, "w+", buffering=1, encoding='utf-8')
         except Exception as e:
-            MessageBox("Exception in LogOpen("+g_logFile+")  Exception="+str(e))
+            MessageBox("Exception in LogOpen("+g_logErrorFileName+")  Exception="+str(e))
 
     # If Clear=True, then we clear pre-existing headers
     if Clear:
@@ -86,6 +87,7 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
         if g_logHeaderError != "":
             print("----\n"+g_logHeaderError, file=g_logErrorFile)
         g_logHeaderError=""
+        g_errorLogged=True
 
     if g_logFile is None and g_logErrorFile is None:
         print("*** Log() called prior to call to LogOpen()", end=newlinechar)
@@ -113,6 +115,26 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
 # Shortcut to calling Log(...isError=True) to log an error
 def LogError(text: str) -> None:
     Log(text, isError=True)
+
+
+#=============================================================================
+# Returns True if an error has been logged since the Log was started
+def LogErrorHasBeenLogged() -> bool:
+    global g_errorLogged
+    return g_errorLogged
+
+
+#=============================================================================
+# Displays the error file in a pop-up window if any errors have been logged
+def LogDisplayErrorsIfAny() -> None:
+    global g_logErrorFile
+    if not LogErrorHasBeenLogged():
+        return
+
+    if platform.system() == "Windows":
+        os.startfile(g_logErrorFileName)
+    if platform.system() == "Darwin":   # Mac!
+        messagebox.showinfo(title=None, message=f"An error has been logged/nLook at {g_logErrorFile} for details.")
 
 
 #=============================================================================
@@ -151,11 +173,18 @@ def LogOpen(logfilename: str, errorfilename: str, dated: bool=False) -> None:
             ext=".txt"
         errorfilename=fname+" "+d+ext
 
-    global g_logFile
-    g_logFile=logfilename
+    global gerrorFound
+    gerrorFound=False
 
+    global g_logFileName
+    g_logFileName=logfilename
+    global g_logFile
+    g_logFile=None
+
+    global g_logErrorFileName
+    g_logErrorFileName=errorfilename
     global g_logErrorFile
-    g_logErrorFile=errorfilename
+    g_logErrorFile=None
 
     global g_logHeaderPrint
     g_logHeaderPrint=""

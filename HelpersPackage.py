@@ -679,11 +679,13 @@ def ReadListAsDict(filename: str, isFatal: bool=False) -> DefaultDict[str, str]:
 # =============================================================================
 # A wrapper for dict that returns None if item not present.
 # With this class you can write parms[key, strdefault] and it will return strdefault if key is not a key
-# If CaseInsensntive=True, then keys are stored with case, but are queried case-insentively
+# If CaseInsensntive=True, then keys are stored with case, but are queried case-insensitively.  (E.f., "full name" == "Full Name")
+# If IgnoreSpacesCompare=True, then spaces are squeexed out of keys before comaparison
 class ParmDict():
-    def __init__(self, CaseInsensitiveCompare=False):
+    def __init__(self, CaseInsensitiveCompare=False, IgnoreSpacesCompare=False):
         self._parms: dict={}
         self._CaseInsensitiveCompare=CaseInsensitiveCompare
+        self._IgnoreSpacesCompare=IgnoreSpacesCompare
 
     # Get an item.  Returns None if key does not exist and no default value is specified.
     # Call as parms[key] or parms[key, defaultvalue]
@@ -697,6 +699,9 @@ class ParmDict():
         return self.GetItem(key)
 
     def GetItem(self, key: str) -> Optional[str]:
+        if self._IgnoreSpacesCompare:
+            key=key.replace(" ","")
+
         if self._CaseInsensitiveCompare:
             rslt=[v for k, v in self._parms.items() if k.lower() == key.lower()]
             if len(rslt) == 0:
@@ -708,6 +713,9 @@ class ParmDict():
         return self._parms[key]
 
     def __setitem__(self, key: str, val: str) -> None:
+        if self._IgnoreSpacesCompare:
+            key=key.replace(" ", "")
+
         if self._CaseInsensitiveCompare:
             for k, v in self._parms.items():
                 if k.lower() == key.lower(): # If the key wasn't present, we eventually fall through to the case sensitive branch.
@@ -739,6 +747,9 @@ class ParmDict():
         return self.__iterate_kv()
 
     def Exists(self, key: str) -> bool:
+        if self._IgnoreSpacesCompare:
+            key=key.replace(" ", "")
+
         if self._CaseInsensitiveCompare:
             key=key.lower()
             for k in self._parms.keys():

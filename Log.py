@@ -40,7 +40,7 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
     global g_logHeaderPrint
     global g_logHeaderFile
     global g_logHeaderError
-    global g_errorLogged         # True if anything is logged to the error log
+    global g_errorLogged         # Set to True if anything is logged to the error log
     g_errorLogged=False
 
     LogCheck()

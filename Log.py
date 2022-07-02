@@ -175,8 +175,8 @@ def LogOpen(logfilename: str, errorfilename: str, dated: bool=False) -> None:
             ext=".txt"
         errorfilename=fname+" "+d+ext
 
-    global gerrorFound
-    gerrorFound=False
+    global g_errorFound
+    g_errorFound=False
 
     global g_logFileName
     g_logFileName=logfilename

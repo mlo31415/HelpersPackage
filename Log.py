@@ -134,8 +134,8 @@ def LogDisplayErrorsIfAny() -> None:
 
     if platform.system() == "Windows":
         os.startfile(g_logErrorFileName)
-    if platform.system() == "Darwin":   # Mac!
-        messagebox.showinfo(title=None, message=f"An error has been logged/nLook at {g_logErrorFile} for details.")
+    # if platform.system() == "Darwin":   # Mac!
+    #     messagebox.showinfo(title=None, message=f"An error has been logged/nLook at {g_logErrorFile} for details.")
 
 
 #=============================================================================

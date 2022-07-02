@@ -22,6 +22,12 @@ from datetime import datetime
 #=============================================================================
 # If Log has not been initialized, initialize it using default log names
 def LogCheck() -> None:
+    global g_errorLogged         # Set to True if anything is logged to the error log
+    try:
+        g_errorLogged
+    except NameError:
+        g_errorLogged=False
+
     global g_logFile
     try:
         g_logFile

@@ -128,7 +128,7 @@ def LogErrorHasBeenLogged() -> bool:
 #=============================================================================
 # Displays the error file in a pop-up window if any errors have been logged
 def LogDisplayErrorsIfAny() -> None:
-    global g_logErrorFile
+    global g_logErrorFileName
     if not LogErrorHasBeenLogged():
         return
 

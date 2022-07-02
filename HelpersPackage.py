@@ -774,6 +774,11 @@ def ReadListAsParmDict(filename: str, isFatal: bool=False) -> ParmDict:
     dict=ParmDict()
     lines=ReadList(filename, isFatal=isFatal)
     for line in lines:
+        # Remove everything beyond the first #
+        if '#' in line:
+            loc=line.find("#")
+            line=line[:loc-1].strip()
+
         ret=line.split("=", maxsplit=1)
         if len(ret) == 2:
             dict[ret[0]]=ret[1]

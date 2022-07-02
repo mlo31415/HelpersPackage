@@ -129,6 +129,10 @@ def LogError(text: str) -> None:
 # Returns True if an error has been logged since the Log was started
 def LogErrorHasBeenLogged() -> bool:
     global g_errorLogged
+    try:
+        g_errorLogged
+    except NameError:
+        return False
     return g_errorLogged
 
 

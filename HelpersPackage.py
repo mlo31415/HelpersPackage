@@ -263,6 +263,8 @@ def FindAndReplaceBracketedText(s: str, bracket: str, replacement: str, stripHtm
 #   The name of the first pair of brackets found
 #   The contents of the first pair of brackets found
 #   Rhe remainder of the input string
+# Note that this is a *non-greedy* scanner
+# Note also that it is not very tolerant of errors in the bracketing, just dropping things on the floor
 def FindAnyBracketedText(s: str) -> tuple[str, str, str, str]:
 
     pattern=r"^(.*?)<(.+?)>(.*?)<\/\2>\s*"

@@ -276,6 +276,19 @@ def FindAnyBracketedText(s: str) -> tuple[str, str, str, str]:
     return x
 
 
+#=====================================================================================
+# Find the cfirst bracket located.  Return the leading, enclosed, and trailing text
+def ParseFirstBracketedText(s: str, b1: str, b2: str) -> tuple[str, str, str]:
+    # We need to escape certain characters before substituting them into a RegEx pattern
+    b1=b1.replace("[", r"\[").replace("(", r"\(").replace("{", r"\{")
+
+    pattern=r"^(.*?)"+b1+"(.+?)"+b2+"(.*)$"
+    m=re.search(pattern, s,  re.DOTALL)
+    if m is None:
+        return s, "", ""
+
+    return m.group(1), m.group(2), m.group(3)
+
 
 #=====================================================================================
 # Find text bracketed by [[]]

@@ -771,11 +771,18 @@ class ParmDict():
             return False
         return key in self._parms.keys()
 
+    # Take list of lines of the form xxx=yyy and add item yyy to key xxx
     def AppendLines(self, lines: list[str]) -> None:
         for line in lines:
             m=re.match("^([a-zA-Z0-9_ ]+)=(.*)$", line)
             if m:
                 self[m.groups()[0].strip()]=m.groups()[1].strip()
+
+    # Append one ParmDict to another
+    def Append(self, new: ParmDict) -> None:
+        for key, val in new.items():
+            self[key]=val
+
 
     def Lines(self) -> list[str]:
         return [f"{key} = {val}\n" for key, val in self.items()]

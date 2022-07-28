@@ -238,7 +238,6 @@ def FindBracketedText(s: str, b: str, stripHtml: bool=True) -> tuple[str, str]:
     return match, s2
 
 
-
 #=====================================================================================
 # Find text bracketed by <b>...</b> and replace it with new text
 # Return the (possibly) modified text and a bool to indicate if anything was found
@@ -253,7 +252,6 @@ def FindAndReplaceBracketedText(s: str, bracket: str, replacement: str, stripHtm
         match=RemoveAllHTMLTags(match)
     s2=re.sub(pattern, replacement, s, flags=re.DOTALL, count=1)
     return s2, True
-
 
 
 #=====================================================================================

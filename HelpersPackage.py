@@ -881,6 +881,50 @@ def InterpretNumber(inputstring: Optional[str]) -> Union[None, int, float]:
     return None
 
 
+# This is a lot like InterpretNumber(), but it focuses on yielding a number which represents the input for purposes of sorting, and nothing else.
+# A pure numbers goes to itself (e.g., 1.5-> 1.5, etc)
+# An integer followed by letters goes to a heuristic float (e.g., 32A -> 32.1, 32.b -> 32.3)
+# A range goes to something a bit bigger than the first number, so that 29-35 sorts after 29
+# The uninterpretable just goes to a Really BigNumber so it sorts last
+def SortMessyNumber(inputstring: str) -> float:
+    inputstring=inputstring.strip()
+
+    # Empty strings sort first
+    if inputstring == "":
+        return -99999999
+
+    # Locate any trailing alphabetic characters
+    m=re.match("^([0-9,.\-/ ]*)([a-zA-Z ]*)$", inputstring)
+    if m is None:
+        # Confusing result. Sort last
+        return 99999999
+
+    number=m.groups()[0].strip()
+    alpha=m.groups()[1].strip()
+    if len(number) == 0:
+        # We have no leading Arabic numerals, but just *maybe* the text part is Roman numerals
+        val=InterpretRoman(alpha)
+        if val is not None:
+            return val
+        # Apparently it's just letters.  These sort last
+        return 99999999
+    # OK, we have leading numerals.  Do we have trailing letters?
+    if len(alpha) > 0:
+        # This is a fast-and-loose heuristic.  We'll just look at the first two characters and come up with a number which sorts in the same order
+        ordering=" abcdefghijklmnopqurstuvwxyzABCDEFGHIJKLMNOPQURSTUVWXYZ"
+        if alpha[0] not in ordering:
+            return 99999999
+        o1=ordering.index(alpha[0])
+        if len(alpha) == 1 or alpha[1] not in ordering:
+            return InterpretNumber(number)+o1/100
+        o2=ordering.index(alpha[1])
+        return InterpretNumber(number)+o1/100+o2/10000
+    # So it appears we have a more-or-less pure number
+    return InterpretNumber(number)
+
+
+
+
 # =============================================================================
 # Take a possibly ragged list of lists of strings and make all rows the length of the longest by padding with empty strings
 def SquareUpMatrix(m: list[list[str]]) -> list[list[str]]:

@@ -237,6 +237,19 @@ def FindBracketedText(s: str, b: str, stripHtml: bool=True) -> tuple[str, str]:
     s2=re.sub(pattern, "", s, count=1)
     return match, s2
 
+#=====================================================================================
+# Find the first <bracket>bracketed text</bracket> located.  Return the leading, enclosed, and trailing text
+def ParseFirstStringBracketedText(s: str, bracket: str) -> tuple[str, str, str]:
+    # We need to escape certain characters before substituting them into a RegEx pattern
+    bracket=bracket.replace("[", r"\[").replace("(", r"\(").replace("{", r"\{")
+
+    pattern=rf"^(.*?)<{bracket}>(.+?)</{bracket}>(.*)$"
+    m=re.search(pattern, s,  re.DOTALL)
+    if m is None:
+        return s, "", ""
+
+    return m.group(1), m.group(2), m.group(3)
+
 
 #=====================================================================================
 # Find text bracketed by <b>...</b> and replace it with new text
@@ -805,6 +818,36 @@ def ReadListAsParmDict(filename: str, isFatal: bool=False) -> ParmDict:
     return dict
 
 
+# =============================================================================
+# Take a text file and a ParmDict as input.
+# Search through the text file and for every instance of [yyy xxx] (where yyy is an arbitrary string with no whitespace and xxx is an arbitrary string, including the empty string).
+#
+# If yyy exists and no value, replace [yyy xxx] with xxx.
+# This basically makes xxx visible iff yyy is in the ParmDict
+#
+# OTOH, if it is found and does have a value, replace [yyy xxx] with yyy's value.
+# This lets you, for instance, replace [Convention Name] with "Confluence 2022"
+def ApplyParmDictToString(s: str, parms: ParmDict) -> str:
+    out: str=""
+
+    while len(s) > 0:
+        s1, val, s2=ParseFirstBracketedText(s, "\[", "]")
+        if parms.Exists(val) and len(parms[val]) > 0:
+            out+=s1+parms[val]
+            s=s2
+            continue
+        # Look for the first token of val
+        if " " in val:
+            token1, token2=val.split(" ", 1)
+            if parms.Exists(token1) and len(parms[token1]) > 0:
+                out+=s1+token2
+                s=s2
+                continue
+        out+=s1+"["+val+"]"
+        s=s2
+
+    return out
+
 
 # =============================================================================
 # Interpret a string of Roman numerals into an int
@@ -923,6 +966,17 @@ def SortMessyNumber(inputstring: str) -> float:
     return InterpretNumber(number)
 
 
+# ==========================================================
+# Normalize a person's name
+# Johnson, Lyndon Baines --> Lyndon Baines Johnson
+def NormalizePersonsName(name: str) -> str:
+    # For now, all we do is flips the lname, stuff to stuff lname
+    if "," in name:
+        loc=name.index(",")
+        return name[loc+1:]+" "+name[:loc]
+
+    # If nothing else, return the input string
+    return name
 
 
 # =============================================================================

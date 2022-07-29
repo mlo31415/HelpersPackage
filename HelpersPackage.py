@@ -598,6 +598,20 @@ def ExtensionMatches(file: str, ext: Union[str, list[str]]) -> bool:
 
 
 # =============================================================================
+# Format numeric month+year as January 1944
+# Note that Month is 1-12
+def DateMonthYear(month: int, year: int) -> str:
+    months=["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    if month > 0 and year > 0:
+        return f"{months[month-1]} {year}"
+    if year > 0:
+        return str(year)
+    if month > 0:
+        return months[month]
+    return "date?"
+
+
+# =============================================================================
 # Check to see if an argument (int, float or string) is a number
 def IsInt(arg: any) -> bool:
     if type(arg) is int:

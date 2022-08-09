@@ -243,7 +243,7 @@ def ParseFirstStringBracketedText(s: str, bracket: str) -> tuple[str, str, str]:
     # We need to escape certain characters before substituting them into a RegEx pattern
     bracket=bracket.replace("[", r"\[").replace("(", r"\(").replace("{", r"\{")
 
-    pattern=rf"^(.*?)<{bracket}>(.+?)</{bracket}>(.*)$"
+    pattern=rf"^(.*?)<{bracket}>(.*?)</{bracket}>(.*)$"
     m=re.search(pattern, s,  re.DOTALL)
     if m is None:
         return s, "", ""

@@ -980,6 +980,28 @@ def SortMessyNumber(inputstring: str) -> float:
     return InterpretNumber(number)
 
 
+# A sort function (to be passed in to sorted() or sort()) which sorts into a sensible alphabetic order
+# A, An, or The is moved to the end of the name
+# Case is ignored
+# Leading spaces are ignored
+def SortTitle(inputstring: str) -> str:
+    inputstring=inputstring.strip().lower()
+
+    # Empty strings sort first
+    if inputstring == "":
+        return ""
+
+    if inputstring.startswith("a "):
+        return inputstring.removeprefix("a ")+", a"
+    if inputstring.startswith("an "):
+        return inputstring.removeprefix("an ")+", an"
+    if inputstring.startswith("the "):
+        return inputstring.removeprefix("the ")+", the"
+
+    return inputstring
+
+
+
 # ==========================================================
 # Normalize a person's name
 # Johnson, Lyndon Baines --> Lyndon Baines Johnson

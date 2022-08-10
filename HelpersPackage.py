@@ -1001,7 +1001,6 @@ def SortTitle(inputstring: str) -> str:
     return inputstring
 
 
-
 # ==========================================================
 # Normalize a person's name
 # Johnson, Lyndon Baines --> Lyndon Baines Johnson
@@ -1013,6 +1012,21 @@ def NormalizePersonsName(name: str) -> str:
 
     # If nothing else, return the input string
     return name
+
+# ==========================================================
+# Normalize a person's name
+# For now, all we do is flips the lname, stuff to stuff lname
+# Lyndon Baines Johnson --> Johnson, Lyndon Baines
+def SortPersonsName(name: str) -> str:
+    if "," in name:     # If name has a comma, it's probably already in desired order
+        return name
+
+    if " " not in name:     # If it's all characters, there's not much to be done
+        return name
+
+    # Use <last token>, <other tokens>
+    tokens=name.split()
+    return " ".join([tokens[-1]+","]+tokens[:-1])
 
 
 # =============================================================================

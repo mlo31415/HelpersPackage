@@ -1005,12 +1005,9 @@ def SortTitle(inputstring: str) -> str:
 # Normalize a person's name
 # Johnson, Lyndon Baines --> Lyndon Baines Johnson
 def NormalizePersonsName(name: str) -> str:
-    # For now, all we do is flips the lname, stuff to stuff lname
-    if "," in name:
-        loc=name.index(",")
-        return name[loc+1:]+" "+name[:loc]
-
-    # If nothing else, return the input string
+    names=UnscrambleNames(name)
+    if len(names) == 1:
+        return names[0]
     return name
 
 # ==========================================================
@@ -1018,15 +1015,83 @@ def NormalizePersonsName(name: str) -> str:
 # For now, all we do is flips the lname, stuff to stuff lname
 # Lyndon Baines Johnson --> Johnson, Lyndon Baines
 def SortPersonsName(name: str) -> str:
+    if name is None or name == "":
+        return " "
+
+    name=HidePrefixsAndSuffixes(name)   # Need to hide things like Warner, Jr.
+
     if "," in name:     # If name has a comma, it's probably already in desired order
-        return name
+        return UnhidePrefixsAndSuffixes(name)
 
     if " " not in name:     # If it's all characters, there's not much to be done
-        return name
+        return UnhidePrefixsAndSuffixes(name)
 
     # Use <last token>, <other tokens>
     tokens=name.split()
-    return " ".join([tokens[-1]+","]+tokens[:-1])
+    return UnhidePrefixsAndSuffixes(" ".join([tokens[-1]+","]+tokens[:-1]))
+
+
+# Two routines to hide and unhide various name prefixes and suffixes
+suffixes=[(", Jr.", "qqqJr"), (", jr.", "qqqjr"), (" Jr.", "qqqJr2"), (" jr.", "qqqjr2"), (" Jr", "qqqJr3"), (" jr", "qqqjr3"), # With comma & period, with period, with neither
+          (", Sr.", "qqqSr"), (", sr.", "qqqsr"), (" Sr.", "qqqSr2"), (" sr.", "qqqsr2"), (" Sr", "qqqSr3"), (" sr", "qqqsr3"),
+          (" II", "qqqII"), (" III", "qqqIII")]
+prefixes=[("Van ", "xxxVan"), ("van ", "xxxvan"), ("Von ", "xxxVon"), ("von ", "xxxvon"), ("Del ", "xxxDel"), ("del ", "xxxdel"),
+          ("De ", "xxxDe"), ("de ", "xxxde"), ("Le ", "xxxLe"), ("le ", "xxxle")]
+
+def HidePrefixsAndSuffixes(input: str) -> str:
+    # We will hide them as "qqq#" where # is the number, below.  This way, they will appear to be part of the name
+    for key, val in suffixes:
+        input=input.replace(key, val)
+    # The same for prefixes.  (Note that Del must precede Ge to prevent mis-matches.)
+    for key, val in prefixes:
+        input=input.replace(key, val)
+    return input
+
+def UnhidePrefixsAndSuffixes(input: str) -> str:
+    for key, val in suffixes:
+        input=input.replace(val, key)
+    for key, val in prefixes:
+        input=input.replace(val, key)
+    return input
+
+
+# ==========================================================
+# Handle lists of names
+def UnscrambleNames(input: str) -> list[str]:
+    # A list of names can be Fname [MI] Lname, Fname2 [MI2] Lname2...
+    # Names cane be of the form Heinlein, Robert A.
+    # Or Harry Warner, Jr.
+    #
+    # We want to return a list of names in the normal format: John W. Campbell, Jr.
+
+    # Commas are very confusing, so begin by hiding certain constructs which are part of the last name
+    input=HidePrefixsAndSuffixes(input)
+
+    # We can now be pretty confident that any commas are separators.  They could be a list: E. E. Smith, Poul Anderson
+    # Or an inverted name: de Camp, L. Sprague.
+    # We detect the first case because it is always token, token -- never more than one token before the comma.
+    # (Note that we've already turned "de camp" into "xxxdecamp" so it's one token.)
+    # We decline to handle the ugly case
+
+    # First look for the Asimov, Isaac case
+    if input.count(",") == 1:   # Look for a single comma
+        tokens=input.split(",")
+        if " " not in tokens[0].strip():   # With no interior spaces before the comma
+            name=" ".join(tokens[1:])+" "+tokens[0]     # Create a name in normal order
+            # Restore the prefixes & suffixes
+            name=UnhidePrefixsAndSuffixes(name)
+            return [name]   # Return a list of the one name
+
+    # Now deal with a list of names
+    delimiters=[", ", "/", " and "]
+    for delimiter in delimiters:
+        names=input.split(delimiter)
+        if len(names) > 1:
+            return [UnhidePrefixsAndSuffixes(x.strip()) for x in names]
+
+    # For now, these are the only cases we'll try to deal with.
+    # Return the input as a single name
+    return [input]
 
 
 # =============================================================================

@@ -1095,11 +1095,8 @@ def UnscrambleNames(input: str) -> list[str]:
             return [name]   # Return a list of the one name
 
     # Now deal with a list of names
-    delimiters=[", ", "/", " and ", "&"]
-    for delimiter in delimiters:
-        names=input.split(delimiter)
-        if len(names) > 1:
-            return [UnhidePrefixsAndSuffixes(x.strip()) for x in names]
+    names=re.split(", and |, |/| and|&", input)       # delimiters=[", ", "/", " and ", ", and",  "&"]
+    return [UnhidePrefixsAndSuffixes(x.strip()) for x in names]
 
     # For now, these are the only cases we'll try to deal with.
     # Return the input as a single name
@@ -1169,6 +1166,15 @@ def MessageBoxInput(s: str, ignoredebugger: bool=False) -> str:
         root = Tk()
         root.withdraw()
         return tkinter.simpledialog.askstring("xxx", s)
+    return ""
+
+# Same thing with more control
+def MessageBoxInput2(title: str="", prompt: str="", ignoredebugger: bool=False, **kwds) -> str:
+    if not DebuggerIsRunning() or ignoredebugger:
+        root = Tk()
+        root.withdraw()
+        return tkinter.simpledialog.askstring(title, prompt, **kwds)
+    return ""
 
 
 # =============================================================================

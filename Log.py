@@ -170,7 +170,17 @@ def LogSetHeader(name: str) -> None:
 
 #=============================================================================
 # This really doesn't do the open, but just caches the filenames.  They'll be opened by Log() only if needed.
-def LogOpen(logfilename: str, errorfilename: str, dated: bool=False) -> None:
+def LogOpen(logfilename: str, errorfilename: str=None, dated: bool=False) -> None:
+
+    if os.path.splitext(logfilename)[1] == "":
+        logfilename+=".txt"
+
+    if errorfilename is None:
+        name, ext=os.path.splitext(logfilename)
+        errorfilename=name+" (Errors)"+ext
+
+    if os.path.splitext(errorfilename)[1] == "":
+        errorfilename+=".txt"
 
     if dated:
         # If dated is True, we insert a datestring at the end of the filename

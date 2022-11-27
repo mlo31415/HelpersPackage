@@ -103,6 +103,17 @@ def ToNumeric(val: Union[None, int, float, str]) -> Union[None, int, float]:
     return None
 
 
+# Take a string and find the first hyperlink.
+# Return a tuple of: <material before>, <link>, <display text>, <material after>
+def FindLinkInString(s: str) -> tuple[str, str, str, str]:
+    pat="^(.*?)<a\s+href=['\"]http[s]?(.*?)>(.*?)</a>(.*)$"
+    m=re.match(pat, s, flags=re.RegexFlag.IGNORECASE)
+    if m is None:
+        return s, "", "", ""
+    return m.groups()[0], m.groups()[1], m.groups()[2], m.groups()[3]
+
+
+
 #==================================================================================
 # Return a properly formatted link
 # Depending on flags, the URL may get 'https://' or 'http://' prepended.

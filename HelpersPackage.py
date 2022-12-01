@@ -460,6 +460,13 @@ def UnicodeToHtml(s: str) -> str:
 
 
 #=====================================================================================
+# Convert the unicode of a str to a string which can be used in an HTML file
+def UnicodeToHtml2(s: str) -> str:
+    # Convert the text to ascii and then used decode to turn it back into a str
+    return s.encode(encoding='ascii', errors="xmlcharrefreplace").decode()
+
+
+#=====================================================================================
 # Function to generate the proper kind of path.  (This may change depending on the target location of the output.)
 def RelPathToURL(relPath: str) -> Optional[str]:
     if relPath is None:

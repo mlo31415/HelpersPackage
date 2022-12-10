@@ -1050,10 +1050,10 @@ def SortPersonsName(name: str) -> str:
 
 
 # Two routines to hide and unhide various name prefixes and suffixes
-suffixes=[(", Jr.", "qqqJr"), (", jr.", "qqqjr"), (" Jr.", "qqqJr2"), (" jr.", "qqqjr2"), (" Jr", "qqqJr3"), (" jr", "qqqjr3"), # With comma & period, with period, with neither
-          (", Sr.", "qqqSr"), (", sr.", "qqqsr"), (" Sr.", "qqqSr2"), (" sr.", "qqqsr2"), (" Sr", "qqqSr3"), (" sr", "qqqsr3"),
-          (", II", "qqqII"), (" II", "qqqII2"), (", III", "qqqIII"), (" III", "qqqIII2"),
-          (", et al", "qqqetal"), (" et al", "qqqetal2")]
+suffixes=[(", Jr.", "qqqJr"), (", jr.", "qqqjr"), (" Jr.", "qqq2Jr"), (" jr.", "qqq2jr"), (" Jr", "qqq3Jr"), (" jr", "qqq3jr"), # With comma & period, with period, with neither
+          (", Sr.", "qqqSr"), (", sr.", "qqqsr"), (" Sr.", "qqq2Sr"), (" sr.", "qqq2sr"), (" Sr", "qqq3Sr"), (" sr", "qqq3sr"),
+          (", III", "qqqIII"), (" III", "qqq2III"), (", II", "qqqII"), (" II", "qqq2II"),
+          (", et al", "qqqetal"), (" et al", "qqq2etal")]
 prefixes=[("Van ", "xxxVan"), ("van ", "xxxvan"), ("Von ", "xxxVon"), ("von ", "xxxvon"), ("Del ", "xxxDel"), ("del ", "xxxdel"),
           ("De ", "xxxDe"), ("de ", "xxxde"), ("Le ", "xxxLe"), ("le ", "xxxle")]
 

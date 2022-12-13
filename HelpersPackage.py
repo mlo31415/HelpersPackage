@@ -476,9 +476,23 @@ def RelPathToURL(relPath: str) -> Optional[str]:
     return "https://www.fanac.org/"+os.path.normpath(os.path.join("fanzines", relPath)).replace("\\", "/")
 
 
+# =====================================================================================
+# Function to find the index of one or more strings in a list of strings
+def FindIndexOfStringInList(lst: list[str], s: [str, list[str]], IgnoreCase=False) -> Optional[int]:
+    if type(s) is str:  # If it's a single string, just go with it!
+        return FindIndexOfStringInList2(lst, s)
+
+    for item in s:
+        val=FindIndexOfStringInList2(lst, item)
+        if val is not None:
+            return val
+
+    return None
+
+
 #=====================================================================================
 # Function to find the index of a string in a list of strings
-def FindIndexOfStringInList(lst: list[str], s: str, IgnoreCase=False) -> Optional[int]:
+def FindIndexOfStringInList2(lst: list[str], s: str, IgnoreCase=False) -> Optional[int]:
     if not IgnoreCase:
         try:
             return lst.index(s)
@@ -490,6 +504,12 @@ def FindIndexOfStringInList(lst: list[str], s: str, IgnoreCase=False) -> Optiona
         if item.lower() == s.lower():
             return i
     return None
+
+
+
+
+
+
 
 
 #==================================================================================

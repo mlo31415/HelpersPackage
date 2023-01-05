@@ -182,6 +182,13 @@ def UnformatLinks(s: str) -> Optional[str]:
 def CapitalizeFirstChar(s: str) -> str:
     return s[0].upper()+s[1:]
 
+
+# -------------------------------------------------------------------------
+# Take a string and a value and add appropriate pluralization to string -- used in calls to WriteTable
+def Pluralize(val: int, s: str) -> str:
+    return f"{val} {s}{'s' if val != 1 else ''}"
+
+
 #-------------------------------------------------------------
 def CanonicizeColumnHeaders(header: str) -> str:
     # 2nd item is the cannonical form for fanac.org and fancyclopedia series tables

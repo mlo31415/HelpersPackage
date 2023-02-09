@@ -244,7 +244,7 @@ def ScanForBracketedText(s: str, bra: str) -> tuple[bool, str]:
 # Return the contents of the first pair of brackets found and the remainder of the input string
 def FindBracketedText(s: str, b: str, stripHtml: bool=True) -> tuple[str, str]:
 
-    pattern="<"+b+">(.*?)</"+b+">"
+    pattern="\s*<"+b+">(.*?)</"+b+">\s*"
     m=re.search(pattern, s,  re.DOTALL)
     if m is None:
         return "", s

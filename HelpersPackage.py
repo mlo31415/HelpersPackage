@@ -188,10 +188,9 @@ def CapitalizeFirstChar(s: str) -> str:
 def Pluralize(val: int, s: str) -> str:
     return f"{val} {s}{'s' if val != 1 else ''}"
 
-
 #-------------------------------------------------------------
 def CanonicizeColumnHeaders(header: str) -> str:
-    # 2nd item is the cannonical form for fanac.org and fancyclopedia series tables
+    # 2nd item is the canonical form for fanac.org and fancyclopedia series tables
     translationTable={
                         "published" : "Date",
                         "editors" : "Editor",

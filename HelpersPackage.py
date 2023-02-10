@@ -238,22 +238,6 @@ def ScanForBracketedText(s: str, bra: str) -> tuple[bool, str]:
         return False, s
     return True, m.groups()[0]
 
-
-#=====================================================================================
-# Find text bracketed by <b>...</b>
-# Return the contents of the first pair of brackets found and the remainder of the input string
-def FindBracketedText(s: str, b: str, stripHtml: bool=True) -> tuple[str, str]:
-
-    pattern="\s*<"+b+">(.*?)</"+b+">\s*"
-    m=re.search(pattern, s,  re.DOTALL)
-    if m is None:
-        return "", s
-    match=m.groups()[0]
-    if stripHtml:
-        match=RemoveAllHTMLTags(match)
-    s2=re.sub(pattern, "", s, count=1)
-    return match, s2
-
 #=====================================================================================
 # Find the first <bracket>bracketed text</bracket> located.  Return the leading, enclosed, and trailing text
 def ParseFirstStringBracketedText(s: str, bracket: str) -> tuple[str, str, str]:
@@ -302,6 +286,26 @@ def FindAnyBracketedText(s: str) -> tuple[str, str, str, str]:
 
     x=m.group(1), m.group(2), m.group(3), s[m.regs[0][1]:]
     return x
+
+
+#=====================================================================================
+# Find text bracketed by <b>...</b>
+# Return the contents of the first pair of brackets found and the remainder of the input string
+def FindBracketedText(s: str, b: str, stripHtml: bool=True, stripWhitespace: bool=False) -> tuple[str, str]:
+
+    pattern="<"+b+">(.*?)</"+b+">"
+    if stripWhitespace:
+        pattern=fr"\s*{pattern}\s*"
+    m=re.search(pattern, s,  re.DOTALL)
+    if m is None:
+        return "", s
+    #match=m.groups()[0]
+    match=s[m.regs[1][0]:m.regs[1][1]]  # The matched part -- the only group of the pattern
+    s2=s[:m.regs[0][0]]+s[m.regs[0][1]:]
+    if stripHtml:
+        match=RemoveAllHTMLTags(match)
+    #s2=re.sub(pattern, "", s, count=1)
+    return match, s2
 
 
 #=====================================================================================

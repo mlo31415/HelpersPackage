@@ -291,6 +291,9 @@ def FindAnyBracketedText(s: str) -> tuple[str, str, str, str]:
 #=====================================================================================
 # Find text bracketed by <b>...</b>
 # Return the contents of the first pair of brackets found and the remainder of the input string
+def FindBracktedText2(s: str, b: str) -> tuple[str, str]:
+    return FindBracketedText(s, b, stripHtml=False, stripWhitespace=True)
+
 def FindBracketedText(s: str, b: str, stripHtml: bool=True, stripWhitespace: bool=False) -> tuple[str, str]:
 
     pattern="<"+b+">(.*?)</"+b+">"

@@ -606,6 +606,12 @@ def RemoveArticles(name: str) -> str:
     return name
 
 #=============================================================================
+# Sometime we need to construct a directory name by changing all the funny characters to underscores.
+def FanzineNameToDirName(s: str) -> str:       # MainWindow(MainFrame)
+    return re.sub("[^a-zA-Z0-9\-]+", "_", RemoveArticles(s))
+
+
+#=============================================================================
 def CaseInsensitiveCompare(s1: str, s2: str) -> bool:
     if s1 == s2:
         return True

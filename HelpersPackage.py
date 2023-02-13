@@ -715,6 +715,68 @@ def IsNumeric(arg: any) -> bool:
 
 
 # =============================================================================
+# Move a block of elements within a list
+# All element numbers are logical
+# startingIndex is the 1st row of the block to be moved
+# Numcols is the number of elements to be moved
+# Newcol is the target position to which oldrow is moved
+# NOTE: Does not do a move in place
+def ListBlockMove(lst: [], startingIndex: int, numElements: int, targetIndex: int) -> list:
+    numCols=len(lst)
+
+    assert startingIndex < numCols and startingIndex >= 0
+    assert targetIndex < numCols and targetIndex >= 0
+    assert numElements > 0
+
+    end=startingIndex+numElements-1
+    out=[""]*numCols
+    print(f"MoveCols: {startingIndex=}  {end=}  {numElements=}  {targetIndex=}")
+    if targetIndex < startingIndex:
+        # Move earlier
+        i1=list(range(0, targetIndex))
+        i2=list(range(targetIndex, startingIndex))
+        i3=list(range(startingIndex, end+1))
+        i4=list(range(end+1, numCols))
+        print(f"{i1=}  {i2=}  {i3=}  {i4=}")
+    else:
+        # Move Later
+        i1=list(range(0, startingIndex))
+        i2=list(range(startingIndex, end+1))
+        i3=list(range(end+1, end+1+targetIndex-startingIndex))
+        i4=list(range(end+1+targetIndex-startingIndex, numCols))
+        print(f"{i1=}  {i2=}  {i3=}  {i4=}")
+
+    tpermuter: list[int]=i1+i3+i2+i4
+    permuter: list[int]=[-1]*len(tpermuter)     # This next bit of code inverts tpermuter. (There ought to be a more elegant way to generate it!)
+    for i, r in enumerate(tpermuter):
+        permuter[r]=i
+
+    # Move the elements
+    temp: list=[None]*numCols
+    for i in range(numCols):
+        out[permuter[i]]=lst[i]
+
+    return out
+
+
+    # if targetIndex < startingIndex: # Moving earlier
+    #     START=lst[:targetIndex]
+    #     REST=lst[targetIndex:startingIndex]
+    #     MOVED=lst[startingIndex:startingIndex+numElements]
+    #     END=lst[startingIndex+numElements:]
+    #
+    #     return START+MOVED+REST+END
+    #
+    # # Moving later
+    # START=lst[:startingIndex]
+    # MOVED=lst[startingIndex:startingIndex+numElements]
+    # REST=lst[startingIndex+numElements:targetIndex]
+    # END=lst[targetIndex:]
+    #
+    # return START+REST+MOVED+END
+
+
+# =============================================================================
 # Return true iff a path points to a file which is writeable
 def IsFileWriteable(pathname: str) -> bool:
     return os.path.exists(pathname) and os.path.isfile(pathname) and os.access(pathname, os.W_OK)

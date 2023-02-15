@@ -324,6 +324,16 @@ def ParseFirstBracketedText(s: str, b1: str, b2: str) -> tuple[str, str, str]:
 
     return m.group(1), m.group(2), m.group(3)
 
+#=====================================================================================
+# Remove hyperlinks leaving the link text behind
+# E.g., <a http:xxx.com>abc</a>  ==> abc
+def RemoveHyperlink(s: str) -> str:
+    m=re.match("(.*?)<a.*>(.*)<\/a>(.*)$", s)
+    if m:
+        return m.groups()[0]+m.groups()[1]+m.groups()[2]
+    return s
+
+
 
 #=====================================================================================
 # Find text bracketed by [[]]

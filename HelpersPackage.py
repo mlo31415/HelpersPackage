@@ -733,10 +733,9 @@ def IsNumeric(arg: any) -> bool:
 # NOTE: Does not do a move in place
 def ListBlockMove(lst: [], startingIndex: int, numElements: int, targetIndex: int) -> list:
     numCols=len(lst)
-
-    assert startingIndex < numCols and startingIndex >= 0
-    assert targetIndex < numCols and targetIndex >= 0
-    assert numElements > 0
+    print(f"{startingIndex=}  {numElements=}  {targetIndex=}  {numCols=}")
+    if startingIndex < 0 or targetIndex < 0 or startingIndex+numElements >= numCols or targetIndex+numElements > numCols:
+        return lst
 
     end=startingIndex+numElements-1
     out=[""]*numCols
@@ -761,29 +760,22 @@ def ListBlockMove(lst: [], startingIndex: int, numElements: int, targetIndex: in
     for i, r in enumerate(tpermuter):
         permuter[r]=i
 
-    # Move the elements
-    temp: list=[None]*numCols
-    for i in range(numCols):
-        out[permuter[i]]=lst[i]
+    if type(lst) is list and len(lst) > 0:
+        if type(lst[0]) is tuple:
+            # The input is a list of (row, col) tuples (e.g., AllowCellEdits)
+            for i, (row, col) in enumerate(lst):
+                try:
+                    lst[i]=(permuter[row], col)
+                except:
+                    pass
+        else:
+            # The inout is a list of cells (like a row)
+            # Just move the elements
+            temp: list=[None]*numCols
+            for i in range(numCols):
+                out[permuter[i]]=lst[i]
 
     return out
-
-
-    # if targetIndex < startingIndex: # Moving earlier
-    #     START=lst[:targetIndex]
-    #     REST=lst[targetIndex:startingIndex]
-    #     MOVED=lst[startingIndex:startingIndex+numElements]
-    #     END=lst[startingIndex+numElements:]
-    #
-    #     return START+MOVED+REST+END
-    #
-    # # Moving later
-    # START=lst[:startingIndex]
-    # MOVED=lst[startingIndex:startingIndex+numElements]
-    # REST=lst[startingIndex+numElements:targetIndex]
-    # END=lst[targetIndex:]
-    #
-    # return START+REST+MOVED+END
 
 
 # =============================================================================

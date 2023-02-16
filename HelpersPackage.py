@@ -324,6 +324,7 @@ def ParseFirstBracketedText(s: str, b1: str, b2: str) -> tuple[str, str, str]:
 
     return m.group(1), m.group(2), m.group(3)
 
+
 #=====================================================================================
 # Remove hyperlinks leaving the link text behind
 # E.g., <a http:xxx.com>abc</a>  ==> abc
@@ -500,13 +501,14 @@ def RelPathToURL(relPath: str) -> Optional[str]:
 
 
 # =====================================================================================
-# Function to find the index of one or more strings in a list of strings
+# Function to find the index of one or more strings in a list of strings.  Stop with the first one found.
+#  E.g., find the first occurance of "Mailing" or "Mailings" or "APA Mailing" in a list of possible column headers
 def FindIndexOfStringInList(lst: list[str], s: [str, list[str]], IgnoreCase=False) -> Optional[int]:
     if type(s) is str:  # If it's a single string, just go with it!
         return FindIndexOfStringInList2(lst, s)
 
     for item in s:
-        val=FindIndexOfStringInList2(lst, item)
+        val=FindIndexOfStringInList2(lst, item, IgnoreCase=IgnoreCase)
         if val is not None:
             return val
 
@@ -514,7 +516,7 @@ def FindIndexOfStringInList(lst: list[str], s: [str, list[str]], IgnoreCase=Fals
 
 
 #=====================================================================================
-# Function to find the index of a string in a list of strings
+# Function to find the index of a specific string in a list of strings
 def FindIndexOfStringInList2(lst: list[str], s: str, IgnoreCase=False) -> Optional[int]:
     if not IgnoreCase:
         try:

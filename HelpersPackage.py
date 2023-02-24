@@ -729,33 +729,34 @@ def IsNumeric(arg: any) -> bool:
 # =============================================================================
 # Move a block of elements within a list
 # All element numbers are logical
-# startingIndex is the 1st row of the block to be moved
+# startingIndex is the 1st index of the start of the block to be moved
 # Numcols is the number of elements to be moved
-# Newcol is the target position to which oldrow is moved
+# Newcol is the target position to which oldrow is moved.
+# Note: to Swap cols 5 and 6, the arguments would be 5, 1, 6: Take 1 column starting at col 5 and move it to where col 6 is.
 # NOTE: Does not do a move in place
 def ListBlockMove(lst: [], startingIndex: int, numElements: int, targetIndex: int) -> list:
     numCols=len(lst)
-    print(f"{startingIndex=}  {numElements=}  {targetIndex=}  {numCols=}")
-    if startingIndex < 0 or targetIndex < 0 or startingIndex+numElements >= numCols or targetIndex+numElements > numCols:
+    #print(f"{startingIndex=}  {numElements=}  {targetIndex=}  {numCols=}")
+    if startingIndex < 0 or targetIndex < 0 or startingIndex+numElements > numCols or targetIndex+numElements > numCols:
         return lst
 
     end=startingIndex+numElements-1
     out=[""]*numCols
-    print(f"MoveCols: {startingIndex=}  {end=}  {numElements=}  {targetIndex=}")
+    #print(f"MoveCols: {startingIndex=}  {end=}  {numElements=}  {targetIndex=}")
     if targetIndex < startingIndex:
         # Move earlier
         i1=list(range(0, targetIndex))
         i2=list(range(targetIndex, startingIndex))
         i3=list(range(startingIndex, end+1))
         i4=list(range(end+1, numCols))
-        print(f"{i1=}  {i2=}  {i3=}  {i4=}")
+        #print(f"{i1=}  {i2=}  {i3=}  {i4=}")
     else:
         # Move Later
         i1=list(range(0, startingIndex))
         i2=list(range(startingIndex, end+1))
         i3=list(range(end+1, end+1+targetIndex-startingIndex))
         i4=list(range(end+1+targetIndex-startingIndex, numCols))
-        print(f"{i1=}  {i2=}  {i3=}  {i4=}")
+        #print(f"{i1=}  {i2=}  {i3=}  {i4=}")
 
     tpermuter: list[int]=i1+i3+i2+i4
     permuter: list[int]=[-1]*len(tpermuter)     # This next bit of code inverts tpermuter. (There ought to be a more elegant way to generate it!)

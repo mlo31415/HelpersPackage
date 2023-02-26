@@ -337,6 +337,16 @@ def RemoveHyperlink(s: str) -> str:
 
 
 #=====================================================================================
+# Remove hyperlinks leaving the link text behind
+# E.g., <a http:xxx.com>abc</a>  ==> abc
+def RemoveHyperlinkContainingPattern(s: str, pattern: str) -> str:
+    m=re.match(f"(.*?)<a.*>({pattern})<\/a>(.*)$", s)
+    if m:
+        return m.groups()[0]+m.groups()[1]+m.groups()[2]
+    return s
+
+
+#=====================================================================================
 # Find text bracketed by [[]]
 # Return the contents of the first pair of brackets found
 def FindWikiBracketedText(s: str) -> str:

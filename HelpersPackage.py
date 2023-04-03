@@ -963,6 +963,8 @@ def ReadListAsParmDict(filename: str, isFatal: bool=False) -> ParmDict:
         ret=line.split("=", maxsplit=1)
         if len(ret) == 2:
             dict[ret[0]]=ret[1]
+
+    dict["_filename"]=filename  # Save filename of source of parameters for debugging use
     return dict
 
 

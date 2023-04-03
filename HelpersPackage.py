@@ -860,6 +860,7 @@ class ParmDict():
         self._parms: dict={}
         self._CaseInsensitiveCompare=CaseInsensitiveCompare
         self._IgnoreSpacesCompare=IgnoreSpacesCompare
+        self._sourcefilename=None
 
     # Get an item.  Returns None if key does not exist and no default value is specified.
     # Call as parms[key] or parms[key, defaultvalue]
@@ -898,8 +899,14 @@ class ParmDict():
 
         self._parms[key.strip()]=val
 
+
     def __len__(self) -> int:
         return len(self._parms)
+
+
+    @property
+    def SourceFilename(self) -> str:
+        return self._sourcefilename
 
 
     def __iterate_kv(self):
@@ -964,7 +971,7 @@ def ReadListAsParmDict(filename: str, isFatal: bool=False) -> ParmDict:
         if len(ret) == 2:
             dict[ret[0]]=ret[1]
 
-    dict["_filename"]=filename  # Save filename of source of parameters for debugging use
+    dict._sourcefilename=filename  # Save filename of source of parameters for debugging use
     return dict
 
 

@@ -957,6 +957,18 @@ class ParmDict():
 
 
 # =============================================================================
+# Get a parameter i present or log an error message and terminate if parameter missing and no default supplied
+def GetParmFromParmDict(parameters: ParmDict, name: str, default: str=None) -> str:
+    val=parameters[name]
+    if not val:
+        if default is not None:
+            val=default
+        else:
+            MessageLog(f"GetParmFromParmDict: Can't find {name} value in {parameters.SourceFilename}\nProgram terminated.")
+            exit(999)
+    return val
+
+# =============================================================================
 # Read a file using ReadList and then parse lines from name=value pairs to a defaultdict
 def ReadListAsParmDict(filename: str, isFatal: bool=False) -> ParmDict:
     dict=ParmDict()

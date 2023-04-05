@@ -973,6 +973,8 @@ def GetParmFromParmDict(parameters: ParmDict, name: str, default: str=None) -> s
 def ReadListAsParmDict(filename: str, isFatal: bool=False) -> ParmDict:
     dict=ParmDict()
     lines=ReadList(filename, isFatal=isFatal)
+    if lines is None:
+        return None
     for line in lines:
         # Remove everything beyond the first #
         if '#' in line:

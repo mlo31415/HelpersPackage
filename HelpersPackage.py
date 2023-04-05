@@ -964,7 +964,7 @@ def GetParmFromParmDict(parameters: ParmDict, name: str, default: str=None) -> s
         if default is not None:
             val=default
         else:
-            MessageLog(f"GetParmFromParmDict: Can't find {name} value in {parameters.SourceFilename}\nProgram terminated.")
+            MessageLog(f"GetParmFromParmDict: Can't find a parameter '{name}' in {parameters.SourceFilename}\nProgram terminated.")
             exit(999)
     return val
 

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any
 import os
 import sys
 import ctypes
@@ -857,7 +858,7 @@ def ReadListAsDict(filename: str, isFatal: bool=False) -> DefaultDict[str, str]:
 # If IgnoreSpacesCompare=True, then spaces are squeexed out of keys before comaparison
 class ParmDict():
     def __init__(self, CaseInsensitiveCompare=False, IgnoreSpacesCompare=False):
-        self._parms: dict={}
+        self._parms: dict[str, Any]={}
         self._CaseInsensitiveCompare=CaseInsensitiveCompare
         self._IgnoreSpacesCompare=IgnoreSpacesCompare
         self._sourcefilename=None
@@ -865,7 +866,7 @@ class ParmDict():
     # Get an item.  Returns None if key does not exist and no default value is specified.
     # Call as parms[key] or parms[key, defaultvalue]
     # parms[key] returns None if key is not found
-    def __getitem__(self, key: str | tuple[str, str]) -> Optional[str]:
+    def __getitem__(self, key: str | tuple[str, str]):
         if type(key) is tuple:
             val=self.GetItem(key[0])
             if val is None:
@@ -873,7 +874,7 @@ class ParmDict():
             return val
         return self.GetItem(key)
 
-    def GetItem(self, key: str) -> Optional[str]:
+    def GetItem(self, key: str):
         if self._IgnoreSpacesCompare:
             key=key.replace(" ","")
 
@@ -887,7 +888,7 @@ class ParmDict():
             return None
         return self._parms[key]
 
-    def __setitem__(self, key: str, val: str) -> None:
+    def __setitem__(self, key: str, val: Any) -> None:
         if self._IgnoreSpacesCompare:
             key=key.replace(" ", "")
 
@@ -958,7 +959,7 @@ class ParmDict():
 
 # =============================================================================
 # Get a parameter i present or log an error message and terminate if parameter missing and no default supplied
-def GetParmFromParmDict(parameters: ParmDict, name: str, default: str=None) -> str:
+def GetParmFromParmDict(parameters: ParmDict, name: str, default: str=None) -> Any:
     val=parameters[name]
     if not val:
         if default is not None:
@@ -970,7 +971,7 @@ def GetParmFromParmDict(parameters: ParmDict, name: str, default: str=None) -> s
 
 # =============================================================================
 # Read a file using ReadList and then parse lines from name=value pairs to a defaultdict
-def ReadListAsParmDict(filename: str, isFatal: bool=False) -> ParmDict:
+def ReadListAsParmDict(filename: str, isFatal: bool=False) -> ParmDict | None:
     dict=ParmDict()
     lines=ReadList(filename, isFatal=isFatal)
     if lines is None:

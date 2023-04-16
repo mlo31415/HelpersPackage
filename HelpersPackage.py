@@ -264,7 +264,7 @@ def FindAndReplaceBracketedText(s: str, bracket: str, replacement: str, stripHtm
         return s, False
     match=m.groups()[0]
     if stripHtml:
-        match=RemoveAllHTMLTags(match)
+        match=RemoveAllHTMLTags(match)      #TODO: Why is this here!??
     s2=re.sub(pattern, replacement, s, flags=re.DOTALL, count=1)
     return s2, True
 

@@ -900,6 +900,20 @@ class ParmDict():
 
         self._parms[key.strip()]=val
 
+    def __contains__(self, key):
+        if self._IgnoreSpacesCompare:
+            key=key.replace(" ","")
+
+        if self._CaseInsensitiveCompare:
+            rslt=[v for k, v in self._parms.items() if k.lower() == key.lower()]
+            if len(rslt) == 0:
+                return None
+            return rslt[0]
+
+        if key not in self._parms.keys():
+            return None
+        return self._parms[key]
+
 
     def __len__(self) -> int:
         return len(self._parms)

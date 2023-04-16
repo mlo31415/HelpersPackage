@@ -1177,6 +1177,8 @@ def SortTitle(inputstring: str) -> str:
 # Take an input string and check for "yes" or "no" (case insenstive, abbreviations allowed.
 # Return "yes" or "no" or "unknown" depending on what's found
 def YesNoMaybe(s: str) -> str:
+    if s is None:
+        return "unknown"
     s=s.strip().lower()
     if s == "yes" or s == "y" or s == "true":
         return "yes"

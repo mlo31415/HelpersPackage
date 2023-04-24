@@ -1244,6 +1244,23 @@ def UnhidePrefixsAndSuffixes(input: str) -> str:
     return input
 
 
+def SortAndFlattenPersonsName(s: str) -> str:
+    s=SortPersonsName(s).casefold()
+
+    # Now remove all characters except the single quote (O'Brien)
+    out=""
+    for c in s:
+        if c.isalpha():
+            out+=c.casefold()
+        elif c.isdigit():
+            out+=c
+        elif c == "'":
+            out+=c
+        # Everything else is ignored
+
+    return out
+
+
 # ==========================================================
 # Handle lists of names
 def UnscrambleNames(input: str) -> list[str]:

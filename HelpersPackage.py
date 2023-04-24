@@ -580,6 +580,7 @@ def CompressName(name: str) -> str:
 def CompareCompressedName(n1: str, n2: str) -> bool:
     return CompressName(n1) == CompressName(n2)
 
+
 #==================================================================================
 # Compare two directory paths.  Convery them to canonical form (lc, all "/")
 def ComparePathsCanonical(p1: str, p2: str) -> bool:
@@ -635,6 +636,7 @@ def FanzineNameToDirName(s: str) -> str:       # MainWindow(MainFrame)
 
 
 #=============================================================================
+# None counts as the empty string
 def CaseInsensitiveCompare(s1: str, s2: str) -> bool:
     if s1 == s2:
         return True
@@ -1198,7 +1200,7 @@ def NormalizePersonsName(name: str) -> str:
 
 # ==========================================================
 # Normalize a person's name
-# For now, all we do is flips the lname, stuff to stuff lname
+# For now, all we do is flips the 'stuff lname' to 'lname, stuff'
 # Lyndon Baines Johnson --> Johnson, Lyndon Baines
 def SortPersonsName(name: str) -> str:
     if name is None or name == "":

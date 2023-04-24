@@ -644,7 +644,7 @@ def CaseInsensitiveCompare(s1: str, s2: str) -> bool:
         return True
     if s1 is None or s2 is None:
         return False  # We already know that s1 and s2 are different
-    return s1.lower() == s2.lower()  # Now that we know that neither is None, we can do the lower case compare
+    return s1.casefold() == s2.casefold()  # Now that we know that neither is None, we can do the case-insensitive compare
 
 
 # =============================================================================

@@ -1208,10 +1208,10 @@ def SortPersonsName(name: str) -> str:
 
     name=HidePrefixsAndSuffixes(name)   # Need to hide things like Warner, Jr.
 
-    if "," in name:     # If name has a comma, it's probably already in desired order
+    if "," in name:     # If name has a comma, it's probably already in lname, fname  order
         return UnhidePrefixsAndSuffixes(name)
 
-    if " " not in name:     # If it's all characters, there's not much to be done
+    if " " not in name:     # If it's all non-whitespace characters, there's not much to be done
         return UnhidePrefixsAndSuffixes(name)
 
     # Use <last token>, <other tokens>

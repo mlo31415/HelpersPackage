@@ -1193,7 +1193,7 @@ def YesNoMaybe(s: str) -> str:
 # Normalize a person's name
 # Johnson, Lyndon Baines --> Lyndon Baines Johnson
 def NormalizePersonsName(name: str) -> str:
-    names=UnscrambleNames(name)
+    names=UnscrambleListOfNames(name)
     if len(names) == 1:
         return names[0]
     return name
@@ -1245,25 +1245,28 @@ def UnhidePrefixsAndSuffixes(input: str) -> str:
 
 
 def SortAndFlattenPersonsName(s: str) -> str:
-    s=SortPersonsName(s).casefold()
+    return RemoveNonAlphanumericChars(SortPersonsName(s).casefold(), LeaveSingleQuote=True)
 
-    # Now remove all characters except the single quote (O'Brien)
+
+def RemoveNonAlphanumericChars(s: str, LeaveSingleQuote: bool=False) -> str:
+
     out=""
     for c in s:
         if c.isalpha():
-            out+=c.casefold()
+            out+=c
         elif c.isdigit():
             out+=c
-        elif c == "'":
+        elif c == " ":
+            out+=c
+        elif c == "'" and LeaveSingleQuote:
             out+=c
         # Everything else is ignored
 
     return out
 
-
 # ==========================================================
 # Handle lists of names
-def UnscrambleNames(input: str) -> list[str]:
+def UnscrambleListOfNames(input: str) -> list[str]:
     # A list of names can be Fname [MI] Lname, Fname2 [MI2] Lname2...
     # Names cane be of the form Heinlein, Robert A.
     # Or Harry Warner, Jr.

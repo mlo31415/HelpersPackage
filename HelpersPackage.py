@@ -4,6 +4,7 @@ import os
 import sys
 import ctypes
 import unicodedata
+from unidecode import unidecode
 from tkinter import Tk, messagebox
 from tkinter.simpledialog import askstring
 import tkinter
@@ -1244,8 +1245,12 @@ def UnhidePrefixsAndSuffixes(input: str) -> str:
     return input
 
 
-def SortAndFlattenPersonsName(s: str) -> str:
-    return RemoveNonAlphanumericChars(SortPersonsName(s).casefold(), LeaveSingleQuote=True)
+def FlattenPersonsNameForSorting(s: str) -> str:
+    return RemoveNonAlphanumericChars(unidecode(SortPersonsName(s).casefold()), LeaveSingleQuote=True)
+
+
+def FlattenTextForSorting(s: str) -> str:
+    return RemoveNonAlphanumericChars(unidecode(RemoveArticles(s).casefold()))     # Since we don't care about O'Neil, we don't need to fuss about single quotes
 
 
 def RemoveNonAlphanumericChars(s: str, LeaveSingleQuote: bool=False) -> str:

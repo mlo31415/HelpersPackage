@@ -16,7 +16,7 @@ from collections import defaultdict
 import re
 import stat
 
-from Log import Log, LogClose
+from Log import Log, LogClose, LogError
 
 
 #=======================================================
@@ -1410,9 +1410,12 @@ def SelectFileBasedOnDebugger(path: str, fname: str) -> str:
 # Text names the app
 # msg is the error message
 def Bailout(e, msg: str, title: str) -> None:
-    Log("exception: "+str(e), isError=True)
-    Log("   title: "+title, isError=True)
-    Log("   msg: "+msg, isError=True)
+    if e is not None:
+        LogError("exception: "+str(e))
+    else:
+        LogError("Failure")
+    LogError("   title: "+title)
+    LogError("   msg: "+msg)
     LogClose()
     ctypes.windll.user32.MessageBoxW(0, msg, title, 1)
     raise e

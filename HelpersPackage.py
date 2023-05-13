@@ -534,7 +534,6 @@ def FindIndexOfStringInList(lst: list[str], s: [str, list[str]], IgnoreCase=Fals
         val=FindIndexOfStringInList2(lst, item, IgnoreCase=IgnoreCase)
         if val is not None:
             return val
-
     return None
 
 
@@ -549,7 +548,7 @@ def FindIndexOfStringInList2(lst: list[str], s: str, IgnoreCase=False) -> Option
 
     # Do it the hard way
     for i, item in enumerate(lst):
-        if item.lower() == s.lower():
+        if item.casefold() == s.casefold():
             return i
     return None
 

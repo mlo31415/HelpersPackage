@@ -1,7 +1,7 @@
 from typing import Optional
 import os
 
-from PyPDF2 import PdfFileReader, PdfFileWriter
+from PyPDF2 import PdfReader, PdfWriter
 
 from HelpersPackage import ExtensionMatches
 from Log import Log
@@ -12,16 +12,13 @@ def AddMissingMetadata(file: str, newmetadata: dict[str, str]):
     if file.lower().endswith(".pdf"):
 
         file_in=open(file, 'rb')
-        reader=PdfFileReader(file_in)
-        info=reader.getDocumentInfo()
-        if "/Title" in info.keys() and info["/Title"]:
-            return  # There's *something* there already
+        reader=PdfReader(file_in)
 
-        writer=PdfFileWriter()
+        writer=PdfWriter()
 
-        writer.appendPagesFromReader(reader)
-        writer.addMetadata(reader.getDocumentInfo())    # For unclear reasons, we have to add the existing metadata back as well as adding the new
-        writer.addMetadata(newmetadata)
+        writer.append_pages_from_reader(reader)
+        writer.add_metadata(reader.metadata)
+        writer.add_metadata(newmetadata)
         # os.remove(file)
         path, ext=os.path.splitext(file)
         newfile=path+" added"+ext
@@ -46,7 +43,7 @@ def GetPdfPageCount(pathname: str) -> Optional[int]:
     # So it claims to be a PDF.  Try to get its page count.
     try:
         with open(pathname, 'rb') as fl:
-            reader=PdfFileReader(fl)
+            reader=PdfReader(fl)
             return reader.getNumPages()
     except Exception as e:
         Log(f"GetPdfPageCount: Exception {e} raised while getting page count for '{pathname}'")

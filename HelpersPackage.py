@@ -1418,6 +1418,8 @@ def Bailout(e, msg: str, title: str) -> None:
     LogError("   msg: "+msg)
     LogClose()
     ctypes.windll.user32.MessageBoxW(0, msg, title, 1)
+    if e is None:
+        sys.exit(666)
     raise e
 
 

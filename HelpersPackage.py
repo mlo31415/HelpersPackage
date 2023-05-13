@@ -312,6 +312,17 @@ def FindBracketedText(s: str, b: str, stripHtml: bool=True, stripWhitespace: boo
     #s2=re.sub(pattern, "", s, count=1)
     return match, s2
 
+#---------------------------------------------------
+# Does the input string contain a balanced set of brackets with text inside?
+# The brackets overall do not need to be balanced as long as there is a substring with balanced brackets.
+def ContainsBracketedText(s: str) -> bool:
+
+    m=re.search("<[^<>]*>", s)
+    if m is None:
+        return False
+    return True
+
+
 
 #=====================================================================================
 # Find the cfirst bracket located.  Return the leading, enclosed, and trailing text

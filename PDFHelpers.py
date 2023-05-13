@@ -44,7 +44,7 @@ def GetPdfPageCount(pathname: str) -> Optional[int]:
     try:
         with open(pathname, 'rb') as fl:
             reader=PdfReader(fl)
-            return reader.getNumPages()
+            return len(reader.pages)
     except Exception as e:
         Log(f"GetPdfPageCount: Exception {e} raised while getting page count for '{pathname}'")
         Log(f"GetPdfPageCount: {os.getcwd()=}")

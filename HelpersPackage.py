@@ -1235,8 +1235,8 @@ suffixes=[(", Jr.", "qqqJr"), (", jr.", "qqqjr"), (" Jr.", "qqq2Jr"), (" jr.", "
           (", Sr.", "qqqSr"), (", sr.", "qqqsr"), (" Sr.", "qqq2Sr"), (" sr.", "qqq2sr"), (" Sr", "qqq3Sr"), (" sr", "qqq3sr"),
           (", III", "qqqIII"), (" III", "qqq2III"), (", II", "qqqII"), (" II", "qqq2II"),
           (", et al", "qqqetal"), (" et al", "qqq2etal")]
-prefixes=[("Van ", "xxxVan"), ("van ", "xxxvan"), ("Von ", "xxxVon"), ("von ", "xxxvon"), ("Del ", "xxxDel"), ("del ", "xxxdel"),
-          ("De ", "xxxDe"), ("de ", "xxxde"), ("Le ", "xxxLe"), ("le ", "xxxle")]
+prefixes=[(" Van ", " Van_"), (" van ", " van_"), (" Von ", " Von_"), (" von ", " von_"), (" Del ", " Del_"), (" del ", " del_"),
+          (" De ", " De_"), (" de ", " de_"), (" Le ", " Le_"), (" le ", " le_")]
 
 def HidePrefixsAndSuffixes(input: str) -> str:
     # We will hide them as "qqq#" where # is the number, below.  This way, they will appear to be part of the name
@@ -1308,7 +1308,9 @@ def UnscrambleListOfNames(input: str) -> list[str]:
 
     # Now deal with a list of names
     names=re.split(", and |, |/| and|&", input)       # delimiters=[", ", "/", " and ", ", and",  "&"]
-    return [UnhidePrefixsAndSuffixes(x.strip()) for x in names]
+    names=[UnhidePrefixsAndSuffixes(x.strip()) for x in names]
+    # In certain cases (e.g., "Del Coger") the first name is interpreted as a prefix and is left with a trailing '_'.  Turn it into a space
+    return [x.replace("_", " ") for x in names]
 
     # For now, these are the only cases we'll try to deal with.
     # Return the input as a single name

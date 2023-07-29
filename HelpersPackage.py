@@ -323,9 +323,8 @@ def ContainsBracketedText(s: str) -> bool:
     return True
 
 
-
 #=====================================================================================
-# Find the cfirst bracket located.  Return the leading, enclosed, and trailing text
+# Find the first bracket located.  Return the leading, enclosed, and trailing text
 def ParseFirstBracketedText(s: str, b1: str, b2: str) -> tuple[str, str, str]:
     # We need to escape certain characters before substituting them into a RegEx pattern
     b1=b1.replace("[", r"\[").replace("(", r"\(").replace("{", r"\{")

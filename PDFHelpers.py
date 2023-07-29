@@ -17,8 +17,8 @@ def AddMissingMetadata(file: str, newmetadata: dict[str, str]):
         writer=PdfWriter()
 
         writer.append_pages_from_reader(reader)
-        writer.add_metadata(reader.metadata)
         writer.add_metadata(newmetadata)
+        writer.add_metadata(reader.metadata)
         # os.remove(file)
         path, ext=os.path.splitext(file)
         newfile=path+" added"+ext

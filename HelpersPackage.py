@@ -317,7 +317,7 @@ def FindBracketedText(s: str, b: str, stripHtml: bool=True, stripWhitespace: boo
 # The brackets overall do not need to be balanced as long as there is a substring with balanced brackets.
 def ContainsBracketedText(s: str) -> bool:
 
-    m=re.search("<[^<>]*>", s)
+    m=re.search("<[^<>]+>", s)
     if m is None:
         return False
     return True

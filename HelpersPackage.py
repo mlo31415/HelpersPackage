@@ -788,14 +788,14 @@ def ListBlockMove(lst: [], startingIndex: int, numElements: int, targetIndex: in
 
     if type(lst) is list and len(lst) > 0:
         if type(lst[0]) is tuple:
-            # The input is a list of (row, col) tuples (e.g., AllowCellEdits)
+            # The input is a list of (cols, col) tuples (e.g., AllowCellEdits)
             for i, (row, col) in enumerate(lst):
                 try:
                     lst[i]=(permuter[row], col)
                 except:
                     pass
         else:
-            # The inout is a list of cells (like a row)
+            # The inout is a list of cells (like a cols)
             # Just move the elements
             temp: list=[None]*numCols
             for i in range(numCols):

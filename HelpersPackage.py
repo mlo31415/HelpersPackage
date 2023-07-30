@@ -351,10 +351,14 @@ def RemoveHyperlink(s: str) -> str:
 #=====================================================================================
 # Remove hyperlinks leaving the link text behind
 # E.g., <a http:xxx.com>abc</a>  ==> abc
-def RemoveHyperlinkContainingPattern(s: str, pattern: str, flags: Any=None) -> str:
-    m=re.match(f"(.*?)<a.*>({pattern})<\/a>(.*)$", s, flags)
-    if m:
-        return m.groups()[0]+m.groups()[1]+m.groups()[2]
+def RemoveHyperlinkContainingPattern(s: str, pattern: str, repeat: bool=False, flags: re.RegexFlag | None=None) -> str:
+    while True:
+        m=re.match(f"(.*?)<a.*?>({pattern})<\/a>(.*)$", s, flags)
+        if m:
+            s=m.groups()[0]+m.groups()[1]+m.groups()[2]
+            if repeat:
+                continue
+        break
     return s
 
 

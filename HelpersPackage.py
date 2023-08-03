@@ -187,8 +187,8 @@ def CapitalizeFirstChar(s: str) -> str:
 
 # -------------------------------------------------------------------------
 # Take a string and a value and add appropriate pluralization to string -- used in calls to WriteTable
-def Pluralize(val: int, s: str) -> str:
-    return f"{val} {s}{'s' if val != 1 else ''}"
+def Pluralize(val: int, s: str, Spacechar: str=" ") -> str:
+    return f"{val}{Spacechar}{s}{'s' if val != 1 else ''}"
 
 #-------------------------------------------------------------
 def CanonicizeColumnHeaders(header: str) -> str:
@@ -351,7 +351,7 @@ def RemoveHyperlink(s: str, repeat: bool=False) -> str:
 # E.g., <a http:xxx.com>abc</a>  ==> abc
 def RemoveHyperlinkContainingPattern(s: str, pattern: str, repeat: bool=False, flags: re.RegexFlag | None=None) -> str:
     while True:
-        m=re.match(f"(.*?)<a.*?>({pattern})<\/a>(.*)$", s, flags)
+        m=re.match(f"(.*?)<a.*?>({pattern})</a>(.*)$", s, flags)
         if m:
             s=m.groups()[0]+m.groups()[1]+m.groups()[2]
             if repeat:

@@ -45,7 +45,7 @@ def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: i
         if numGroups == 1:
             found.append(m.groups()[0])
         elif numGroups > 1:
-            found.append([x for x in m.groups()])
+            found.extend([x for x in m.groups()])
         # Replace the found text
         inputstr=re.sub(pattern, replacement, inputstr, 1, flags=re.IGNORECASE)
 

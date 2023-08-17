@@ -572,18 +572,15 @@ def FindIndexOfStringInList2(lst: list[str], s: str, IgnoreCase=False) -> Option
 
 
 
-
-
-
-
-
 #==================================================================================
 def CreateFanacOrgAbsolutePath(fanacDir: str, s: str) -> str:
     return "https://www.fanac.org/fanzines/"+fanacDir+"/"+s
 
 #==================================================================================
 # Is at least one item in inputlist also in checklist?  Return the index of the 1st match or None
-def CrosscheckListElement(inputList, checkList) -> Optional[int]:
+def CrosscheckListElement(inputList: str |list[str], checkList: list[str]) -> Optional[int]:
+    if type(inputList) is str:
+        inputlist=[inputList]
     ListofHits=[FindIndexOfStringInList(checkList, x) for x in inputList]
     n=next((item for item in ListofHits if item is not None), None)
     return n

@@ -461,7 +461,29 @@ def CaseInsensitiveReplace(s: str, old: str, new: str) -> str:
 
 
 #=====================================================================================
-# Remove certain strings which amount to whitespace in html
+# Turn all strings of whitespace (including HTMLish whitespace) to a single space
+def CompressWhitespace(s: str) -> str:
+    return RemoveFunnyWhitespace(s).replace("    ", " ").replace("  ", " ").replace("  ", " ")
+
+#=====================================================================================
+# There are HTML code which display characters which we'd prefer to see as ASCII. So change them.
+def ConvertHTMLishCharacters(s: str) -> str:
+    return s.replace("&#8209;", "-")
+
+
+#=====================================================================================
+# Turn some whitespace escape characters into spaces
+def RemoveFunnyWhitespace(s: str) -> str:
+    return RemoveHTMLishWhitespace(s.replace("\xc2\xa0", " ").replace(u"\u00A0", " "))
+
+
+#=====================================================================================
+# Replace certain strings which amount to whitespace in html with whitespace
+def RemoveHTMLishWhitespace(s: str) -> str:
+    return s.replace("<br>", " ").replace("<BR>", " ").replace("&nbsp;", " ")
+
+
+# An older version of this
 def RemoveHTMLDebris(s: str) -> str:
     return s.replace("<br>", "").replace("<BR>", "")
 
@@ -488,7 +510,7 @@ def RemoveFunnyWhitespace(s: str) -> str:
 
 #=====================================================================================
 # Change"&nbsp;" to space
-def ChangeNBSPToSpace(s: Optional[str]) -> Union[None, str, list[str]]:
+def ChangeNBSPToSpace(s: None | str) -> None | str | list[str]:
     if s is None:
         return None
     if len(s) == 0:

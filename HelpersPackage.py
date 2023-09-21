@@ -38,7 +38,6 @@ def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: i
 
     # Keep looping and removing matched material until the match fails
     found: list[str] | list[list[str]]=[]
-    # Keep looping and removing matched material until the match fails
     while True:
         # Look for a match
         m=re.search(pattern, inputstr, flags=flags)
@@ -197,6 +196,9 @@ def Pluralize(val: int, s: str, Spacechar: str=" ") -> str:
     return f"{val}{Spacechar}{s}{'s' if val != 1 else ''}"
 
 #-------------------------------------------------------------
+# We have a list of preferred column headers.  This routine converts common variations to the preferred form.
+# If the input is not opne of these cpmmon variations, it is simple retured with the 1st character capitalized.
+# All matching is case-insensitive.
 def CanonicizeColumnHeaders(header: str) -> str:
     # 2nd item is the canonical form for fanac.org and fancyclopedia series tables
     translationTable={

@@ -110,15 +110,29 @@ def ToNumeric(val: None | int | float | str) -> None | int | float:
     return None
 
 
+# # Take a string and find the first hyperlink.
+# # Return a tuple of: <material before>, <link>, <display text>, <material after>
+# def FindLinkInString(s: str) -> tuple[str, str, str, str]:
+#     # Get rid of any class=stuff crud
+#     #s=re.sub(r'class=".+?"', "", s, count=10, flags=re.IGNORECASE)
+#     pat="^(.*?)<a\s+href=['\"]https?(.*?)>(.*?)</a>(.*)$"
+#     m=re.match(pat, s, flags=re.RegexFlag.IGNORECASE)
+#     if m is None:
+#         return s, "", "", ""
+#     return m.groups()[0], m.groups()[1], m.groups()[2], m.groups()[3]
+
+
 # Take a string and find the first hyperlink.
 # Return a tuple of: <material before>, <link>, <display text>, <material after>
+# This version does not require
 def FindLinkInString(s: str) -> tuple[str, str, str, str]:
-    pat="^(.*?)<a\s+href=['\"]http[s]?(.*?)>(.*?)</a>(.*)$"
+    # Get rid of any class=stuff crud
+    s=re.sub(r'class=".+?"', "", s, count=10, flags=re.IGNORECASE)
+    pat="^(.*?)<a\s+href=['\"](https?:)?(.*?)['\"]>(.*?)</a>(.*)$"
     m=re.match(pat, s, flags=re.RegexFlag.IGNORECASE)
     if m is None:
         return s, "", "", ""
-    return m.groups()[0], m.groups()[1], m.groups()[2], m.groups()[3]
-
+    return m.groups()[0], m.groups()[2], m.groups()[3], m.groups()[4]
 
 
 #==================================================================================
@@ -355,7 +369,6 @@ def ParseFirstBracketedText(s: str, b1: str, b2: str) -> tuple[str, str, str]:
 # E.g., <a http:xxx.com>abc</a>  ==> abc
 def RemoveHyperlink(s: str, repeat: bool=False) -> str:
     return RemoveHyperlinkContainingPattern(s, "[^<>]*?", repeat, flags=re.IGNORECASE)
-
 
 
 

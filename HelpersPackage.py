@@ -1405,11 +1405,11 @@ def MessageLog(s: str) -> None:
 # Display a message box (needed only for the built/packaged version)
 # User sparingly, since the messagebox must be closed by hand and can be annoying.
 # It does nothing in the debug version
-def MessageBox(s: str, ignoredebugger: bool=False) -> None:
+def MessageBox(s: str, ignoredebugger: bool=False, Title=None) -> None:
     if not DebuggerIsRunning() or ignoredebugger:
         root = Tk()
         root.withdraw()
-        messagebox.showinfo(title=None, message=s)
+        messagebox.showinfo(title=Title, message=s)
 
 # =============================================================================
 # Display a message box (needed only for the built/packaged version)

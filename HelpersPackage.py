@@ -28,16 +28,21 @@ from Log import Log, LogClose, LogError
 # Return a list of matched strings and the remnant of the input string
 
 # NOTE: Text to be removed *must* be part of a group!
-def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: int=1, caseinsensitive: bool=False) -> tuple[list[str], str]:
 def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: int=1, caseinsensitive: bool=False, ignorenewlines: bool=False) -> tuple[list[str], str]:
+
+    flags=0
+    if caseinsensitive:     # This nonsense is due to an old error
+        flags=re.IGNORECASE
+    if ignorenewlines:
+        flags=flags | re.DOTALL
+
+    # Keep looping and removing matched material until the match fails
     found: list[str] | list[list[str]]=[]
     # Keep looping and removing matched material until the match fails
     while True:
         # Look for a match
-        if caseinsensitive:
-            m=re.search(pattern, inputstr, re.IGNORECASE)
-        else:
-            m=re.search(pattern, inputstr)
+        m=re.search(pattern, inputstr, flags=flags)
+
         # If none is found, return the results
         if m is None:
             return found, inputstr
@@ -48,7 +53,7 @@ def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: i
         elif numGroups > 1:
             found.extend([x for x in m.groups()])
         # Replace the found text
-        inputstr=re.sub(pattern, replacement, inputstr, 1, flags=re.IGNORECASE)
+        inputstr=re.sub(pattern, replacement, inputstr, 1, flags=flags)
 
 #=======================================================
 # When a python program has been frozen using Pyinstaller, some of its resource files may be frozen with it

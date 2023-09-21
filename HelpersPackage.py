@@ -517,6 +517,18 @@ def RemoveAllHTMLTags2(s: str) -> str:
 
 
 #=====================================================================================
+# Remove the top level of html tags.  I.e., <a>xx<>/a>yy<b><c>zzz</c></b>  -->  yy<c>zzz</c>
+def RemoveTopLevelHTMLTags(s: str) -> str:
+    vv=re.sub(r'<([a-zA-Z0-9]+)[^>]*>(.+?)</\1>', r"\2", s)
+    return vv
+
+#=====================================================================================
+# Remove all HTML-like tags
+def RemoveAllHTMLLikeTags(s: str) -> str:
+    vv=re.sub(r"(</?.*?/?>)", "", s)
+    return vv
+
+#=====================================================================================
 # Change"&nbsp;" to space
 def ChangeNBSPToSpace(s: None | str) -> None | str | list[str]:
     if s is None:

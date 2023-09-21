@@ -9,7 +9,7 @@ from tkinter import Tk, messagebox
 from tkinter.simpledialog import askstring
 import tkinter
 import urllib.parse
-from typing import Union, Optional, DefaultDict
+from typing import Optional, DefaultDict
 from html import escape, unescape
 from contextlib import suppress
 from collections import defaultdict
@@ -29,6 +29,7 @@ from Log import Log, LogClose, LogError
 
 # NOTE: Text to be removed *must* be part of a group!
 def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: int=1, caseinsensitive: bool=False) -> tuple[list[str], str]:
+def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: int=1, caseinsensitive: bool=False, ignorenewlines: bool=False) -> tuple[list[str], str]:
     found: list[str] | list[list[str]]=[]
     # Keep looping and removing matched material until the match fails
     while True:
@@ -84,7 +85,7 @@ def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str) -> 
 #=======================================================
 # Try to make the input numeric
 # Note that if it fails, it returns what came in.
-def ToNumeric(val: Union[None, int, float, str]) -> Union[None, int, float]:
+def ToNumeric(val: None | int | float | str) -> None | int | float:
     if val is None:
         return None
 
@@ -693,7 +694,7 @@ def ChangeFileInURL(url: str, newFileName: str) -> str:
 # =============================================================================
 # Case insensitive check if a file's extension is in a list of extensions
 # The extension can be either a string or a list of strings. Leading '.' optional
-def ExtensionMatches(file: str, ext: Union[str, list[str]]) -> bool:
+def ExtensionMatches(file: str, ext: str | list[str]) -> bool:
     file=os.path.splitext(file.lower())
     if type(ext) is str:
         ext=[ext]
@@ -1096,7 +1097,7 @@ def InterpretInteger(inputstring: Optional[str]) -> Optional[int]:
         return None
     return int(num)
 
-def InterpretNumber(inputstring: Optional[str]) -> Union[None, int, float]:
+def InterpretNumber(inputstring: Optional[str]) -> None | int | float:
     if inputstring is None:
         return None
 

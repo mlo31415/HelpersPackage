@@ -251,7 +251,7 @@ def UnformatLinks(s: str) -> Optional[str]:
 
 
 #-------------------------------------------------------------
-# Change the 1st character to uppercase and leave the rest alonw
+# Change the 1st character to uppercase and leave the rest alone
 def CapitalizeFirstChar(s: str) -> str:
     return s[0].upper()+s[1:]
 

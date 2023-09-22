@@ -87,6 +87,23 @@ def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str) -> 
 
 
 #=======================================================
+# Take a list of strings and turn it into an english list.  E.g. ["A", "B", "C"] --> "A, B, and C"
+def TurnPythonListIntoWordList(plist: list[str]) -> str:
+    if len(plist) == 0:
+        return ""
+    if len(plist) == 1:
+        return plist[0]
+
+    out=""
+    for pl in plist[:-1]:
+        if len(out) > 0:
+            out+=", "
+        out+=pl
+    out+=" and"+plist[-1]
+    return out
+
+
+#=======================================================
 # Try to make the input numeric
 # Note that if it fails, it returns what came in.
 def ToNumeric(val: None | int | float | str) -> None | int | float:

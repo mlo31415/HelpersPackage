@@ -75,7 +75,7 @@ def PyiResourcePath(relative_path):
 
 #=======================================================
 # Locate and return a chunk of text bounded by two patterns
-def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str) -> tuple[Optional[str], str]:
+def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str, Flags=0) -> tuple[Optional[str], str]:
     m=re.search(startpattern, source)
     if m is None:
         return None, source

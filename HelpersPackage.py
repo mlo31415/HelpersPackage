@@ -87,6 +87,30 @@ def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str, Fla
 
 
 #=======================================================
+# Locate and return a chunk of text match by a pattern.  The patten has three capturing groups: (start)(middle)(end)
+# Remove the starting and ending patterns and all they contain.
+# Return a tuple consisting of (middle),  all of the input before (start)+after (end)
+# The default is to search *everying, ignoring line boundaries and case.
+# When there is no match, (middle) is returned as None
+def SearchExtractAndRemoveBounded(source: str, pattern: str, Flags=re.IGNORECASE | re.DOTALL) -> tuple[Optional[str], str]:
+    m=re.search(pattern, source, flags=Flags)
+    if m is None:
+        return None, source
+    middle=m.groups()[1]
+    source=re.sub(pattern, "", source, count=1)
+    return middle, source
+
+
+# Remove *all* the matches
+def SearchExtractAndRemoveBoundedAll(source: str, pattern: str, Flags=re.IGNORECASE | re.DOTALL) -> tuple[list[str], str]:
+    matches=[]
+    while True:
+        middle, source=SearchExtractAndRemoveBounded(source, pattern, Flags=Flags)
+        if middle is None:
+            return matches, source
+        matches.append(f"<td{middle}")
+
+#=======================================================
 # Take a list of strings and turn it into an english list.  E.g. ["A", "B", "C"] --> "A, B, and C"
 def TurnPythonListIntoWordList(plist: list[str]) -> str:
     if len(plist) == 0:

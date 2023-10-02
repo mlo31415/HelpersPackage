@@ -585,6 +585,9 @@ def RemoveHTMLishWhitespace(s: str) -> str:
     return re.sub(r"<br>|</br>|<br/>|&nbsp;", " ", s)
 
 
+def CompressAllWhitespace(s: str) -> str:
+    return CompressWhitespace(RemoveHTMLishWhitespace(RemoveFunnyWhitespace(s)))
+
 # An older version of this
 def RemoveHTMLDebris(s: str) -> str:
     return s.replace("<br>", "").replace("<BR>", "")

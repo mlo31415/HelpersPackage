@@ -80,7 +80,7 @@ def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str, Fla
     if m is None:
         return None, source
     loc=m.span()[1]
-    m=re.search(endpattern, source[loc:])
+    m=re.search(endpattern, source[loc:], flags=Flags)
     if m is None:
         return None, source
     return source[loc:loc+m.span()[0]], source[loc+m.span()[1]+1:]

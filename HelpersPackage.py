@@ -565,7 +565,7 @@ def CaseInsensitiveReplace(s: str, old: str, new: str) -> str:
 #=====================================================================================
 # Turn all strings of whitespace (including HTMLish whitespace) to a single space
 def CompressWhitespace(s: str) -> str:
-    return RemoveFunnyWhitespace(s).replace("    ", " ").replace("  ", " ").replace("  ", " ")
+    return re.sub("\s+", " ", RemoveFunnyWhitespace(s))
 
 #=====================================================================================
 # There are HTML code which display characters which we'd prefer to see as ASCII. So change them.

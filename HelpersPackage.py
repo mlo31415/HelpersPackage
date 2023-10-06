@@ -567,10 +567,11 @@ def CaseInsensitiveReplace(s: str, old: str, new: str) -> str:
 def CompressWhitespace(s: str) -> str:
     return re.sub("\s+", " ", RemoveFunnyWhitespace(s))
 
+
 #=====================================================================================
-# There are HTML code which display characters which we'd prefer to see as ASCII. So change them.
+# There are HTML codes which display characters which we'd prefer to see as ASCII. So change them.
 def ConvertHTMLishCharacters(s: str) -> str:
-    return s.replace("&#8209;", "-")
+    return s.replace("&#8209;", "-").replace("&nbsp;", " ")
 
 
 #=====================================================================================

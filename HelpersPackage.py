@@ -586,9 +586,12 @@ def RemoveHTMLishWhitespace(s: str) -> str:
     return re.sub(r"<br>|</br>|<br/>|&nbsp;", " ", s)
 
 
+#=====================================================================================
 def CompressAllWhitespace(s: str) -> str:
     return CompressWhitespace(RemoveHTMLishWhitespace(RemoveFunnyWhitespace(s)))
 
+
+#=====================================================================================
 # An older version of this
 def RemoveHTMLDebris(s: str) -> str:
     return s.replace("<br>", "").replace("<BR>", "")
@@ -700,7 +703,7 @@ def CrosscheckListElement(inputList: str |list[str], checkList: list[str]) -> Op
     if type(inputList) is str:
         inputlist=[inputList]
     ListofHits=[FindIndexOfStringInList(checkList, x) for x in inputList]
-    n=next((item for item in ListofHits if item is not None), None)
+    n=next((item for item in ListofHits if item is not None), None)     #TODO: Could this be done by replacing next() with [0]?
     return n
 
 

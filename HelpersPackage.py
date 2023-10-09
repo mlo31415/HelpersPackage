@@ -569,6 +569,11 @@ def CompressWhitespace(s: str) -> str:
 
 
 #=====================================================================================
+def CompressAllWhitespaceAndRemovePunctuation(s: str) -> str:
+    s=re.sub("[.,\-?!_*\'\";:]+", " ", s)
+    return CompressAllWhitespace(s)
+
+#=====================================================================================
 # There are HTML codes which display characters which we'd prefer to see as ASCII. So change them.
 def ConvertHTMLishCharacters(s: str) -> str:
     return s.replace("&#8209;", "-").replace("&nbsp;", " ")

@@ -87,7 +87,7 @@ def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str, Fla
 
 
 #=======================================================
-# Locate and return a chunk of text match by a pattern.  The patten has three capturing groups: (start)(middle)(end)
+# Locate and return a chunk of text matched by a pattern.  The patten has three capturing groups: (start)(middle)(end)
 # Remove the starting and ending patterns and all they contain.
 # Return a tuple consisting of (middle),  all of the input before (start)+after (end)
 # The default is to search *everying, ignoring line boundaries and case.
@@ -342,6 +342,7 @@ def ScanForBracketedText(s: str, bra: str) -> tuple[bool, str]:
     if m is None:
         return False, s
     return True, m.groups()[0]
+
 
 #=====================================================================================
 # Find the first <bracket>bracketed text</bracket> located.  Return the leading, enclosed, and trailing text

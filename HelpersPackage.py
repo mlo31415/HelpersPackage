@@ -357,6 +357,19 @@ def ParseFirstStringBracketedText(s: str, bracket: str) -> tuple[str, str, str]:
 
     return m.group(1), m.group(2), m.group(3)
 
+#=====================================================================================
+# Find text bracketed by <b>...</b> and replace it with new text
+# The bracketing text must enclose everything else in the string -- this, essentially, removes the first layer of the onion.
+# Return the (possibly) modified text and a bool to indicate if anything was found
+def RemoveTopBracketedText(s: str, bracket: str, stripHtml: bool=True) -> tuple[str, bool]:
+
+    pattern=f"^\s*<{bracket}>(.*?)</{bracket}>\s*$"
+    m=re.search(pattern, s,  flags=re.DOTALL)     # Do it multiline
+    if m is None:
+        return s, False
+
+    return m.groups()[0], True
+
 
 #=====================================================================================
 # Find text bracketed by <b>...</b> and replace it with new text

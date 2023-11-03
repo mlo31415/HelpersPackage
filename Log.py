@@ -121,8 +121,8 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
 
 #=============================================================================
 # Shortcut to calling Log(...isError=True) to log an error
-def LogError(text: str) -> None:
-    Log(text, isError=True)
+def LogError(text: str, Print=True, timestamp=False) -> None:
+    Log(text, isError=True, Print=Print, timestamp=timestamp)
 
 
 #=============================================================================

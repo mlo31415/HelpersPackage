@@ -280,10 +280,17 @@ def CapitalizeFirstChar(s: str) -> str:
     return s[0].upper()+s[1:]
 
 
+# ==================================================================================
+# Format an integer for typical Fanac.org numbering:  nnnn. but nn,nnn for longer
+def FormatCount(i: int) -> str:
+    if i < 10000:
+        return f"{i}"
+    return f"{i:,}"
+
 # -------------------------------------------------------------------------
 # Take a string and a value and add appropriate pluralization to string -- used in calls to WriteTable
 def Pluralize(val: int, s: str, Spacechar: str=" ") -> str:
-    return f"{val}{Spacechar}{s}{'s' if val != 1 else ''}"
+    return f"{FormatCount(val)}{Spacechar}{s}{'s' if val != 1 else ''}"
 
 #-------------------------------------------------------------
 # We have a list of preferred column headers.  This routine converts common variations to the preferred form.

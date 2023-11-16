@@ -530,7 +530,7 @@ def StripSpecificTag(s: str, tag: str, CaseSensitive=False)-> str:
     return m.groups()[0]
 
 #=====================================================================================
-# Remove a matched pair of <brackets> <containing anything> from a string, returning the inside
+# Remove a matched pair of external <brackets> <containing anything> from a string, returning the inside
 def StripExternalTags(s: str)-> Optional[str]:
     m=re.match("^<.*>(.*)</.*>$", s)
     if m is None:
@@ -690,7 +690,9 @@ def ChangeNBSPToSpace(s: None | str) -> None | str | list[str]:
 # Convert the unicode of a str to a string which can be used in an HTML file
 def UnicodeToHtml(s: str) -> str:
     # Convert the text to ascii and then used decode to turn it back into a str
-    return escape(s).encode('ascii', 'xmlcharrefreplace').decode()
+    s=escape(s).encode('ascii', 'xmlcharrefreplace').decode()
+    # But this overachievs and converts <, > and & to html.  Reverse this.
+    return s.replace("&gt;", ">").replace("&lt;", "<").replace("&amp;", "&")
 
 
 #=====================================================================================

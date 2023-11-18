@@ -234,6 +234,17 @@ def ExtractInvisibleTextUsingFanacComments(s: str, tag: str) -> str:
     return mid.removeprefix("<!--").removesuffix("-->").strip()
 
 
+def InsertInvisibleTextInsideFanacComment(s: str, tag: str, insert: str) -> str:
+    return re.sub(r"<!--\s*fanac-"+tag+"\s*(.*?)\s*-->", f"<!-- fanac-{tag} {insert} -->", s, flags=re.IGNORECASE|re.DOTALL)
+
+
+def ExtractInvisibleTextInsideFanacComment(s: str, tag: str) -> str:
+    m=re.search(r"<!--\s*fanac-"+tag+"\s*(.*?)\s*-->", s, flags=re.IGNORECASE|re.DOTALL)
+    if m is None:
+        return ""
+    return m.groups()[0].strip()
+
+
 
 #==================================================================================
 # Return a properly formatted link

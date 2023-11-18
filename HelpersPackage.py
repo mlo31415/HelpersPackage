@@ -210,6 +210,15 @@ def InsertHTMLUsingFanacComments(s: str, tag: str, insert: str) -> str:
         return ""
     return start+opentag+insert+closetag+end
 
+#--------------
+# Scan for a pair of fanac comments and return the contents (but not the tags themselves)
+def ExtractHTMLUsingFanacComments(s: str, tag: str) -> str:
+    opentag=f"<!-- fanac-{tag} start-->"
+    closetag=f"<!-- fanac-{tag} end-->"
+    _, mid, _=FindFanacTagsInHTML(s, opentag, closetag)
+    return mid
+
+
 def InsertInvisibleTextUsingFanacComments(s: str, tag: str, insert: str) -> str:
     opentag=f"<!-- fanac-{tag} start-->"
     closetag=f"<!-- fanac-{tag} end-->"
@@ -219,13 +228,6 @@ def InsertInvisibleTextUsingFanacComments(s: str, tag: str, insert: str) -> str:
         return ""
     return start+opentag+"<!-- "+insert+" -->"+closetag+end
 
-#--------------
-# Scan for a pair of fanac comments and return the contents (but not the tags themselves)
-def ExtractHTMLUsingFanacComments(s: str, tag: str) -> str:
-    opentag=f"<!-- fanac-{tag} start-->"
-    closetag=f"<!-- fanac-{tag} end-->"
-    _, mid, _=FindFanacTagsInHTML(s, opentag, closetag)
-    return mid
 
 def ExtractInvisibleTextUsingFanacComments(s: str, tag: str) -> str:
     mid=ExtractHTMLUsingFanacComments(s, tag)

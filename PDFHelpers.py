@@ -18,7 +18,10 @@ def AddMissingMetadata(file: str, newmetadata: dict[str, str]):
 
         writer.append_pages_from_reader(reader)
         writer.add_metadata(newmetadata)
-        writer.add_metadata(reader.metadata)
+        try:
+            writer.add_metadata(reader.metadata)
+        except:
+            Log(f"AddMissingMetadata().writer.add_metadata(reader.metadata) with file {file} threw an exception: Ignored")
         # os.remove(file)
         path, ext=os.path.splitext(file)
         newfile=path+" added"+ext

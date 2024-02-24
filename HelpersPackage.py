@@ -729,7 +729,7 @@ def RelPathToURL(relPath: str) -> Optional[str]:
 # Function to find the index of one or more strings in a list of strings.  Stop with the first one found.
 #  E.g., find the first occurance of "Mailing" or "Mailings" or "APA Mailing" in a list of possible column headers
 def FindIndexOfStringInList(lst: list[str], s: [str, list[str]], IgnoreCase=False) -> Optional[int]:
-    if type(s) is str:  # If it's a single string, just go with it!
+    if isinstance(s, str):  # If it's a single string, just go with it!
         return FindIndexOfStringInList2(lst, s)
 
     for item in s:
@@ -763,7 +763,7 @@ def CreateFanacOrgAbsolutePath(fanacDir: str, s: str) -> str:
 #==================================================================================
 # Is at least one item in inputlist also in checklist?  Return the index of the 1st match or None
 def CrosscheckListElement(inputList: str |list[str], checkList: list[str]) -> Optional[int]:
-    if type(inputList) is str:
+    if isinstance(inputList, str):
         inputlist=[inputList]
     ListofHits=[FindIndexOfStringInList(checkList, x) for x in inputList]
     n=next((item for item in ListofHits if item is not None), None)     #TODO: Could this be done by replacing next() with [0]?
@@ -879,7 +879,7 @@ def ChangeFileInURL(url: str, newFileName: str) -> str:
 # The extension can be either a string or a list of strings. Leading '.' optional
 def ExtensionMatches(file: str, ext: str | list[str]) -> bool:
     file=os.path.splitext(file.lower())
-    if type(ext) is str:
+    if isinstance(ext, str):
         ext=[ext]
     for ex in ext:
         if ex[0] != ".":
@@ -906,7 +906,7 @@ def DateMonthYear(month: int, year: int) -> str:
 # =============================================================================
 # Check to see if an argument (int, float or string) is a number
 def IsInt(arg: any) -> bool:
-    if type(arg) is int:
+    if isinstance(arg, int):
         return True
 
     # It's not an integer type.  See if it can be converted into an integer.  E.g., it's a string representation of a number
@@ -938,7 +938,7 @@ def ZeroIfNone(x: Optional[int]):
 # =============================================================================
 # Check to see if an argument (int, float or string) is a number
 def IsNumeric(arg: any) -> bool:
-    if type(arg) in [float, int]:
+    if isinstance(arg, float) or isinstance(arg, int):
         return True
 
     # It's not a numeric type.  See if it can be converted into a float.  E.g., it's a string representation of a number
@@ -986,8 +986,8 @@ def ListBlockMove(lst: [], startingIndex: int, numElements: int, targetIndex: in
     for i, r in enumerate(tpermuter):
         permuter[r]=i
 
-    if type(lst) is list and len(lst) > 0:
-        if type(lst[0]) is tuple:
+    if isinstance(lst, list) and len(lst) > 0:
+        if isinstance(lst[0], tuple):
             # The input is a list of (cols, col) tuples (e.g., AllowCellEdits)
             for i, (row, col) in enumerate(lst):
                 try:
@@ -1079,7 +1079,7 @@ class ParmDict():
     # Call as parms[key] or parms[key, defaultvalue]
     # parms[key] returns None if key is not found
     def __getitem__(self, key: str | tuple[str, str]):
-        if type(key) is tuple:
+        if isinstance(key, tuple):
             val=self.GetItem(key[0])
             if val is None:
                 val=key[1]

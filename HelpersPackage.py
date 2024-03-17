@@ -5,6 +5,7 @@ import sys
 import ctypes
 import unicodedata
 from unidecode import unidecode
+from datetime import datetime
 from tkinter import Tk, messagebox
 from tkinter.simpledialog import askstring
 import tkinter
@@ -760,6 +761,7 @@ def FindIndexOfStringInList2(lst: list[str], s: str, IgnoreCase=False) -> Option
 def CreateFanacOrgAbsolutePath(fanacDir: str, s: str) -> str:
     return "https://www.fanac.org/fanzines/"+fanacDir+"/"+s
 
+
 #==================================================================================
 # Is at least one item in inputlist also in checklist?  Return the index of the 1st match or None
 def CrosscheckListElement(inputList: str |list[str], checkList: list[str]) -> Optional[int]:
@@ -901,6 +903,19 @@ def DateMonthYear(month: int, year: int) -> str:
     if month > 0:
         return months[month]
     return "date?"
+
+
+# =============================================================================
+# Add a timestamp to a filename
+def TimestampFilename(fname: str) -> str:
+    head, tail=os.path.split(fname)
+    if head != "":
+        head+="/"
+    filename, ext=os.path.splitext(tail)
+    if ext != "":
+        ext+="."
+    tstampedFilename=f"{filename} - {datetime.now():%Y-%m-%d %H-%M-%S}{ext}"
+    return head+tstampedFilename
 
 
 # =============================================================================

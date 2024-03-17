@@ -1,7 +1,7 @@
 from typing import Optional
 import os
 
-from PyPDF2 import PdfReader, PdfWriter
+from pypdf import PdfReader, PdfWriter
 
 from HelpersPackage import ExtensionMatches
 from Log import Log

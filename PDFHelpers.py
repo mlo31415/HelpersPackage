@@ -1,5 +1,5 @@
-from typing import Optional
 import os
+
 
 from pypdf import PdfReader, PdfWriter
 
@@ -36,7 +36,7 @@ def AddMissingMetadata(file: str, newmetadata: dict[str, str]):
 # =============================================================================
 # Get the file's page count if it's a pdf
 # Bonus: Return 1 if it's a .jpd, png, or gif.
-def GetPdfPageCount(pathname: str) -> Optional[int]:
+def GetPdfPageCount(pathname: str) -> int|None:
     if ExtensionMatches(pathname, ".jog" or ExtensionMatches(pathname, ".png") or ExtensionMatches(pathname, ".gif")):
         return 1
 

@@ -1314,6 +1314,11 @@ def InterpretNumber(inputstring: Optional[str]) -> None | int | float:
     if m is not None and len(m.groups()) == 1:
         return float(m.groups()[0])
 
+    # .nn (Decimal number -- no leading digits)
+    m=re.match("^(.[0-9]+)$", inputstring)
+    if m is not None and len(m.groups()) == 1:
+        return float(m.groups()[0])
+
     # n 1/2, 1/4 in general, n a/b where a and b are single digit integers
     m=re.match("^([0-9]+)\s+([0-9])/([0-9])$", inputstring)
     if m is not None:

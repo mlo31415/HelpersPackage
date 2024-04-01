@@ -217,6 +217,20 @@ def LogOpen(logfilename: str, errorfilename: str=None, dated: bool=False) -> Non
     global g_logLastHeader
     g_logLastHeader=""
 
+    # We want to open both log files right at the beginning, so we don't leave an old log file to confuse things
+    if g_logFile is None and g_logFileName is not None:
+        try:
+            g_logFile=open(g_logFileName, "w+", encoding='utf-8')
+        except Exception as e:
+            MessageBox("Exception in LogOpen("+g_logFileName+")  Exception="+str(e))
+
+    if g_logErrorFile is None and g_logErrorFileName is not None:
+        try:
+            g_logErrorFile=open(g_logErrorFileName, "w+", buffering=1, encoding='utf-8')
+        except Exception as e:
+            MessageBox("Exception in LogOpen("+g_logErrorFileName+")  Exception="+str(e))
+
+
 
 #=============================================================================
 def LogFlush() -> None:

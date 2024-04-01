@@ -1324,6 +1324,11 @@ def InterpretNumber(inputstring: Optional[str]) -> None | int | float:
     if m is not None:
         return int(m.groups()[0])+int(m.groups()[1])/int(m.groups()[2])
 
+    # n 1/2, 1/4 in general, n a/b where a and b are single digit integers
+    m=re.match("^([0-9]+)\s+([0-9]+)/([0-9]+)$", inputstring)
+    if m is not None:
+        return int(m.groups()[0])+int(m.groups()[1])/int(m.groups()[2])
+
     # nnaa (integer followed by letter)
     # nnn + optional space + nnn
     m=re.match("^([0-9]+)\s?([a-zA-Z]+)$", inputstring)

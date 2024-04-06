@@ -248,6 +248,20 @@ def ExtractInvisibleTextInsideFanacComment(s: str, tag: str) -> str:
 
 
 #==================================================================================
+# Make a properly formatted link to a Fancy 3 page
+def MakeFancyLink(name: str) -> str:
+    return f"<a href=https://fancyclopedia.org/{name.replace(" ","_")}>{name}</a>"
+
+# Take a string containing a fancy link and remove the link, leaving the link text
+def RemoveFancyLink(link: str) -> str:
+    m=re.match(r"^(.*?)<a href=\"?http[s]?://fancyclopedia.org/.*?\"?>(.*?)</a>(.*)$", link)
+    if m is None:
+        return link
+
+    return " ".join(m.groups())
+
+
+#==================================================================================
 # Return a properly formatted link
 # Depending on flags, the URL may get 'https://' or 'http://' prepended.
 # If it is a PDF it will get view=Fit appended
@@ -647,6 +661,11 @@ def RemoveFunnyWhitespace(s: str) -> str:
 def RemoveHTMLishWhitespace(s: str) -> str:
     return re.sub(r"<br>|</br>|<br/>|&nbsp;", " ", s)
 
+
+#=====================================================================================
+# Remove <Hx>-type brackets from a string.
+def RemoveHxTags(s: str) -> str:
+    return re.sub(r"</?h\d>", "", s, flags=re.IGNORECASE)
 
 #=====================================================================================
 def CompressAllWhitespace(s: str) -> str:

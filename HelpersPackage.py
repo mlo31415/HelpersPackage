@@ -246,11 +246,65 @@ def ExtractInvisibleTextInsideFanacComment(s: str, tag: str) -> str:
     return m.groups()[0].strip()
 
 
+# =============================================================================
+# Converting between page names and poge file names (urlname) in MediaWiki
+# Name -> filename
+#   Turn spaces to underscores
+#   Capitalize the first letter
+#   Map certain forbidden characters to %escape sequences
+# Note that Mediawiki canonicalization is not reversable.
+# We reserve the right to improve on the accuracy of the translation as issues are discovered
+subst={
+    "&": "%26",
+    "?": "%3F"
+    }
+
+def WikiPagenameToWikiUrlname(s: str) -> str:
+    if len(s) == 0:
+        return s
+    out=""
+    for c in s:
+        if c == " ":
+            out+="_"
+        elif c in subst.keys():
+            out+=subst[c]
+        else:
+            out+=c
+
+    return out[0].upper()+(out[1:] if len(out) > 1 else "")
+
+def WikiUrlnameToWikiPagename(s: str) -> str:
+    for key, val in subst.items():
+        s=s.replace(val, key)
+    return s.replace("_", " ")
+
+
+
 
 #==================================================================================
 # Make a properly formatted link to a Fancy 3 page
-def MakeFancyLink(name: str) -> str:
-    return f"<a href=https://fancyclopedia.org/{name.replace(" ","_")}>{name}</a>"
+# If the second argument is present, use the first as the URL and the second as the display text.
+# If only one is present, use it for both
+def MakeFancyLink(fancyName: str, displayName: str=None) -> str:
+    if displayName is None:
+        displayName=fancyName
+
+    return f"<a href=https://fancyclopedia.org/{WikiPagenameToWikiUrlname(fancyName)}>{displayName}</a>"
+
+
+# Take a string containing a fancy link and convert the link's url back to ordinary text, returning:
+# link|display text (if they are different
+# display text (if they are the same
+def UnmakeFancyLink(link: str) -> [str]:
+    m=re.match(r"^(.*?)<a href=\"?http[s]?://fancyclopedia.org/(.*?)\"?>(.*?)</a>(.*)$", link)
+    if m is None:
+        return WikiUrlnameToWikiPagename(link)
+
+    link=m.groups()[1]
+    text=m.groups()[2]
+
+    return WikiUrlnameToWikiPagename(link)+"|"+text
+
 
 # Take a string containing a fancy link and remove the link, leaving the link text
 def RemoveFancyLink(link: str) -> str:
@@ -1763,29 +1817,6 @@ def WindowsFilenameToWikiPagename(fname: str) -> str:
 
     return s
 
-# =============================================================================
-# Turn a page name to and from  Wiki canonical form
-# Capitalize the first character and turn spaces to underscores
-subst={
-    "&": "%26",
-    "?": "%3F"
-    }
-
-def WikiPagenameToWikiUrlname(s: str) -> str:
-    if len(s) == 0:
-        return s
-    out=""
-    for c in s:
-        if c == " ":
-            out+="_"
-        elif c in subst.keys():
-            out+=subst[c]
-        else:
-            out+=c
-
-    return out[0].upper()+(out[1:] if len(out) > 1 else "")
-
-
 #-----------------------------------------------------------------
 # Break a Mediawiki link into its components
 # [[link#anchor|display text]] --> (link, anchor, display text)
@@ -1816,15 +1847,6 @@ def WikiLinkSplit(s: str) -> tuple[str, str, str]:
             else:
                 link=val[0].upper()+val[1:]
     return link, anchor, text
-
-
-#-----------------------------------------------------------------
-# Turn underscores to spaces
-# Note that Mediawiki canonicalization is not reversable.  We will turn underscores to spaces, but otherwise do nothing.
-def WikiUrlnameToWikiPagename(s: str) -> str:
-    for key, val in subst.items():
-        s=s.replace(val, key)
-    return s.replace("_", " ")
 
 
 #-----------------------------------------------------------------

@@ -521,15 +521,18 @@ def FindAnyBracketedText(s: str) -> tuple[str, str, str, str]:
 #=====================================================================================
 # Find text bracketed by <b>...</b>
 # Return the contents of the first pair of brackets found and the remainder of the input string
-def FindBracktedText2(s: str, b: str) -> tuple[str, str]:
-    return FindBracketedText(s, b, stripHtml=False, stripWhitespace=True)
+def FindBracktedText2(s: str, b: str, caseInsensitive=False) -> tuple[str, str]:
+    return FindBracketedText(s, b, stripHtml=False, stripWhitespace=True, caseInsensitive=caseInsensitive)
 
-def FindBracketedText(s: str, b: str, stripHtml: bool=True, stripWhitespace: bool=False) -> tuple[str, str]:
+def FindBracketedText(s: str, b: str, stripHtml: bool=True, stripWhitespace: bool=False, caseInsensitive=False) -> tuple[str, str]:
 
-    pattern="<"+b+">(.*?)</"+b+">"
+    pattern=f"<{b}.*?>(.*?)</{b}>"
     if stripWhitespace:
         pattern=fr"\s*{pattern}\s*"
-    m=re.search(pattern, s,  re.DOTALL)
+    flags=re.DOTALL
+    if caseInsensitive:
+        flags=flags | re.IGNORECASE
+    m=re.search(pattern, s,  flags)
     if m is None:
         return "", s
     #match=m.groups()[0]

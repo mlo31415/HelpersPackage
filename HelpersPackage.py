@@ -544,13 +544,12 @@ def FindBracketedText(s: str, tag: str, stripHtml: bool=True, stripWhitespace: b
     m=re.search(pattern, s,  flags)
     if m is None:
         return "", s
-    #match=m.groups()[0]
+    pre=s[:m.regs[0][0]]
     match=s[m.regs[1][0]:m.regs[1][1]]  # The matched part -- the only group of the pattern
-    s2=s[:m.regs[0][0]]+s[m.regs[0][1]:]
+    post=s[m.regs[0][1]:]
     if stripHtml:
         match=RemoveAllHTMLTags(match)
-    #s2=re.sub(pattern, "", s, count=1)
-    return match, s2
+    return match, pre+post
 
 #---------------------------------------------------
 # Does the input string contain a balanced set of brackets with text inside?
@@ -997,8 +996,6 @@ def TimestampFilename(fname: str) -> str:
     if head != "":
         head+="/"
     filename, ext=os.path.splitext(tail)
-    if ext != "":
-        ext+="."
     tstampedFilename=f"{filename} - {datetime.now():%Y-%m-%d %H-%M-%S}{ext}"
     return head+tstampedFilename
 

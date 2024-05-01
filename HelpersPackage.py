@@ -289,7 +289,7 @@ def MakeFancyLink(fancyName: str, displayName: str=None) -> str:
     if displayName is None:
         displayName=fancyName
 
-    return f"<a href=https://fancyclopedia.org/{WikiPagenameToWikiUrlname(fancyName)}>{displayName}</a>"
+    return f'<a href="https://fancyclopedia.org/{WikiPagenameToWikiUrlname(fancyName)}">{displayName}</a>'
 
 
 # Take a string containing a fancy link and convert the link's url back to ordinary text, returning:

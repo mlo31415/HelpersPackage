@@ -507,7 +507,7 @@ def FindAndReplaceBracketedText(s: str, bracket: str, replacement: str, stripHtm
 #   The remainder (post) of the input string
 # Note that this is a *non-greedy* scanner
 # Note also that it is not very tolerant of errors in the bracketing, just dropping things on the floor
-def FindAnyBracketedText(s: str) -> tuple[str, str, str, str]:
+def FindNextBracketedText(s: str) -> tuple[str, str, str, str]:
 
     pattern="^(.*?)<([a-zA-Z0-9][^>]*?)>([^<]*?)<\/\\2>(.*)"
     m=re.search(pattern, s,  flags=re.DOTALL)

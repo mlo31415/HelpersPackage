@@ -509,8 +509,8 @@ def FindAndReplaceBracketedText(s: str, bracket: str, replacement: str, stripHtm
 # Note also that it is not very tolerant of errors in the bracketing, just dropping things on the floor
 def FindNextBracketedText(s: str) -> tuple[str, str, str, str]:
 
-    pattern="^(.*?)<([a-zA-Z0-9][^>]*?)>([^<]*?)<\/\\2>(.*)"
-    m=re.search(pattern, s,  flags=re.DOTALL)
+    pattern="^(.*?)<(?P<tag>[a-z0-9][^>]*?)>(.*?)</(?P=tag)>(.*)$"
+    m=re.search(pattern, s,  flags=re.DOTALL|re.IGNORECASE)
     if m is None:
         return s, "", "", ""
 

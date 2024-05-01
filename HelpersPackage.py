@@ -514,7 +514,7 @@ def FindNextBracketedText(s: str) -> tuple[str, str, str, str]:
     if m is None:
         return s, "", "", ""
 
-    x=m.group(1), m.group(2), m.group(3), s[m.regs[0][1]:]
+    x=m.group(1), m.group(2), m.group(3), m.group(4)
     return x
 
 

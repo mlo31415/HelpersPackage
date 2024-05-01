@@ -520,13 +520,22 @@ def FindNextBracketedText(s: str) -> tuple[str, str, str, str]:
 
 #=====================================================================================
 # Find text bracketed by <b>...</b>
-# Return the contents of the first pair of brackets found and the remainder of the input string
-def FindBracktedText2(s: str, b: str, caseInsensitive=False) -> tuple[str, str]:
-    return FindBracketedText(s, b, stripHtml=False, stripWhitespace=True, caseInsensitive=caseInsensitive)
+# Return the contents of the first pair of the specified brackets found and the remainder of the input string
+def FindBracketedText2(s: str, tag: str, caseInsensitive=False, includeBrackets=False) -> tuple[str, str]:
+    # We want to remove any leading or trailing whitespace
+    m=re.match(r"^\s*(.*?)\s*$", s, re.DOTALL)
+    if m is not None:
+        s=m.group(1)
+    return FindBracketedText(s, tag, stripHtml=False, caseInsensitive=caseInsensitive, includeBrackets=includeBrackets)
 
-def FindBracketedText(s: str, b: str, stripHtml: bool=True, stripWhitespace: bool=False, caseInsensitive=False) -> tuple[str, str]:
 
-    pattern=f"<{b}.*?>(.*?)</{b}>"
+def FindBracketedText(s: str, tag: str, stripHtml: bool=True, stripWhitespace: bool=False, caseInsensitive=False, includeBrackets=False) -> tuple[str, str]:
+
+    if includeBrackets:
+        pattern=f"(<{tag}.*?>.*?</{tag}>)"
+    else:
+        pattern=f"<{tag}.*?>(.*?)</{tag}>"
+
     if stripWhitespace:
         pattern=fr"\s*{pattern}\s*"
     flags=re.DOTALL

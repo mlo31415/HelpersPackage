@@ -171,7 +171,7 @@ def FindLinkInString(s: str) -> tuple[str, str, str, str]:
     # Get rid of any class=stuff crud
     s=re.sub(r'class=".+?"', "", s, count=10, flags=re.IGNORECASE)
     pat="^(.*?)<a\s+href=['\"](https?:)?(.*?)['\"]>(.*?)</a>(.*)$"
-    m=re.match(pat, s, flags=re.RegexFlag.IGNORECASE)
+    m=re.match(pat, s, flags=re.IGNORECASE|re.DOTALL)
     if m is None:
         return s, "", "", ""
     return m.groups()[0], m.groups()[2], m.groups()[3], m.groups()[4]

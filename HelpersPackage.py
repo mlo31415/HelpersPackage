@@ -1022,7 +1022,7 @@ def Int(val: str) -> Optional[int]:
     return None
 
 # Convert a string to integer, returning 0 when uninterpretable
-def Int0(val: str) -> int:
+def Int0(val: str|int) -> int:
     ret=Int(val)
     if ret is None:
         ret=0

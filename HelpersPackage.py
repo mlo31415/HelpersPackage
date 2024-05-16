@@ -1028,6 +1028,20 @@ def Int0(val: str|int) -> int:
         ret=0
     return ret
 
+# =============================================================================
+# Convert a string to float, returning 0 when uninterpretable
+def Float0(arg: any) -> float:
+    if isinstance(arg, float) or isinstance(arg, int):
+        return float(arg)
+
+    # It's not a numeric type.  See if it can be converted into float.  E.g., it's a string representation of a number
+    with suppress(Exception):
+        return float(arg)
+
+    return 0    # Apparently it can't be handled
+
+
+
 def ZeroIfNone(x: Optional[int]):
     return 0 if x is None else x
 

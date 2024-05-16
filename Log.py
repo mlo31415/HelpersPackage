@@ -21,6 +21,9 @@ from datetime import datetime
 
 #=============================================================================
 # If Log has not been initialized, initialize it using default log names
+
+
+
 def LogCheck() -> None:
     global g_errorLogged         # Set to True if anything is logged to the error log
     try:
@@ -33,6 +36,12 @@ def LogCheck() -> None:
         g_logFile
     except NameError:
         LogOpen("Log.txt", "Log Errors.txt")
+
+    global g_alwaysTimestamp
+    try:
+        g_alwaysTimestamp
+    except NameError:
+        g_alwaysTimestamp=False
 
 
 #=============================================================================
@@ -47,12 +56,14 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
     global g_logHeaderFile
     global g_logHeaderError
     global g_errorLogged         # Set to True if anything is logged to the error log
+    global g_alwaysTimestamp
+
     g_errorLogged=False
 
     LogCheck()
 
-    if timestamp:
-        text=f"{datetime.now():%H:%M:%S}: "+text
+    if timestamp or g_alwaysTimestamp:
+        text=f"{datetime.now():%H:%M:%S  %f}: "+text
 
     # We don't actually create the log files until there's something written to them
     # LogOpen stores the names of the output files in g_logFile and g_errorFile.
@@ -124,8 +135,14 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
 def LogError(text: str, Print=True, timestamp=False) -> None:
     Log(text, isError=True, Print=Print, timestamp=timestamp)
 
-
 #=============================================================================
+# Turn on/off timestamping for all log messages
+def LogSetTimestamping(val: bool) :
+    global g_alwaysTimestamp
+    g_alwaysTimestamp=val
+
+
+#============================================================================
 # Returns True if an error has been logged since the Log was started
 def LogErrorHasBeenLogged() -> bool:
     global g_errorLogged

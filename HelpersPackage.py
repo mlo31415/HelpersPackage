@@ -55,6 +55,7 @@ def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: i
         # Replace the found text
         inputstr=re.sub(pattern, replacement, inputstr, 1, flags=flags)
 
+
 #=======================================================
 # When a python program has been frozen using Pyinstaller, some of its resource files may be frozen with it
 # PyiResourcePath takes a path *relative to the python source files* and turns it into the resource path if we're running frozen.
@@ -235,9 +236,9 @@ def ExtractInvisibleTextUsingFanacComments(s: str, tag: str) -> str:
     return mid.removeprefix("<!--").removesuffix("-->").strip()
 
 
+# The comment is <!--fanac-<tag><stuff>-->, where tag is the ID and stuff is the payload
 def InsertInvisibleTextInsideFanacComment(s: str, tag: str, insert: str) -> str:
     return re.sub(r"<!--\s*fanac-"+tag+"\s*(.*?)\s*-->", f"<!-- fanac-{tag} {insert} -->", s, flags=re.IGNORECASE|re.DOTALL)
-
 
 def ExtractInvisibleTextInsideFanacComment(s: str, tag: str) -> str:
     m=re.search(r"<!--\s*fanac-"+tag+"\s*(.*?)\s*-->", s, flags=re.IGNORECASE|re.DOTALL)

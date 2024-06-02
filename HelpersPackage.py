@@ -341,7 +341,7 @@ def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=Fals
         url=urllib.parse.quote(url)
 
     # If the url points to a pdf, add '#view=Fit' to the end to force the PDF to scale to the page
-    if ".pdf" in url:
+    if ".pdf" in url and not "view=Fit" in url:
         # Note that if there's already a #whatzit at the end, this gets added as &view=Fit and not as #view=Fit
         if ".pdf#" in url:
             url+="&view=Fit"

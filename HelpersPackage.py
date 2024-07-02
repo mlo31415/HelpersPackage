@@ -1214,6 +1214,16 @@ class ParmDict():
             return None
         return self._parms[key]
 
+
+    # Given a key and a default value, return the key's value.
+    # If the key does not exist, create it and set its value to default and then return defaiult
+    def SetIfMissingAndGet(self, key: str, default: str):
+        if key in self:
+            return self[key]
+        self[key]=default
+        return default
+
+
     def __setitem__(self, key: str, val: Any) -> None:
         if self._IgnoreSpacesCompare:
             key=key.replace(" ", "")

@@ -63,7 +63,7 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
     LogCheck()
 
     if timestamp or g_alwaysTimestamp:
-        text=f"{datetime.now():%H:%M:%S  %f}: "+text
+        text=f"{datetime.now():%H:%M:%S}."+f"{datetime.now():%f}"[0:2]+f": {text}"
 
     # We don't actually create the log files until there's something written to them
     # LogOpen stores the names of the output files in g_logFile and g_errorFile.

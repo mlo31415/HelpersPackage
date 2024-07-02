@@ -171,7 +171,7 @@ def ToNumeric(val: None | int | float | str) -> None | int | float:
 def FindLinkInString(s: str) -> tuple[str, str, str, str]:
     # Get rid of any class=stuff crud
     s=re.sub(r'class=".+?"', "", s, count=10, flags=re.IGNORECASE)
-    pat="^(.*?)<a\s+href=['\"](https?:)?(.*?)['\"]>(.*?)</a>(.*)$"
+    pat=r"^(.*?)<a\s+href=['\"](https?:)?(.*?)['\"]>(.*?)</a>(.*)$"
     m=re.match(pat, s, flags=re.IGNORECASE|re.DOTALL)
     if m is None:
         return s, "", "", ""
@@ -238,10 +238,10 @@ def ExtractInvisibleTextUsingFanacComments(s: str, tag: str) -> str:
 
 # The comment is <!--fanac-<tag><stuff>-->, where tag is the ID and stuff is the payload
 def InsertInvisibleTextInsideFanacComment(s: str, tag: str, insert: str) -> str:
-    return re.sub(r"<!--\s*fanac-"+tag+"\s*(.*?)\s*-->", f"<!-- fanac-{tag} {insert} -->", s, flags=re.IGNORECASE|re.DOTALL)
+    return re.sub(fr"<!--\s*fanac-{tag}\s*(.*?)\s*-->", f"<!-- fanac-{tag} {insert} -->", s, flags=re.IGNORECASE|re.DOTALL)
 
 def ExtractInvisibleTextInsideFanacComment(s: str, tag: str) -> str:
-    m=re.search(r"<!--\s*fanac-"+tag+"\s*(.*?)\s*-->", s, flags=re.IGNORECASE|re.DOTALL)
+    m=re.search(fr"<!--\s*fanac-{tag}\s*(.*?)\s*-->", s, flags=re.IGNORECASE|re.DOTALL)
     if m is None:
         return ""
     return m.groups()[0].strip()
@@ -332,7 +332,7 @@ def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=Fals
     # But it *can* be part of a link to an anchor on a page or a part of a pdf reference.
     # Look for #s in a URL *before* a .pdf extension and convert them to %23s
     if '#' in url:
-        m=re.match("(.*)(\.pdf.*)", url, re.IGNORECASE)
+        m=re.match(r"(.*)(\.pdf.*)", url, re.IGNORECASE)
         if m is not None:
             url=m.groups()[0].replace("#", "%23")+m.groups()[1]
     url=UnicodeToHtml(url)
@@ -370,10 +370,10 @@ def UnformatLinks(s: str) -> Optional[str]:
 
     try:
         # Convert substrings of the form '<a href="'(stuff1)'>'(stuff2)'</a>'  to (stuff2)
-        s=re.sub('(<a\s+href=".+?">)(.+?)(</a>)', "\\2", s)
+        s=re.sub(r'(<a\s+href=".+?">)(.+?)(</a>)', "\\2", s)
 
         # And then there are Mediawiki redirects
-        s=re.sub('(<a\s+class=".+?">)(.+?)(</a>)', "\\2", s)
+        s=re.sub(r'(<a\s+class=".+?">)(.+?)(</a>)', "\\2", s)
     except:
         pass
     return s
@@ -450,7 +450,7 @@ def CanonicizeColumnHeaders(header: str) -> str:
 # Return True/False and remaining text after <bra> </bra> is removed
 # Return the whole string if brackets not found
 def ScanForBracketedText(s: str, bra: str) -> tuple[bool, str]:
-    m=re.match(f"\w*<{bra}>(.*)</{bra}>\w*$", s)
+    m=re.match(fr"\w*<{bra}>(.*)</{bra}>\w*$", s)
     if m is None:
         return False, s
     return True, m.groups()[0]
@@ -475,7 +475,7 @@ def ParseFirstStringBracketedText(s: str, bracket: str) -> tuple[str, str, str]:
 # Return the (possibly) modified text and a bool to indicate if anything was found
 def RemoveTopBracketedText(s: str, bracket: str, stripHtml: bool=True) -> tuple[str, bool]:
 
-    pattern=f"^\s*<{bracket}>(.*?)</{bracket}>\s*$"
+    pattern=fr"^\s*<{bracket}>(.*?)</{bracket}>\s*$"
     m=re.search(pattern, s,  flags=re.DOTALL)     # Do it multiline
     if m is None:
         return s, False
@@ -605,7 +605,7 @@ def RemoveHyperlinkContainingPattern(s: str, pattern: str, repeat: bool=False, f
 # Return the contents of the first pair of brackets found
 def FindWikiBracketedText(s: str) -> str:
 
-    m=re.search("\[\[(:?.+)]]", s)
+    m=re.search(r"\[\[(:?.+)]]", s)
     if m is None:
         return ""
     return m.groups()[0]
@@ -636,7 +636,7 @@ def StripExternalTags(s: str)-> Optional[str]:
 #=====================================================================================
 # Remove a matched pair of <brackets> <containing anything> from a string, returning the inside
 def StripWikiBrackets(s: str)-> str:
-    m=re.match("^\[\[(.*)]]$", s)
+    m=re.match(r"^\[\[(.*)]]$", s)
     if m is None:
         return s
     return m.groups()[0]
@@ -686,7 +686,7 @@ def RemoveAccents(s: str) -> str:
 #=====================================================================================
 # Most non-alphanumeric characters can't be used in filenames with Jack's software on fanac.org. Turn runs of those characters into a single underscore
 def RemoveScaryCharacters(name: str) -> str:
-    return RemoveAccents("".join(re.sub("[?*&%$#@'><:;,.{}\][=+)(^!\s]+", "_", name)))
+    return RemoveAccents("".join(re.sub(r"[?*&%$#@'><:;,.{}\][=+)(^!\s]+", "_", name)))
 
 
 #=====================================================================================
@@ -703,12 +703,12 @@ def CaseInsensitiveReplace(s: str, old: str, new: str) -> str:
 #=====================================================================================
 # Turn all strings of whitespace (including HTMLish whitespace) to a single space
 def CompressWhitespace(s: str) -> str:
-    return re.sub("\s+", " ", RemoveFunnyWhitespace(s))
+    return re.sub(r"\s+", " ", RemoveFunnyWhitespace(s))
 
 
 #=====================================================================================
 def CompressAllWhitespaceAndRemovePunctuation(s: str) -> str:
-    s=re.sub("[.,\-?!_*\'\";:]+", " ", s)
+    s=re.sub(r"[.,\-?!_*\'\";:]+", " ", s)
     return CompressAllWhitespace(s)
 
 #=====================================================================================
@@ -930,7 +930,7 @@ def RemoveArticles(name: str) -> str:
 #=============================================================================
 # Sometime we need to construct a directory name by changing all the funny characters to underscores.
 def FanzineNameToDirName(s: str) -> str:       # MainWindow(MainFrame)
-    return re.sub("[^a-zA-Z0-9\-]+", "_", RemoveArticles(s))
+    return re.sub("[^a-zA-Z0-9\\-]+", "_", RemoveArticles(s))
 
 
 #=============================================================================
@@ -1199,6 +1199,7 @@ class ParmDict():
             return val
         return self.GetItem(key)
 
+
     def GetItem(self, key: str):
         if self._IgnoreSpacesCompare:
             key=key.replace(" ","")
@@ -1342,7 +1343,7 @@ def ApplyParmDictToString(s: str, parms: ParmDict) -> str:
     out: str=""
 
     while len(s) > 0:
-        s1, val, s2=ParseFirstBracketedText(s, "\[", "]")
+        s1, val, s2=ParseFirstBracketedText(s, r"\[", "]")
         if parms.Exists(val) and len(parms[val]) > 0:
             out+=s1+parms[val]
             s=s2
@@ -1403,7 +1404,7 @@ def InterpretNumber(inputstring: Optional[str]) -> None | int | float:
 
     # nn-nn (Hyphenated integers which usually means a range of numbers)
     # nnn + dash + nnn
-    m=re.match("^([0-9]+)\s*-\s*([0-9]+)$", inputstring)
+    m=re.match(r"^([0-9]+)\s*-\s*([0-9]+)$", inputstring)
     if m is not None and len(m.groups()) == 2:
         return int(m.groups()[0])        # We just sorta ignore n2...
 
@@ -1418,18 +1419,18 @@ def InterpretNumber(inputstring: Optional[str]) -> None | int | float:
         return float(m.groups()[0])
 
     # n 1/2, 1/4 in general, n a/b where a and b are single digit integers
-    m=re.match("^([0-9]+)\s+([0-9])/([0-9])$", inputstring)
+    m=re.match(r"^([0-9]+)\s+([0-9])/([0-9])$", inputstring)
     if m is not None:
         return int(m.groups()[0])+int(m.groups()[1])/int(m.groups()[2])
 
     # n 1/2, 1/4 in general, n a/b where a and b are single digit integers
-    m=re.match("^([0-9]+)\s+([0-9]+)/([0-9]+)$", inputstring)
+    m=re.match(r"^([0-9]+)\s+([0-9]+)/([0-9]+)$", inputstring)
     if m is not None:
         return int(m.groups()[0])+int(m.groups()[1])/int(m.groups()[2])
 
     # nnaa (integer followed by letter)
     # nnn + optional space + nnn
-    m=re.match("^([0-9]+)\s?([a-zA-Z]+)$", inputstring)
+    m=re.match(r"^([0-9]+)\s?([a-zA-Z]+)$", inputstring)
     if m is not None and len(m.groups()) == 2:
         return int(m.groups()[0])
     
@@ -1458,7 +1459,7 @@ def SortMessyNumber(inputstring: str) -> float:
         return -99999999
 
     # Locate any trailing alphabetic characters
-    m=re.match("^([0-9,.\-/ ]*)([a-zA-Z ]*)$", inputstring)
+    m=re.match(r"^([0-9,.\-/ ]*)([a-zA-Z ]*)$", inputstring)
     if m is None:
         # Confusing result. Sort last
         return 99999999
@@ -1851,11 +1852,11 @@ def WikiLinkSplit(s: str) -> tuple[str, str, str]:
     link=""
     anchor=""
     text=""
-    m=re.match("(?:\[\[)?"
-               "([^|#\]]+)"
-               "(#[^|\]]*)*"
-               "(\|[^]]*)*"
-               "(?:]])?", s)
+    m=re.match(r"(?:\[\[)?"
+               r"([^|#\]]+)"
+               r"(#[^|\]]*)*"
+               r"(\|[^]]*)*"
+               r"(?:]])?", s)
     # Optional "[["
     # A string not containing "#", "|" or "]" (the link)
     # An optional string beginning with "#" and not containing "|" or "]" (the anchor)

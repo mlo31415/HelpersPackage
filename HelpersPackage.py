@@ -1321,8 +1321,8 @@ def GetParmFromParmDict(parameters: ParmDict, name: str, default: str=None) -> A
 
 # =============================================================================
 # Read a file using ReadList and then parse lines from name=value pairs to a defaultdict
-def ReadListAsParmDict(filename: str, isFatal: bool=False) -> ParmDict | None:
-    dict=ParmDict()
+def ReadListAsParmDict(filename: str, isFatal: bool=False, CaseInsensitiveCompare: bool=False, IgnoreSpacesCompare: bool=False) -> ParmDict | None:
+    dict=ParmDict(CaseInsensitiveCompare=CaseInsensitiveCompare, IgnoreSpacesCompare=IgnoreSpacesCompare)
     lines=ReadList(filename, isFatal=isFatal)
     if lines is None:
         return None

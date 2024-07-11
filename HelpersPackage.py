@@ -910,9 +910,17 @@ def CompareTitles(name1: str, name2: str) -> bool:
 # Remove leading and trailing articles
 # "The Hobbit" --> "Hobbit"
 # "Odyssey, The" --> "Odyssey"
+# But "The" all by itself is kept.
 # Also, "A" and "An"
 def RemoveArticles(name: str) -> str:
     lname=name.lower()
+    # If someone has been too clever (I'm talking about you, Harter!) and used "The" is the title, we need to handle this specially
+    if lname.strip() == "the" or lname.strip() == "an" or lname.strip() == "a":
+        return name
+    if lname.strip() == ", the" or lname.strip() == ", an" or lname.strip() == ", a":
+        return name
+
+    # Normal cases
     if lname[:4] == "the ":
         return name[4:]
     if lname[-5:] == ", the":

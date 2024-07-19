@@ -1714,7 +1714,7 @@ def MessageBox(s: str, ignoredebugger: bool=False, Title=None) -> None:
 
 # =============================================================================
 # Display a message box (needed only for the built/packaged version)
-# User sparingly, since the messagebox must be closed by hand and can be annoying.
+# Use sparingly, since the messagebox must be closed by hand and can be annoying.
 # It does nothing in the debug version
 def MessageBoxInput(s: str, ignoredebugger: bool=False) -> str:
     if not DebuggerIsRunning() or ignoredebugger:

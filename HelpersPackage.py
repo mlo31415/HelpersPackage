@@ -1600,8 +1600,11 @@ def FlattenPersonsNameForSorting(s: str) -> str:
     return RemoveNonAlphanumericChars(unidecode(SortPersonsName(s).casefold()), LeaveSingleQuote=True)
 
 
-def FlattenTextForSorting(s: str) -> str:
-    return RemoveNonAlphanumericChars(unidecode(RemoveArticles(s).casefold()))     # Since we don't care about O'Neil, we don't need to fuss about single quotes
+def FlattenTextForSorting(s: str, RemoveLeadingArticles: bool=False) -> str:
+    s=RemoveNonAlphanumericChars(unidecode(s.casefold()))     # Since we don't care about O'Neil, we don't need to fuss about single quotes
+    if RemoveLeadingArticles:
+        s=RemoveArticles(s)
+    return s
 
 
 def RemoveNonAlphanumericChars(s: str, LeaveSingleQuote: bool=False) -> str:

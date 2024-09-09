@@ -922,18 +922,18 @@ def RemoveArticles(name: str) -> str:
 
     # Normal cases
     if lname[:4] == "the ":
-        return name[4:]
+        return name[4:].strip()
     if lname[-5:] == ", the":
-        return name[:-5]
+        return name[:-5].strip()
     if lname[:3] == "an ":
-        return name[3:]
+        return name[3:].strip()
     if lname[-4:] == ", an":
-        return name[:-4]
+        return name[:-4].strip()
     if lname[:2] == "a ":
-        return name[2:]
+        return name[2:].strip()
     if lname[-3:] == ", a":
-        return name[:-3]
-    return name
+        return name[:-3].strip()
+    return name.strip()
 
 #=============================================================================
 # Sometime we need to construct a directory name by changing all the funny characters to underscores.

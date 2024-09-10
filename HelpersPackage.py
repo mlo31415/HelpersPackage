@@ -556,6 +556,23 @@ def FindBracketedText(s: str, tag: str, stripHtml: bool=True, stripWhitespace: b
         match=RemoveAllHTMLTags(match)
     return match, pre+post
 
+
+#---------------------------------------------------
+# Find a bracket of the form <xxxx ....> and replace it
+# Find a bracket beginning with tag xxxx. Replace the whole thing, brackets, content and all.
+def FindAndReplaceSingleBracketedText(input: str, tag: str, replacement: str, caseInsensitive=True) -> str:
+    flags=re.DOTALL
+    if caseInsensitive:
+        flags=flags|re.IGNORECASE
+
+    m=re.search(f"(<{tag}.*?>)", replacement,  flags)
+    if m is None:
+        return input
+    pre=input[:m.regs[0][0]]
+    post=input[m.regs[0][1]:]
+    return pre+replacement+post
+
+
 #---------------------------------------------------
 # Does the input string contain a balanced set of brackets with text inside?
 # The brackets overall do not need to be balanced as long as there is a substring with balanced brackets.

@@ -199,8 +199,8 @@ def FindFanacTagsInHTML(s: str, opentag: str, closetag) -> tuple[str | None, str
 
 
 # ==================================================================================
-# Scan the input string looking for a pair of HTML comments of the form '<!-- fanac-<tag> start> ... <fanac-<tag> end>'
-# separate the string into three p[ices: Before the start tag, between the tags, after the end tag.
+# Scan the input string looking for a pair of HTML comments of the form '<!-- fanac-<tag> start--> ... <!--fanac-<tag> end-->'
+# separate the string into three pieces: Before the start tag, between the tags, after the end tag.
 # Replace the middle part with insert
 # Return the empty string if the tags are not found.
 def InsertHTMLUsingFanacComments(s: str, tag: str, insert: str) -> str:
@@ -208,7 +208,7 @@ def InsertHTMLUsingFanacComments(s: str, tag: str, insert: str) -> str:
     closetag=f"<!-- fanac-{tag} end-->"
     start, mid, end=FindFanacTagsInHTML(s, opentag, closetag)
     if start is None:
-        LogError(f"Unable to locate tag pair <fanac-{tag} start-->end>")
+        LogError(f"Unable to locate tag pair {opentag}....{closetag}")
         return ""
     return start+opentag+insert+closetag+end
 

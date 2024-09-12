@@ -565,10 +565,10 @@ def FindAndReplaceSingleBracketedText(input: str, tag: str, replacement: str, ca
     if caseInsensitive:
         flags=flags|re.IGNORECASE
 
-    m=re.search(f"(<{tag}.*?>)", replacement,  flags)
+    m=re.search(f"(<{tag}.*?>)", input,  flags)
     if m is None:
         return input
-    pre=input[:m.regs[0][0]]
+    pre=input[:m.regs[0][1]]
     post=input[m.regs[0][1]:]
     return pre+replacement+post
 

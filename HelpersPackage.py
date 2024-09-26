@@ -6,6 +6,7 @@ import ctypes
 import unicodedata
 import re
 import stat
+import json
 from unidecode import unidecode
 from datetime import datetime
 import tkinter
@@ -1360,11 +1361,25 @@ def ReadListAsParmDict(filename: str, isFatal: bool=False, CaseInsensitiveCompar
             loc=line.find("#")
             line=line[:loc-1].strip()
 
-        ret=line.split("=", maxsplit=1)
-        if len(ret) == 2:
+        # There are two kinds of lines, "=" lines and "{}" lines
+        # The former are simple: A=B assigns B and everything else following the =-sign to a dictionary entry "A"
+        # The latter attempts to interpret the text following as json which will be appended to settings
+        val=""
+        if len(line) > 5 and line[0] == "{" and line[-1] == "}":
+            d=json.loads(line)
+            if d is None:
+                LogError(f"settings.ReadListAsParmDict(): could not interpret '{line}'")
+                continue
+            dict.Append(d)
+        else:
+            ret=line.split("=", maxsplit=1)
+            if len(ret) != 2:
+                LogError(f"settings.ReadListAsParmDict(): could not interpret '{line}'")
+                continue
             dict[ret[0]]=ret[1]
 
     dict._sourcefilename=filename  # Save filename of source of parameters for debugging use
+
     return dict
 
 

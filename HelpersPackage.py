@@ -1,21 +1,21 @@
 from __future__ import annotations
-from typing import Any
+from typing import Any, Optional, DefaultDict
 import os
 import sys
 import ctypes
 import unicodedata
+import re
+import stat
 from unidecode import unidecode
 from datetime import datetime
+import tkinter
 from tkinter import Tk, messagebox
 from tkinter.simpledialog import askstring
-import tkinter
 import urllib.parse
-from typing import Optional, DefaultDict
 from html import escape, unescape
 from contextlib import suppress
 from collections import defaultdict
-import re
-import stat
+
 
 from Log import Log, LogClose, LogError
 

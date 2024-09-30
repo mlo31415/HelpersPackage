@@ -1955,12 +1955,14 @@ def WikiExtractLink(s: str) -> str:
         s=s[b1+2:b2]
     return s.split("|")[0].split("#")[0].strip()
 
+
 #-----------------------------------------------------------------
 # Split a string into a list of string.  The split is done on *spans* of the input characters.
 def SplitOnSpan(chars: str, s: str) -> list[str]:
     pattern=re.compile("["+chars+"]")
     # replace the matched span of <chars> with a single char from the span string
     return [x for x in re.sub(pattern, chars[0], s).split(chars[0]) if len(x) > 0]
+
 
 #------------------------------------------------------------------
 # Split a really long string of output for printing as text.
@@ -1972,3 +1974,17 @@ def SplitOutput(f, s: str):
             out=out+strs[0].strip()+", "
             del strs[0]
         f.write(f"    {out}\n")
+
+
+# ------------------------------------------------------------------
+# Split a string based on spans of <br>, </br>, <br/>, /n, \n
+def SplitOnSpansOfLineBreaks(s: str) -> list[str]:
+    # Turn spans of /n or \n into a single <br>
+    s=re.sub(r"([\\/]n)+", "<br>", s)
+
+    # Split on <br> in all its forms
+    ss=re.split(r"</?br/?>", s, flags=re.IGNORECASE)
+
+    # Trim leading and trailing spaces, drop empty members
+    ss=[x.strip() for x in ss if len(x.strip()) > 0]
+    return ss

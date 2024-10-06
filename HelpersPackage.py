@@ -746,8 +746,11 @@ def RemoveFunnyWhitespace(s: str) -> str:
 
 #=====================================================================================
 # Replace certain strings which amount to whitespace in html with whitespace
-def RemoveHTMLishWhitespace(s: str) -> str:
-    return re.sub(r"<br>|</br>|<br/>|&nbsp;", " ", s)
+def RemoveHTMLishWhitespace(s: str, replacement: str=" ") -> str:
+    return re.sub(r"<br>|</br>|<br/>|&nbsp;", replacement, s, flags=re.IGNORECASE)
+
+def RemoveLinebreaks(s: str, replacement: str="") -> str:
+    return re.sub(r"<br>|</br>|<br/>|\n", replacement, s, flags=re.IGNORECASE | re.DOTALL)
 
 
 #=====================================================================================

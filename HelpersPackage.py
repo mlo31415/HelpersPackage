@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Optional, DefaultDict
+from typing import Any, DefaultDict
 import os
 import sys
 import ctypes

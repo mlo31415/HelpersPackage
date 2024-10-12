@@ -78,7 +78,7 @@ def PyiResourcePath(relative_path):
 
 #=======================================================
 # Locate and return a chunk of text bounded by two patterns
-def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str, Flags=0) -> tuple[Optional[str], str]:
+def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str, Flags=0) -> tuple[str|None, str]:
     m=re.search(startpattern, source)
     if m is None:
         return None, source
@@ -95,7 +95,7 @@ def SearchAndExtractBounded(source: str, startpattern: str, endpattern: str, Fla
 # Return a tuple consisting of (middle),  all of the input before (start)+after (end)
 # The default is to search *everying, ignoring line boundaries and case.
 # When there is no match, (middle) is returned as None
-def SearchExtractAndRemoveBounded(source: str, pattern: str, Flags=re.IGNORECASE | re.DOTALL) -> tuple[Optional[str], str]:
+def SearchExtractAndRemoveBounded(source: str, pattern: str, Flags=re.IGNORECASE | re.DOTALL) -> tuple[str|None, str]:
     m=re.search(pattern, source, flags=Flags)
     if m is None:
         return None, source
@@ -365,7 +365,7 @@ def FormatLink2(url: str, text: str, ForceHTTP: bool=False) -> str:
 
 #==================================================================================
 # Take a string and strip out all hrefs, retaining all the text.
-def UnformatLinks(s: str) -> Optional[str]:
+def UnformatLinks(s: str) -> str|None:
     if s is None or s == "":
         return s
 
@@ -647,7 +647,7 @@ def StripSpecificTag(s: str, tag: str, CaseSensitive=False)-> str:
 
 #=====================================================================================
 # Remove a matched pair of external <brackets> <containing anything> from a string, returning the inside
-def StripExternalTags(s: str)-> Optional[str]:
+def StripExternalTags(s: str)-> str|None:
     m=re.match("^<.*>(.*)</.*>$", s)
     if m is None:
         return None
@@ -828,7 +828,7 @@ def UnicodeToHtml2(s: str) -> str:
 
 #=====================================================================================
 # Function to generate the proper kind of path.  (This may change depending on the target location of the output.)
-def RelPathToURL(relPath: str) -> Optional[str]:
+def RelPathToURL(relPath: str) -> str|None:
     if relPath is None:
         return None
     if relPath.startswith("http"):  # We don't want to mess with foreign URLs
@@ -839,7 +839,7 @@ def RelPathToURL(relPath: str) -> Optional[str]:
 # =====================================================================================
 # Function to find the index of one or more strings in a list of strings.  Stop with the first one found.
 #  E.g., find the first occurance of "Mailing" or "Mailings" or "APA Mailing" in a list of possible column headers
-def FindIndexOfStringInList(lst: list[str], s: [str, list[str]], IgnoreCase=False) -> Optional[int]:
+def FindIndexOfStringInList(lst: list[str], s: [str, list[str]], IgnoreCase=False) -> int|None:
     if isinstance(s, str):  # If it's a single string, just go with it!
         return FindIndexOfStringInList2(lst, s)
 
@@ -852,7 +852,7 @@ def FindIndexOfStringInList(lst: list[str], s: [str, list[str]], IgnoreCase=Fals
 
 #=====================================================================================
 # Function to find the index of a specific string in a list of strings
-def FindIndexOfStringInList2(lst: list[str], s: str, IgnoreCase=False) -> Optional[int]:
+def FindIndexOfStringInList2(lst: list[str], s: str, IgnoreCase=False) -> int|None:
     if not IgnoreCase:
         try:
             return lst.index(s)
@@ -874,7 +874,7 @@ def CreateFanacOrgAbsolutePath(fanacDir: str, s: str) -> str:
 
 #==================================================================================
 # Is at least one item in inputlist also in checklist?  Return the index of the 1st match or None
-def CrosscheckListElement(inputList: str |list[str], checkList: list[str]) -> Optional[int]:
+def CrosscheckListElement(inputList: str |list[str], checkList: list[str]) -> int|None:
     if isinstance(inputList, str):
         inputlist=[inputList]
     ListofHits=[FindIndexOfStringInList(checkList, x) for x in inputList]
@@ -1050,7 +1050,7 @@ def IsInt(arg: any) -> bool:
 
 # =============================================================================
 # Convert a string to Int or None w/o throwing exception
-def Int(val: str) -> Optional[int]:
+def Int(val: str) -> int|None:
     if IsInt(val):
         return int(val)
     return None
@@ -1076,7 +1076,7 @@ def Float0(arg: any) -> float:
 
 
 
-def ZeroIfNone(x: Optional[int]):
+def ZeroIfNone(x: int|None):
     return 0 if x is None else x
 
 
@@ -1179,7 +1179,7 @@ def SetReadOnlyFlag(pathname: str, flag: bool) -> None:
 # =============================================================================
 # Read a list of lines in from a file
 # Strip leading and trailing whitespace and ignore lines which begin with a '#'
-def ReadList(filename: str, isFatal: bool=False) -> Optional[list[str]]:
+def ReadList(filename: str, isFatal: bool=False) -> list[str]|None:
     if not os.path.exists(filename):
         if isFatal:
             MessageLog(f"***Fatal error: Can't find {os.getcwd()}/{filename}")
@@ -1420,7 +1420,7 @@ def ApplyParmDictToString(s: str, parms: ParmDict) -> str:
 # =============================================================================
 # Interpret a string of Roman numerals into an int
 # Better to use roman.fromRoman() if you can, but roman is not supported by Pyinstaller
-def InterpretRoman(s: str) -> Optional[int]:
+def InterpretRoman(s: str) -> int|None:
     values={"m":1000, "d":500, "c":100, "l":50, "x":10, "v":5, "i":1}
     val=0
     lastv=0     # Holds the value of the last character processed -- needed for inversions like "XIX"
@@ -1444,13 +1444,13 @@ def InterpretRoman(s: str) -> Optional[int]:
 #   nnn-nnn
 #   nnn.nnn
 #   nnnaaa
-def InterpretInteger(inputstring: Optional[str]) -> Optional[int]:
+def InterpretInteger(inputstring: str|None) -> int|None:
     num=InterpretNumber(inputstring)
     if num is None:
         return None
     return int(num)
 
-def InterpretNumber(inputstring: Optional[str]) -> None | int | float:
+def InterpretNumber(inputstring: str|None) -> None | int | float:
     if inputstring is None:
         return None
 
@@ -1724,7 +1724,7 @@ def RemoveEmptyRowsFromMatrix(m: list[list[str]]) -> list[list[str]]:
 #       The line with the matched portion removed
 #       Capture group 1
 #       Capture group 2
-def Match2AndRemove(inputstr: str, pattern: str) -> tuple[str, Optional[str], Optional[str]]:
+def Match2AndRemove(inputstr: str, pattern: str) -> tuple[str, str|None, str|None]:
     m=re.match(pattern, inputstr)         # Do we match the pattern?
     if m is not None and len(m.groups()) > 0:
         g0=m.groups()[0]                    # There may be either 1 or two groups, but we need to return two matches

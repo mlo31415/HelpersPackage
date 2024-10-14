@@ -797,6 +797,13 @@ def RemoveAllHTMLLikeTags(s: str) -> str:
     vv=re.sub(r"(</?.*?/?>)", "", s)
     return vv
 
+
+#=====================================================================================
+# Change all occurances of </br> and <br/> to <br> (case insensitive)
+def RegularizeBRTags(s: str) -> str:
+    return re.sub(r"<(/br|br/)>", "<br>", s, flags=re.IGNORECASE)
+
+
 #=====================================================================================
 # Change"&nbsp;" to space
 def ChangeNBSPToSpace(s: None | str) -> None | str | list[str]:

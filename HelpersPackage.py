@@ -786,9 +786,10 @@ def RemoveAllHTMLTags2(s: str) -> str:
 
 #=====================================================================================
 # Remove the top level of html tags.  I.e., <a>xx<>/a>yy<b><c>zzz</c></b>  -->  yy<c>zzz</c>
-def RemoveTopLevelHTMLTags(s: str) -> str:
-    vv=re.sub(r'<([a-zA-Z0-9]+)[^>]*>(.+?)</\1>', r"\2", s)
-    return vv
+def RemoveTopLevelHTMLTags(s: str, LeaveLinks: bool=False) -> str:
+    if not LeaveLinks:
+        return re.sub(r'<([a-zA-Z0-9]+)[^>]*>(.+?)</\1>', r"\2", s)
+    return re.sub(r'<([b-z0-9][a-z0-9]*)[^>]*?>(.*?)</\1>', r"\2", s)
 
 #=====================================================================================
 # Remove all HTML-like tags

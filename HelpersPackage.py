@@ -792,7 +792,7 @@ def RemoveTopLevelHTMLTags(s: str, LeaveLinks: bool=False) -> str:
     return re.sub(r'<([b-z0-9][a-z0-9]*)[^>]*?>(.*?)</\1>', r"\2", s)
 
 #=====================================================================================
-# Remove all HTML-like tags
+# Remove all HTML-like tags (No need for them to be balanced!)
 def RemoveAllHTMLLikeTags(s: str) -> str:
     vv=re.sub(r"(</?.*?/?>)", "", s)
     return vv

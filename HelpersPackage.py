@@ -637,7 +637,7 @@ def FindWikiBracketedText(s: str) -> str:
 def StripSpecificTag(s: str, tag: str, CaseSensitive=False)-> str:
     pattern=f"^<{tag}>(.*)</{tag}>$"
     if CaseSensitive:
-        m=re.match(pattern, s, re.IGNORECASE)
+        m=re.match(pattern, s)
     else:
         m=re.match(pattern, s, re.IGNORECASE)
 

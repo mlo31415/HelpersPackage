@@ -823,7 +823,7 @@ def ChangeNBSPToSpace(s: None | str) -> None | str | list[str]:
 def UnicodeToHtml(s: str) -> str:
     # Convert the text to ascii and then used decode to turn it back into a str
     s=escape(s).encode('ascii', 'xmlcharrefreplace').decode()
-    # But this overachievs and converts <, > and & to html.  Reverse this.
+    # But this overachieves and converts <, > and & to html.  Reverse this.
     return s.replace("&gt;", ">").replace("&lt;", "<").replace("&amp;", "&")
 
 

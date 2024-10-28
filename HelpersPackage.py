@@ -204,7 +204,7 @@ def FindFanacTagsInHTML(s: str, opentag: str, closetag) -> tuple[str | None, str
 # separate the string into three pieces: Before the start tag, between the tags, after the end tag.
 # Replace the middle part with insert
 # Return the empty string if the tags are not found.
-def InsertHTMLUsingFanacComments(s: str, tag: str, insert: str) -> str:
+def InsertHTMLUsingFanacStartEndCommentPair(s: str, tag: str, insert: str) -> str:
     opentag=f"<!-- fanac-{tag} start-->"
     closetag=f"<!-- fanac-{tag} end-->"
     start, mid, end=FindFanacTagsInHTML(s, opentag, closetag)
@@ -215,26 +215,48 @@ def InsertHTMLUsingFanacComments(s: str, tag: str, insert: str) -> str:
 
 #--------------
 # Scan for a pair of fanac comments and return the contents (but not the tags themselves)
-def ExtractHTMLUsingFanacComments(s: str, tag: str) -> str:
+def ExtractHTMLUsingFanacStartEndCommentPair(s: str, tag: str) -> str:
     opentag=f"<!-- fanac-{tag} start-->"
     closetag=f"<!-- fanac-{tag} end-->"
     _, mid, _=FindFanacTagsInHTML(s, opentag, closetag)
     return mid
 
 
-def InsertInvisibleTextUsingFanacComments(s: str, tag: str, insert: str) -> str:
-    opentag=f"<!-- fanac-{tag} start-->"
-    closetag=f"<!-- fanac-{tag} end-->"
-    start, mid, end=FindFanacTagsInHTML(s, opentag, closetag)
+# ==================================================================================
+# Scan the input string looking for a pair of HTML comments of the form '<!--<tag>--> ... <!--<tag>-->'
+# separate the string into three pieces: Before the start tag, between the tags, after the end tag.
+# Replace the middle part with insert
+# Return the empty string if the tags are not found.
+def InsertHTMLUsingFanacTagCommentPair(s: str, tag: str, insert: str) -> str:
+    boundingComment=f"<!--{tag}-->"
+    start, mid, end=FindFanacTagsInHTML(s, boundingComment, boundingComment)
     if start is None:
-        LogError(f"Unable to locate tag pair <fanac-{tag} start-->end>")
+        LogError(f"Unable to locate tag pair {boundingComment}....{boundingComment}")
         return ""
-    return start+opentag+"<!-- "+insert+" -->"+closetag+end
+    return start+boundingComment+insert+boundingComment+end
+
+#--------------
+# Scan for a pair of fanac comments and return the contents (but not the tags themselves)
+# REturn the empty string if the tag is not found
+def ExtractHTMLUsingFanacTagCommentPair(s: str, tag: str) -> str:
+    boundingComment=f"<!--{tag}-->"
+    _, mid, _=FindFanacTagsInHTML(s, boundingComment, boundingComment)
+    return mid
+
+#
+# def InsertInvisibleTextUsingFanacStartEndCommentPair(s: str, tag: str, insert: str) -> str:
+#     opentag=f"<!-- fanac-{tag} start-->"
+#     closetag=f"<!-- fanac-{tag} end-->"
+#     start, mid, end=FindFanacTagsInHTML(s, opentag, closetag)
+#     if start is None:
+#         LogError(f"Unable to locate tag pair <fanac-{tag} start-->end>")
+#         return ""
+#     return start+opentag+"<!-- "+insert+" -->"+closetag+end
 
 
-def ExtractInvisibleTextUsingFanacComments(s: str, tag: str) -> str:
-    mid=ExtractHTMLUsingFanacComments(s, tag)
-    return mid.removeprefix("<!--").removesuffix("-->").strip()
+# def ExtractInvisibleTextUsingFanacComments(s: str, tag: str) -> str:
+#     mid=ExtractHTMLUsingFanacStartEndCommentPair(s, tag)
+#     return mid.removeprefix("<!--").removesuffix("-->").strip()
 
 
 # The comment is <!--fanac-<tag><stuff>-->, where tag is the ID and stuff is the payload

@@ -189,7 +189,7 @@ def FindFanacTagsInHTML(s: str, opentag: str, closetag) -> tuple[str | None, str
     locopen=s.find(opentag)
     if locopen < 0:
         return None, "", ""
-    locclose=s.find(closetag)
+    locclose=s.find(closetag, locopen+len(opentag))
     if locclose < locopen:
         return None, "", ""
 

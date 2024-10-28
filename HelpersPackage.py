@@ -989,6 +989,27 @@ def RemoveArticles(name: str) -> str:
         return name[:-3].strip()
     return name.strip()
 
+
+# Move a leading article to the end of a string
+# E.g., "The Hobbit" --> "Hobbit, The"
+def ArticleToEnd(s: str) -> str:
+    articles=["the", "a", "an"]
+    ls=s.lower()
+    for a in articles:
+        if ls.startswith(a+" "):
+            return s[len(a)+1:]+", "+s[:len(a)]
+    return s
+
+# Move a trailing article to the front of a string
+# E.g., "Hobbit, The" --> "The Hobbit"
+def ArticleToFront(s: str) -> str:
+    articles=["the", "a", "an"]
+    ls=s.lower()
+    for a in articles:
+        if ls.endswith(" "+a):
+            return a+" "+s[:-(len(a)+2)]
+    return s
+
 #=============================================================================
 # Sometime we need to construct a directory name by changing all the funny characters to underscores.
 def FanzineNameToDirName(s: str) -> str:       # MainWindow(MainFrame)

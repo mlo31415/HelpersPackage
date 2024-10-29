@@ -1750,6 +1750,23 @@ def UnscrambleListOfNames(input: str) -> list[str]:
     #return [input]
 
 
+# Split on pattern, but ", Jr." and suchlike should not be detached
+def SplitListOfNamesOnPattern(s: str, pattern: str) -> list[str]:
+
+    # Commas are very confusing, so begin by hiding certain constructs which are part of some last names
+    # Note that this uses the _ to stand for stuff we want to treat as a monolith, so we can't include _ in the patter of splitters
+    s=HidePrefixsAndSuffixes(s)
+
+    # We can now be pretty confident that any remaining commas are separators.
+    # Use the pattern to split the string
+    # an example of a pattern is:   r", and |,|/|;|and |&|\n|<br>"
+    names=re.split(pattern, s)       # delimiters=[", ", "/", " and ", ", and",  "&"]
+    names=[UnhidePrefixsAndSuffixes(x.strip()) for x in names]
+    names=list(filter(None, names))     # Drop emtry strings from list
+    # In certain cases (e.g., the name "Del Coger") the first name is interpreted as a prefix and is left with a trailing '_'.  Turn it into a space
+    return [x.replace("_", " ") for x in names]
+
+
 # =============================================================================
 # Take a possibly ragged list of lists of strings and make all rows the length of the longest by padding with empty strings
 def SquareUpMatrix(m: list[list[str]]) -> list[list[str]]:

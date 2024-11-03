@@ -261,7 +261,7 @@ def ExtractHTMLUsingFanacTagCommentPair(s: str, tag: str) -> str:
 
 # The comment is <!--fanac-<tag><stuff>-->, where tag is the ID and stuff is the payload
 def InsertInvisibleTextInsideFanacComment(s: str, tag: str, insert: str) -> str:
-    return re.sub(fr"<!--\s*fanac-{tag}\s*(.*?)\s*-->", f"<!-- fanac-{tag} {insert} -->", s, flags=re.IGNORECASE|re.DOTALL)
+    return re.sub(fr"<!--\s*fanac-{tag}\s*(.*?)\s*-->", f"<!-- fanac-{tag} {insert} -->", s, count=1,flags=re.IGNORECASE|re.DOTALL)
 
 def ExtractInvisibleTextInsideFanacComment(s: str, tag: str) -> str:
     m=re.search(fr"<!--\s*fanac-{tag}\s*(.*?)\s*-->", s, flags=re.IGNORECASE|re.DOTALL)

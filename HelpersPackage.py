@@ -1003,13 +1003,16 @@ def ArticleToEnd(s: str) -> str:
     return s
 
 # Move a trailing article to the front of a string
-# E.g., "Hobbit, The" --> "The Hobbit"
+# Make sure it's capitalized.
+# E.g., "Hobbit, the" --> "The Hobbit"
 def ArticleToFront(s: str) -> str:
     articles=["the", "a", "an"]
     ls=s.lower()
     for a in articles:
         if ls.endswith(" "+a):
-            return a+" "+s[:-(len(a)+2)]
+            a=a+" "
+            a=a[0].upper()+a[1:]
+            return a+s[:-(len(a)+2)]
     return s
 
 #=============================================================================

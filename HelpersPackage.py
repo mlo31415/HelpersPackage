@@ -1006,13 +1006,23 @@ def ArticleToEnd(s: str) -> str:
 # Make sure it's capitalized.
 # E.g., "Hobbit, the" --> "The Hobbit"
 def ArticleToFront(s: str) -> str:
+    s=s.strip()
+    if s == "":
+        return ""
+
     articles=["the", "a", "an"]
     ls=s.lower()
+    mixedcase=s[0] == s[0].upper()
     for a in articles:
         if ls.endswith(" "+a):
-            a=a+" "
-            a=a[0].upper()+a[1:]
-            return a+s[:-(len(a)+2)]
+            s=a[0].upper()+a[1:]+" "+s[:-(len(a)+2)]
+            break
+    # If the string is mixed case, be sure to capitalize any leading article
+    if mixedcase:
+        for a in articles:
+            if s.startswith(a):
+                s=s[0].upper()+s[1:]
+                break
     return s
 
 #=============================================================================

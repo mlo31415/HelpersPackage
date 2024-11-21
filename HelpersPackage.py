@@ -271,6 +271,17 @@ def ExtractInvisibleTextInsideFanacComment(s: str, tag: str) -> str:
         return ""
     return m.groups()[0].strip()
 
+# Insert text between HTML comments:  <!tag-->stuff<!tag-->
+def InsertBetweenHTMLComments(s: str, tag: str, val: str) -> str:
+    # Look for a section of the input string surrounded by  "<!--- tag -->" and replace it all by val
+    return re.sub(rf"<!--\s*{tag}\s*-->(.*?)<!--\s*{tag}\s*-->", f"<!--{tag}-->{val}<!--{tag}-->", s, flags=re.IGNORECASE|re.DOTALL|re.MULTILINE)
+
+def ExtractBetweenHTMLComments(s: str, tag: str) -> str:
+    m=re.search(rf"<!--\s*{tag}\s*-->(.*?)<!--\s*{tag}\s*-->", s, flags=re.IGNORECASE|re.DOTALL)
+    if m is None:
+        return ""
+    return m.groups()[0].strip()
+
 
 # =============================================================================
 # Converting between page names and poge file names (urlname) in MediaWiki

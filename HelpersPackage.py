@@ -1245,13 +1245,13 @@ def SetReadOnlyFlag(pathname: str, flag: bool) -> None:
 # =============================================================================
 # Read a list of lines in from a file
 # Strip leading and trailing whitespace and ignore lines which begin with a '#'
-def ReadList(filename: str, isFatal: bool=False) -> list[str]|None:
+def ReadList(filename: str, isFatal: bool=False) -> list[str]:
     if not os.path.exists(filename):
         if isFatal:
             MessageLog(f"***Fatal error: Can't find {os.getcwd()}/{filename}")
             raise FileNotFoundError
         Log(f"ReadList can't find {os.getcwd()}/{filename}")
-        return None
+        return []
     with open(filename, "r") as f:
         lst=f.readlines()
 
@@ -1422,7 +1422,7 @@ def GetParmFromParmDict(parameters: ParmDict, name: str, default: str=None) -> A
 def ReadListAsParmDict(filename: str, isFatal: bool=False, CaseInsensitiveCompare: bool=False, IgnoreSpacesCompare: bool=False) -> ParmDict | None:
     dict=ParmDict(CaseInsensitiveCompare=CaseInsensitiveCompare, IgnoreSpacesCompare=IgnoreSpacesCompare)
     lines=ReadList(filename, isFatal=isFatal)
-    if lines is None:
+    if len(lines) == 0:
         return None
     for line in lines:
         # Remove everything beyond the first #

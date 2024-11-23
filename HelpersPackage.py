@@ -441,6 +441,7 @@ def CanonicizeColumnHeaders(header: str) -> str:
     # 2nd item is the canonical form for fanac.org and fancyclopedia series tables
     translationTable={
                         "published" : "Date",
+                        "(date)" : "Date",
                         "author" : "Editor",
                         "editors" : "Editor",
                         "editor/s" : "Editor",

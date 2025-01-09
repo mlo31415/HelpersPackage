@@ -508,13 +508,16 @@ def ScanForBracketedText(s: str, bra: str) -> tuple[bool, str]:
 
 
 #=====================================================================================
-# Find the first <bracket>bracketed text</bracket> located.  Return the leading, enclosed, and trailing text
-def ParseFirstStringBracketedText(s: str, bracket: str) -> tuple[str, str, str]:
+# Find the first <bracket>bracketed text</bracket> located.  Return:  leading, enclosed, and trailing text
+def ParseFirstStringBracketedText(s: str, bracket: str, IgnoreCase=False) -> tuple[str, str, str]:
     # We need to escape certain characters before substituting them into a RegEx pattern
     bracket=bracket.replace("[", r"\[").replace("(", r"\(").replace("{", r"\{")
 
     pattern=rf"^(.*?)<{bracket}>(.*?)</{bracket}>(.*)$"
-    m=re.search(pattern, s,  re.DOTALL)
+    flags=re.DOTALL
+    if IgnoreCase:
+        flags=flags|re.IGNORECASE
+    m=re.search(pattern, s,  flags)
     if m is None:
         return s, "", ""
 

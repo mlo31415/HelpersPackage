@@ -271,6 +271,7 @@ def ExtractInvisibleTextInsideFanacComment(s: str, tag: str) -> str:
         return ""
     return m.groups()[0].strip()
 
+
 # Insert text between HTML comments:  <!tag-->stuff<!tag-->
 def InsertBetweenHTMLComments(s: str, tag: str, val: str) -> str:
     # Look for a section of the input string surrounded by  "<!--- tag -->" and replace it all by val
@@ -445,9 +446,9 @@ def CanonicizeColumnHeaders(header: str) -> str:
                         "author" : "Editor",
                         "editors" : "Editor",
                         "editor/s" : "Editor",
-                        "fanzine" : "Issue",
-                        "title" : "Issue",
-                        "zine" : "Issue",
+                        "fanzine" : "IssueName",
+                        "title" : "IssueName",
+                        "zine" : "IssueName",
                         "apa mailing" : "Mailing",
                         "mo." : "Month",
                         "mon" : "Month",

@@ -181,6 +181,19 @@ def FindLinkInString(s: str) -> tuple[str, str, str, str]:
     return m.groups()[0], m.groups()[2], m.groups()[3], m.groups()[4]
 
 
+# Take a string and find the first href.
+# Return a tuple of: <material before>, <link>, <display text>, <material after>
+# This version does not require
+def FindHrefInString(s: str) -> tuple[str, str, str, str]:
+    # Get rid of any class=stuff crud
+    s=re.sub(r'class=".+?"', "", s, count=10, flags=re.IGNORECASE)
+    pat=r"^(.*?)href=['\"](https?:)?(.*?)['\"](.*)$"
+    m=re.match(pat, s, flags=re.IGNORECASE|re.DOTALL)
+    if m is None:
+        return s, "", "", ""
+    return m.groups()[0], m.groups()[2], m.groups()[3], m.groups()[4]
+
+
 # ==================================================================================
 # Scan the input string looking for a pair of HTML comments of the form '<!-- fanac-<tag> start> ... <fanac-<tag> end>'
 # separate the string into three p[ices: Before the start tag, between the tags, after the end tag.

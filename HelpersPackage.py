@@ -2086,3 +2086,100 @@ def SplitOnSpansOfLineBreaks(s: str) -> list[str]:
     # Trim leading and trailing spaces, drop empty members
     ss=[x.strip() for x in ss if len(x.strip()) > 0]
     return ss
+
+# =============================================================================================
+# Try to interpret a complex string as serial information
+# If there's a trailing Vol+Num designation at the end of a string, interpret it.
+#  leading=True means that we don't try to match the entire input, but just a greedy chunk at the beginning.
+#  strict=True means that we will not match potentially ambiguous or ill-formed strings
+# complete=True means that we will only match the *complete* input (other than leading and trailing whitespace).
+
+# We accept:
+#       ...Vnn[,][ ]#nnn[ ]
+#       ...nnn nnn/nnn      a number followed by a fraction
+#       ...nnn/nnn[  ]      vol/num
+#       ...rrr/nnn          vol (in Roman numerals)/num
+#       ...nn.mm
+#       ...nn[ ]
+#
+#  Return value: Leading stuff (preseumable a nave), Vol#, Num, NumSuffix
+#       If it is not Vol/num, it's a whole number witch is returned in Num with Vol=""
+def ExtractTrailingSequenceNumber(s: str, complete: bool = False) -> (str, str, str, str):
+    s=s.strip()  # Remove leading and trailing whitespace
+
+    # First look for a Vol+Num designation: Vnnn #mmm
+    # # Leading junk
+    # Vnnn + optional whitespace
+    # #nnn + optional single alphabetic character suffix
+    m=re.match(r"^(.*?)V(\d+)\s*#(\d+)(\w?)$", s)
+    if m is not None and len(m.groups()) in [3, 4]:
+        ns=""
+        if len(m.groups()) == 4:
+            ns=m.groups()[3]
+        return m.groups()[0].strip(), m.groups()[1], m.groups()[2], ns
+
+    #
+    #  Vol (or VOL) + optional space + nnn + optional comma + optional space
+    # + #nnn + optional single alphabetic character suffix
+    m=re.match(r"^(.*?)V[oO][lL]\s*(\d+)\s*#(\d+)(\w?)$", s)
+    if m is not None and len(m.groups()) in [3, 4]:
+        ns=None
+        if len(m.groups()) == 4:
+            ns=m.groups()[2]
+        return m.groups()[0].strip(), m.groups()[1], m.groups()[2], ns
+
+    # Now look for nnn nnn/nnn (fractions!)
+    # nnn + mandatory whitespace + nnn + slash + nnn * optional whitespace
+    m=re.match(r"^(.*?)(\d+)\s+(\d+)/(\d+)$", s)
+    if m is not None and len(m.groups()) == 4:
+        return m.groups()[0].strip(), "", m.groups()[1]+" "+m.groups()[2]+"/"+m.groups()[3], ""
+
+    # Now look for nnn/nnn (which is understood as vol/num
+    # Leading stuff + nnn + slash + nnn * optional whitespace
+    m=re.match(r"^(.*?)(\d+)/(\d+)$", s)
+    if m is not None and len(m.groups()) == 3:
+        return m.groups()[0].strip(), m.groups()[1], m.groups()[2], ""
+
+    # Now look for xxx, where xxx is in Roman numerals
+    # Leading whitespace + roman numeral characters + whitespace
+    m=re.match(r"^(.*?)([IVXLC]+)$", s)  # TODO: the regex detects more than just Roman numerals.  We need to bail out of this branch if that happens and not return
+    if m is not None and len(m.groups()) == 2:
+        return m.groups()[0].strip(), "", str(InterpretRoman(m.groups()[1])), ""
+
+    # Next look for nnn-nnn (which is a range of issue numbers; only the start is returned)
+    # Leading stuff + nnn + dash + nnn
+    m=re.match(r"^(.*?)(\d+)-(\d+)$", s)
+    if m is not None and len(m.groups()) == 3:
+        return m.groups()[0].strip(), "", m.groups()[1], ""
+
+    # Next look for #nnn
+    # Leading stuff + nnn
+    m=re.match(r"^(.*?)#(\d+)$", s)
+    if m is not None and len(m.groups()) == 2:
+        return m.groups()[0].strip(), "", m.groups()[1], ""
+
+    # Now look for a trailing decimal number
+    # Leading characters + single non-digit + nnn + dot + nnn + whitespace
+    # the ? makes * a non-greedy quantifier
+    m=re.match(r"^(.*?)(\d+\.\d+)$", s)
+    if m is not None and len(m.groups()) == 2:
+        return m.groups()[0].strip(), "", m.groups()[1]+"."+m.groups()[2], ""
+
+    if not complete:
+        # Now look for a single trailing number
+        # Leading stuff + nnn + optional single alphabetic character suffix + whitespace
+        m=re.match(r"^(.*?)([0-9]+)([a-zA-Z]?)\s*$", s)
+        if m is not None and len(m.groups()) in [2, 3]:
+            ws=None
+            if len(m.groups()) == 3:
+                ws=m.groups()[1].strip()
+            return m.groups()[0].strip(), "", m.groups()[1], ws
+
+        # Now look for trailing Roman numerals
+        # Leading stuff + mandatory whitespace + roman numeral characters + optional trailing whitespace
+        m=re.match(r"^(.*?)\s+([IVXLC]+)\s*$", s)
+        if m is not None and len(m.groups()) == 2:
+            return m.groups()[0].strip(), "", str(InterpretRoman(m.groups()[1])), ""
+
+    # No good, return failure
+    return s, "", "", ""

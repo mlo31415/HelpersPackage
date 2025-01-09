@@ -1299,6 +1299,9 @@ class ParmDict():
         self._IgnoreSpacesCompare=IgnoreSpacesCompare
         self._sourcefilename=None
 
+    def __str__(self) -> str:
+        return ",   ".join([f"'{key}'='{val}'" for key, val in self.items()])
+
     # Get an item.  Returns None if key does not exist and no default value is specified.
     # Call as parms[key] or parms[key, defaultvalue]
     # parms[key] returns None if key is not found

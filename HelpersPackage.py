@@ -866,9 +866,9 @@ def ChangeNBSPToSpace(s: None | str) -> None | str | list[str]:
         return s
 
     if isinstance(s, str):
-        return s.replace("&nbsp;", " ")
+        return s.replace("&nbsp;", " ").replace("&NBSP;", " ")      #TODO: Maybe this should be done by regex?
 
-    return [c.replace("&nbsp;", " ") for c in s]
+    return [c.replace("&nbsp;", " ").replace("&NBSP;", " ") for c in s]
 
 
 #=====================================================================================

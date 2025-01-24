@@ -4,33 +4,47 @@ import os
 from pypdf import PdfReader, PdfWriter
 
 from HelpersPackage import ExtensionMatches
-from Log import Log
+from Log import Log, LogError
 
 
 # =============================================================================
-def AddMissingMetadata(file: str, newmetadata: dict[str, str]):
-    if file.lower().endswith(".pdf"):
+def AddMissingMetadata(filename: str, newmetadata: dict[str, str], keywords: str=""):
+    if filename.lower().endswith(".pdf"):
 
-        file_in=open(file, 'rb')
+        # Open the existing pdf file
+        file_in=open(filename, 'rb')
         reader=PdfReader(file_in)
 
-        writer=PdfWriter()
-
-        writer.append_pages_from_reader(reader)
-        writer.add_metadata(newmetadata)
+        # Try to create a writer which is filled with a clone of the input odf
         try:
-            writer.add_metadata(reader.metadata)
+            writer=PdfWriter(clone_from=filename)
+        except FileNotFoundError:
+            wx.MessageBox(f"Unable to open file {filename}")
+            LogError((f"SetPDFMetadata: Unable to open file {filename}"))
+            return ""
+
+        # If keywords are supplied, add them to the new metadata
+        if keywords != "":
+            newmetadata["/Keywords"]=keywords
+
+        # Add the newmetadata to the cloend pdf.
+        try:
+            writer.add_metadata(newmetadata)
         except:
-            Log(f"AddMissingMetadata().writer.add_metadata(reader.metadata) with file {file} threw an exception: Ignored")
-        # os.remove(file)
-        path, ext=os.path.splitext(file)
+            LogError(f"SetPDFMetadata().writer.add_metadata(metadata) with file {filename} threw an exception: Ignored")
+
+        # Write out the new pdf using the existing pdf's name with " added" appended to it.
+        path, ext=os.path.splitext(filename)
         newfile=path+" added"+ext
         file_out=open(newfile, 'wb')
+
         writer.write(file_out)
+
+        # Close both the old and new pdfs, delete the old and rename the new to the old's name
         file_in.close()
         file_out.close()
-        os.remove(file)
-        os.rename(newfile, file)
+        os.remove(filename)
+        os.rename(newfile, filename)
 
 
 # =============================================================================

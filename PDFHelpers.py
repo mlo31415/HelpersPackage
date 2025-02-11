@@ -8,7 +8,7 @@ from Log import Log, LogError
 
 
 # =============================================================================
-def AddMissingMetadata(filename: str, newmetadata: dict[str, str], keywords: str=""):
+def AddMissingMetadata(filename: str, newmetadata: dict[str, str], keywords: str="") -> bool:
     if filename.lower().endswith(".pdf"):
 
         # Open the existing pdf file
@@ -19,9 +19,8 @@ def AddMissingMetadata(filename: str, newmetadata: dict[str, str], keywords: str
         try:
             writer=PdfWriter(clone_from=filename)
         except FileNotFoundError:
-            wx.MessageBox(f"Unable to open file {filename}")
-            LogError((f"SetPDFMetadata: Unable to open file {filename}"))
-            return ""
+            LogError(f"SetPDFMetadata: Unable to open file {filename}")
+            return False
 
         # If keywords are supplied, add them to the new metadata
         if keywords != "":
@@ -45,6 +44,7 @@ def AddMissingMetadata(filename: str, newmetadata: dict[str, str], keywords: str
         file_out.close()
         os.remove(filename)
         os.rename(newfile, filename)
+        return True
 
 
 # =============================================================================

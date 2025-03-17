@@ -1193,7 +1193,7 @@ def Float0(arg: any) -> float:
 
 
 
-def ZeroIfNone(x: int|None):
+def ZeroIfNone(x: int|None) -> int:
     return 0 if x is None else x
 
 

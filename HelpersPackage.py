@@ -115,22 +115,44 @@ def SearchExtractAndRemoveBoundedAll(source: str, pattern: str, Flags=re.IGNOREC
             return matches, source
         matches.append(f"<td{middle}")
 
+
 #=======================================================
 # Take a list of strings and turn it into an english list.  E.g. ["A", "B", "C"] --> "A, B, and C"
 def TurnPythonListIntoWordList(plist: list[str]) -> str:
-    if len(plist) == 0:
-        return ""
-    if len(plist) == 1:
-        return plist[0]
+    return MakeNiceCommaSeparatedList(plist)
+    # if len(plist) == 0:
+    #     return ""
+    # if len(plist) == 1:
+    #     return plist[0]
+    #
+    # out=""
+    # for pl in plist[:-1]:
+    #     if len(out) > 0:
+    #         out+=", "
+    #     out+=pl
+    # out+=" and"+plist[-1]
+    # return out
 
-    out=""
-    for pl in plist[:-1]:
-        if len(out) > 0:
-            out+=", "
-        out+=pl
-    out+=" and"+plist[-1]
-    return out
 
+# Turn a list of str into a comm-separated list
+# Skip empty strings and spaces-only strings
+def MakeNiceCommaSeparatedList(input: list[str], AppendPeriod=False, UseAnd=False) -> str:
+    lastitem=""
+    if UseAnd:
+        if len(input) > 1:
+            lastitem=input[-1]
+            input=input[:-1]
+
+    stuff=[x.strip() for x in input if x is not None and x.strip() != ""]
+    stuff=", ".join(stuff)
+
+    if UseAnd and len(lastitem) > 0:
+        stuff+= " and "+lastitem
+
+    if AppendPeriod:
+        if len(stuff) > 0:
+            stuff+="."
+    return stuff
 
 #=======================================================
 # Try to make the input numeric
@@ -2122,10 +2144,11 @@ def SplitOnSpansOfLineBreaks(s: str) -> list[str]:
 #       ...nn.mm
 #       ...nn[ ]
 #
-#  Return value: Leading stuff (preseumable a nave), Vol#, Num, NumSuffix
+#  Return value: Leading stuff (preseumable a name), Vol#, Num, NumSuffix
 #       If it is not Vol/num, it's a whole number witch is returned in Num with Vol=""
 def ExtractTrailingSequenceNumber(s: str, complete: bool = False) -> (str, str, str, str):
     s=s.strip()  # Remove leading and trailing whitespace
+    #Log(f"ExtractTrailingSequenceNumber({s})")
 
     # First look for a Vol+Num designation: Vnnn #mmm
     # # Leading junk
@@ -2183,7 +2206,7 @@ def ExtractTrailingSequenceNumber(s: str, complete: bool = False) -> (str, str, 
     # the ? makes * a non-greedy quantifier
     m=re.match(r"^(.*?)(\d+\.\d+)$", s)
     if m is not None and len(m.groups()) == 2:
-        return m.groups()[0].strip(), "", m.groups()[1]+"."+m.groups()[2], ""
+        return m.groups()[0].strip(), "", m.groups()[1], ""
 
     if not complete:
         # Now look for a single trailing number

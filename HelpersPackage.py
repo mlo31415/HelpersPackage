@@ -136,7 +136,7 @@ def TurnPythonListIntoWordList(plist: list[str]) -> str:
 
 # Turn a list of str into a comm-separated list
 # Skip empty strings and spaces-only strings
-def MakeNiceCommaSeparatedList(input: list[str], AppendPeriod=False, UseAnd=False) -> str:
+def MakeNiceCommaSeparatedList(input: list[str], AppendPeriod=False, UseAnd=False, Delimiter=", ") -> str:
     lastitem=""
     if UseAnd:
         if len(input) > 1:
@@ -144,7 +144,7 @@ def MakeNiceCommaSeparatedList(input: list[str], AppendPeriod=False, UseAnd=Fals
             input=input[:-1]
 
     stuff=[x.strip() for x in input if x is not None and x.strip() != ""]
-    stuff=", ".join(stuff)
+    stuff=Delimiter.join(stuff)
 
     if UseAnd and len(lastitem) > 0:
         stuff+= " and "+lastitem

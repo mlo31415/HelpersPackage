@@ -1715,50 +1715,69 @@ def NormalizePersonsName(name: str) -> str:
 # Normalize a person's name
 # For now, all we do is flips the 'stuff lname' to 'lname, stuff'
 # Lyndon Baines Johnson --> Johnson, Lyndon Baines
-def SortPersonsName(name: str) -> str:
+def SortPersonsName(name: str, IsLowerCaseOnly=False) -> str:
     if name is None or name == "":
         return " "
 
-    name=HidePrefixsAndSuffixes(name)   # Need to hide things like Warner, Jr.
+    name=HidePrefixsAndSuffixes(name, IsLowerCaseOnly=IsLowerCaseOnly)   # Need to hide things like Warner, Jr.
 
     if "," in name:     # If name has a comma, it's probably already in lname, fname  order
-        return UnhidePrefixsAndSuffixes(name)
+        return UnhidePrefixsAndSuffixes(name, IsLowerCaseOnly-IsLowerCaseOnly)
 
     if " " not in name:     # If it's all non-whitespace characters, there's not much to be done
-        return UnhidePrefixsAndSuffixes(name)
+        return UnhidePrefixsAndSuffixes(name, IsLowerCaseOnly=IsLowerCaseOnly)
 
     # Use <last token>, <other tokens>
     tokens=name.split()
-    return UnhidePrefixsAndSuffixes(" ".join([tokens[-1]+","]+tokens[:-1]))
+    return UnhidePrefixsAndSuffixes(" ".join([tokens[-1]+","]+tokens[:-1]), IsLowerCaseOnly=IsLowerCaseOnly)
 
 
 # Two routines to hide and unhide various name prefixes and suffixes
-suffixes=[(", Jr.", "qqqJr"), (", jr.", "qqqjr"), (" Jr.", "qqq2Jr"), (" jr.", "qqq2jr"), (", Jr", "qqq3Jr"), (", jr", "qqq3jr"), (" Jr", "qqq4Jr"), (" jr", "qqq4jr"), # With comma & period, with period, with comma, with neither
-          (", Sr.", "qqqSr"), (", sr.", "qqqsr"), (" Sr.", "qqq2Sr"), (" sr.", "qqq2sr"), (", Sr", "qqq3Sr"), (", sr", "qqq3sr"), (" Sr", "qqq4Sr"), (" sr", "qqq4sr"),
-          (", III", "qqqIII"), (" III", "qqq2III"), (", II", "qqqII"), (" II", "qqq2II"),
+suffixesLC=[(", jr.", "qqqjr"), (" jr.", "qqq2jr"), (", jr", "qqq3jr"), (" jr", "qqq4jr"), # With comma & period, with period, with comma, with neither
+          (", sr.", "qqqsr"), (" sr.", "qqq2sr"), (", sr", "qqq3sr"), (" sr", "qqq4sr"),
+          (", iii", "qqqiii"), (" III", "qqq2iii"), (", II", "qqqii"), (" II", "qqq2ii"),
           (", et al", "qqqetal"), (" et al", "qqq2etal"), (" et. al.", "qqq3etal")]
-prefixes=[(" Van ", " Van_"), (" van ", " van_"), (" Von ", " Von_"), (" von ", " von_"), (" Del ", " Del_"), (" del ", " del_"),
-          (" De ", " De_"), (" de ", " de_"), (" Le ", " Le_"), (" le ", " le_")]
+suffixesUC=[(", Jr.", "qqqJr"), (" Jr.", "qqq2Jr"), (", Jr", "qqq3Jr"), (" Jr", "qqq4Jr"),  # With comma & period, with period, with comma, with neither
+          (", Sr.", "qqqSr"), (" Sr.", "qqq2Sr"), (", Sr", "qqq3Sr"), (" Sr", "qqq4Sr"),
+          (", III", "qqqIII"), (" III", "qqq2III"), (", II", "qqqII"), (" II", "qqq2II")]
 
-def HidePrefixsAndSuffixes(input: str) -> str:
+prefixesLC=[(" van ", " van_"), (" von ", " von_"), (" del ", " del_"), (" de ", " de_"), (" le ", " le_")]
+prefixesUC=[(" Van ", " Van_"), (" Von ", " Von_"), (" Del ", " Del_"),  (" De ", " De_"), (" Le ", " Le_")]
+
+# Note that we can get a performance boost if we know that the input text is already all lower case.
+def HidePrefixsAndSuffixes(input: str, IsLowerCaseOnly=False) -> str:
     # We will hide them as "qqq#" where # is the number, below.  This way, they will appear to be part of the name
-    for key, val in suffixes:
+    for key, val in suffixesLC:
         input=input.replace(key, val)
+    if not IsLowerCaseOnly:
+        for key, val in suffixesUC:
+            input=input.replace(key, val)
     # The same for prefixes.  (Note that Del must precede Ge to prevent mis-matches.)
-    for key, val in prefixes:
+    for key, val in prefixesLC:
         input=input.replace(key, val)
+    if not IsLowerCaseOnly:
+        for key, val in prefixesUC:
+            input=input.replace(key, val)
     return input
 
-def UnhidePrefixsAndSuffixes(input: str) -> str:
-    for key, val in suffixes:
+# Undo the above hiding
+def UnhidePrefixsAndSuffixes(input: str, IsLowerCaseOnly=False) -> str:
+    for key, val in suffixesLC:
         input=input.replace(val, key)
-    for key, val in prefixes:
+    if not IsLowerCaseOnly:
+        for key, val in suffixesUC:
+            input=input.replace(val, key)
+    # The same for prefixes.  (Note that Del must precede Ge to prevent mis-matches.)
+    for key, val in prefixesLC:
         input=input.replace(val, key)
+    if not IsLowerCaseOnly:
+        for key, val in prefixesUC:
+            input=input.replace(val, key)
     return input
 
 
 def FlattenPersonsNameForSorting(s: str) -> str:
-    return RemoveNonAlphanumericChars(unidecode(SortPersonsName(s).casefold()), LeaveSingleQuote=True)
+    return RemoveNonAlphanumericChars(unidecode(SortPersonsName(s.casefold(), IsLowerCaseOnly=True)), LeaveSingleQuote=True)
 
 
 def FlattenTextForSorting(s: str, RemoveLeadingArticles: bool=False) -> str:

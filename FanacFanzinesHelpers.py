@@ -13,7 +13,7 @@ def ReadClassicFanzinesTable(html: str) -> list[str]|None:
     # Go through the table finding, extracting and then deleting the rows one-by-one
     rows=[]
     while True:
-        m=re.search(r"<tr.*?>(.*?)</tr>", table, flags=re.DOTALL|re.IGNORECASE)
+        m=re.search(r"<tr.*?>(.*?)</tr>", table, flags=re.DOTALL|re.IGNORECASE|re.MULTILINE)
         if m is None:
             break
         rows.append(m.groups()[0])

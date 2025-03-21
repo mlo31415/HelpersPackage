@@ -17,6 +17,7 @@ def ReadClassicFanzinesTable(html: str) -> list[str]|None:
         if m is None:
             break
         rows.append(m.groups()[0])
-        table=re.sub(r"<tr.*?>(.*?)</tr>", "?", table, count=1, flags=re.DOTALL|re.IGNORECASE)
+        table=table[m.end():]       # Remove the just-matched row (and all preceding it) from table.
+        #table=re.sub(r"<tr.*?>(.*?)</tr>", "?", table, count=1, flags=re.DOTALL|re.IGNORECASE)
 
     return rows

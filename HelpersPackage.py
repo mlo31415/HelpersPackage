@@ -709,16 +709,19 @@ def FindWikiBracketedText(s: str) -> str:
 
 #=====================================================================================
 # Remove an outside matched pair of <tag> </tag> from a string, returning the inside
-def StripSpecificTag(s: str, tag: str, CaseSensitive=False)-> str:
-    pattern=f"^<{tag}>(.*)</{tag}>$"
-    if CaseSensitive:
-        m=re.match(pattern, s)
-    else:
-        m=re.match(pattern, s, re.IGNORECASE)
+def StripSpecificTag(s: str, tag: str, CaseSensitive=False, Number=1)-> str:
+    while Number > 0:
+        pattern=fr"^<{tag}>(.*)</{tag}>$"
+        if CaseSensitive:
+            m=re.match(pattern, s)
+        else:
+            m=re.match(pattern, s, re.IGNORECASE)
+        if m is None:
+            break
+        Number-=1
+        s=m.groups()[0]
 
-    if m is None:
-        return s
-    return m.groups()[0]
+    return s
 
 #=====================================================================================
 # Remove a matched pair of external <brackets> <containing anything> from a string, returning the inside

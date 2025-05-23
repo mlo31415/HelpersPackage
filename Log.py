@@ -6,7 +6,6 @@ import platform
 
 from datetime import datetime
 
-#from HelpersPackage import MessageBox
 
 # The idea is that Log will print the log message to the console and also to a log file. Additionally, if the iserror flag is True,
 # it will print it to an errors file.
@@ -47,7 +46,7 @@ def LogCheck() -> None:
 #=============================================================================
 # Print the text to a log file open by the main program
 # If isError is set also print it to the error file.
-def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear=False, Flush=True, timestamp=False) -> None:
+def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear=False, Flush=True, timestamp=False, isWarning: bool=False, isCritical: bool=False) -> None:
     global g_logFile
     global g_logFileName
     global g_logErrorFile
@@ -59,6 +58,8 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
     global g_alwaysTimestamp
 
     g_errorLogged=False
+
+    isSomeErrorLevel=isError or isWarning or isCritical
 
     LogCheck()
 
@@ -75,7 +76,7 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
         except Exception as e:
             MessageBox("Exception in LogOpen("+g_logFileName+")  Exception="+str(e))
 
-    if isError and g_logErrorFile is None and g_logErrorFileName is not None:
+    if isSomeErrorLevel and g_logErrorFile is None and g_logErrorFileName is not None:
         try:
             g_logErrorFile=open(g_logErrorFileName, "w+", buffering=1, encoding='utf-8')
         except Exception as e:
@@ -101,7 +102,7 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
     if g_logHeaderFile != "":
         print("\n"+g_logHeaderFile, file=g_logFile)
         g_logHeaderFile=""
-    if isError:
+    if isSomeErrorLevel:
         # If this is an error entry and is the first error entry for this header, print the header and then clear it so it's not printed again
         if g_logHeaderError != "":
             print("----\n"+g_logHeaderError, file=g_logErrorFile)
@@ -125,9 +126,18 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
                 LogFlush()
         except:
             pass
-    if isError and g_logErrorFile is not None and isinstance(g_logErrorFile, io.TextIOWrapper):
+    if isSomeErrorLevel and g_logErrorFile is not None and isinstance(g_logErrorFile, io.TextIOWrapper):
         print(text, file=g_logErrorFile, end=newlinechar)
         LogFlush()  # Always flush after an error message
+
+    if isWarning:
+        root=Tk()
+        root.withdraw()
+        messagebox.showwarning(title="Warning", message=text)
+
+    if isCritical:
+        messagebox.showerror(title="Critical Error", message=text)
+        sys.exit()
 
 
 #=============================================================================

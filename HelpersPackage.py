@@ -2166,9 +2166,9 @@ def SplitOnSpansOfLineBreaks(s: str) -> list[str]:
 #       ...nn.mm
 #       ...nn[ ]
 #
-#  Return value: Leading stuff (preseumable a name), Vol#, Num, NumSuffix
+#  Return value: Leading stuff (presumably a name), Vol#, Num, NumSuffix
 #       If it is not Vol/num, it's a whole number witch is returned in Num with Vol=""
-def ExtractTrailingSequenceNumber(s: str, complete: bool = False) -> (str, str, str, str):
+def ExtractTrailingSequenceNumber(s: str, complete: bool = False, IgnoreRomanNumerals=False) -> (str, str, str, str):
     s=s.strip()  # Remove leading and trailing whitespace
     #Log(f"ExtractTrailingSequenceNumber({s})")
 
@@ -2207,9 +2207,10 @@ def ExtractTrailingSequenceNumber(s: str, complete: bool = False) -> (str, str, 
 
     # Now look for xxx, where xxx is in Roman numerals
     # Leading whitespace + roman numeral characters + whitespace
-    m=re.match(r"^(.*?)([IVXLC]+)$", s)  # TODO: the regex detects more than just Roman numerals.  We need to bail out of this branch if that happens and not return
-    if m is not None and len(m.groups()) == 2:
-        return m.groups()[0].strip(), "", str(InterpretRoman(m.groups()[1])), ""
+    if not IgnoreRomanNumerals:
+        m=re.match(r"^(.*?)([IVXLC]+)$", s)  # TODO: the regex detects more than just Roman numerals.  We need to bail out of this branch if that happens and not return
+        if m is not None and len(m.groups()) == 2:
+            return m.groups()[0].strip(), "", str(InterpretRoman(m.groups()[1])), ""
 
     # Next look for nnn-nnn (which is a range of issue numbers; only the start is returned)
     # Leading stuff + nnn + dash + nnn
@@ -2242,9 +2243,10 @@ def ExtractTrailingSequenceNumber(s: str, complete: bool = False) -> (str, str, 
 
         # Now look for trailing Roman numerals
         # Leading stuff + mandatory whitespace + roman numeral characters + optional trailing whitespace
-        m=re.match(r"^(.*?)\s+([IVXLC]+)\s*$", s)
-        if m is not None and len(m.groups()) == 2:
-            return m.groups()[0].strip(), "", str(InterpretRoman(m.groups()[1])), ""
+        if not IgnoreRomanNumerals:
+            m=re.match(r"^(.*?)\s+([IVXLC]+)\s*$", s)
+            if m is not None and len(m.groups()) == 2:
+                return m.groups()[0].strip(), "", str(InterpretRoman(m.groups()[1])), ""
 
     # No good, return failure
     return s, "", "", ""

@@ -147,7 +147,7 @@ def MakeNiceCommaSeparatedList(input: list[str], AppendPeriod=False, UseAnd=Fals
     stuff=Delimiter.join(stuff)
 
     if UseAnd and len(lastitem) > 0:
-        stuff+= " and "+lastitem
+        stuff+= " and "+lastitem.strip()
 
     if AppendPeriod:
         if len(stuff) > 0:

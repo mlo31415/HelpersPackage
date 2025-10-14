@@ -922,6 +922,33 @@ def RelPathToURL(relPath: str) -> str|None:
     return "https://www.fanac.org/"+os.path.normpath(os.path.join("fanzines", relPath)).replace("\\", "/")
 
 
+#=====================================================================================
+# Given the URL of a directory in which we have an HTML filee with a reference and given the reference (which may or may not be local) generate a proper URL
+def MergeURLs(dirURL: str, pageFilename: str) -> str:
+    parsedFilename=urllib.parse.urlparse(pageFilename)
+
+    if len(parsedFilename.scheme) > 0 or len(parsedFilename.netloc) > 0:  # If the PageFilename begins with http: or a network location, we just return it
+        return urllib.parse.urlunparse(("https", parsedFilename.netloc, parsedFilename.path, parsedFilename.params, parsedFilename.query, parsedFilename.fragment))
+
+    # OK, apparently we have a filename which is not a full URL
+    # WE'll intelligently prepend the directory URL to flesh it out
+    parsedDirURL=urllib.parse.urlparse(dirURL)
+    pp=parsedDirURL.path+"/"+parsedFilename.path
+    pn=parsedDirURL.netloc
+    ps=parsedDirURL.scheme
+    if len(ps) == 0:
+        ps="https"
+
+    # # Is it just a pagename alone, without any path info?
+    # # Then we add it to the directory's URL to form the new URL
+    # if "/" not in pp and "\\" not in pp:
+    #     pp=parsedDirURL.path+"/"+pp
+    #     ps=parsedDirURL.scheme
+
+    parsedFilename=ps, pn, pp, parsedFilename.params, parsedFilename.query, parsedFilename.fragment
+    return urllib.parse.urlunparse(parsedFilename)
+
+
 # =====================================================================================
 # Function to find the index of one or more strings in a list of strings.  Stop with the first one found.
 #  E.g., find the first occurance of "Mailing" or "Mailings" or "APA Mailing" in a list of possible column headers

@@ -1181,6 +1181,152 @@ def TimestampFilename(fname: str) -> str:
     return head+tstampedFilename
 
 
+def JoinPathWithSimpleSingleSlashes(p1: str|list[str], p2: str|list[str]= "", p3: str|list[str]= "") -> str:
+    if isinstance(p1, str):
+        p=[p1]
+    else:
+        p=p1
+
+    if p2 is not None and p2 != "":
+        if isinstance(p2, str):
+            p.append(p2)
+        else:
+            p.extend(p2)
+
+    if p3 is not None and p3 != "":
+        if isinstance(p3, str):
+            p.append(p3)
+        else:
+            p.extend(p3)
+
+    out="/".join(p)
+    return out.replace("\\", "/").replace("//", "/").replace("//", "/")
+
+
+
+class SplitPath:
+    def __init__(self, path: str):
+        hd, sp, tl=SplitFilepath(path)
+
+        self.Tail: str=tl  # Trailing slashes
+
+        self.Head: str=""  # Leading dots and slashes
+        # First the drive, if any
+        if len(hd) > 0 and len(sp[0]) > 0 and hd[0][-1] == ":":
+            self.Drive=sp[0]
+            hd=hd[1:]
+
+        # Then whatever leading slashes and dots
+
+        self.Head: str=""
+        if len(hd) > 0 and len(sp[0]) > 0:
+            out=""
+            hd0=hd[0]
+            if len(hd0) > 0 and hd0[0] == ".":
+                hd0=hd0[1:]
+                out+="."
+                hd=hd[1:]
+            if len(hd0) > 0 and hd0[0] == ".":
+                hd0=hd0[1:]
+                out+="."
+            if hd0[0] == "/" or hd0[0] == r"\\":
+                out+="/"
+            self.Head=out
+
+        self.Tail: str=""
+        # self.Tail: str=""  # Trailing slashes
+        # if len(sp) > 0 and len(sp[-1]) > 0 and (sp[-1][0] == "/" or sp[-1][0] == r"\\"):
+        #     self.Tail=sp[-1]
+        #     sp=sp[:-1]
+
+        self.Filename: str=""   # The filename
+        if len(sp) > 0 and len(sp[-1]) > 0 and "." in sp[-1]:
+            self.Filename=sp[-1]
+            sp=sp[:-1]
+
+        # The path to the filename as a list of strings
+        self.Path: list[str]=sp # A list of directories
+
+
+    def __str__(self):
+        return self.Head + "/".join(self.Path) + self.Tail + ("/"+ self.Filename) if self.Filename != "" else ""
+
+    @property
+    def FilePath(self) -> str:
+        fp="/".join(self.Path)
+        if self.Filename != "":
+            fp+="/"+self.Filename
+        return fp
+
+    @property
+    def IsEmpty(self) -> bool:
+        return self.Head == "" and self.Tail == "" and self.Filename == "" and (self.Path == [] or self.Path == "")
+
+    @property
+    def IsFilename(self) -> bool:
+        return self.Head == "" and self.Tail == "" and self.Filename != "" and self.Path == []
+
+    @property
+    def IsRelative(self) -> bool:
+        return len(self.Head) > 0 and self.Head[0] == "."
+    @IsRelative.setter
+    def IsRelative(self, value: bool):
+        self.Head=""
+
+
+# =============================================================================
+# Split a file path into a list of components
+#       --> head [path] tail
+# a/b/c  --> [a, b, c]      (str --> list [str])
+# /a/b/c --> / [a, b, c]
+# a --> [a]
+# a/ --> [a] /
+# a/b//c --> [a, b, c]
+# r"a/b\\c" --> [a, b, c]
+# r"//c/d" --> // [c, d]
+# r"/c/d" --> / [c, d]
+# r"/c/d/" --> / [c, d] /
+
+def SplitFilepath(filepath: str) -> tuple[str, list[str], str]:
+    head=filepath
+    if len(head) == 0:
+        return ("", [], "")
+
+    # Replace all backslashes by forward slashes
+    head=head.replace("\\", "/")
+
+    drive, rest=os.path.splitdrive(head)
+
+    # Look for leading slashes
+    startswith=None
+    if rest[0] == "/":
+        startswith="/"
+        rest=rest[1:]
+    if len(rest) > 0 and rest[0:1] == "//":
+        startswith="//"
+        rest=rest[2:]
+    if startswith is None:
+        startswith=drive
+    else:
+        startswith=drive+startswith
+
+    # Look for trailing slashes
+    endswith=None
+    if len(rest) > 0 and rest[-1] == "/":
+        endswith="/"
+        rest=rest[:-1]
+
+    # Now parse what's left
+    path=[]
+    while True:
+        rest, tail=os.path.split(rest)
+        path.insert(0, tail)     # Prepend it
+        if rest is None or rest == "" or rest == "/" or rest == "//" or rest == "":
+            break
+
+    return (startswith, path, endswith)
+
+
 # =============================================================================
 # Check to see if an argument (int, float or string) is a number
 def IsInt(arg: any) -> bool:

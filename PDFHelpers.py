@@ -26,7 +26,7 @@ def AddMissingMetadata(filename: str, newmetadata: dict[str, str], keywords: str
         if keywords != "":
             newmetadata["/Keywords"]=keywords
 
-        # Add the newmetadata to the cloend pdf.
+        # Add the new metadata to the cloned pdf.
         try:
             writer.add_metadata(newmetadata)
         except:

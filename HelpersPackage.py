@@ -8,7 +8,6 @@ import re
 import stat
 import json
 
-#from PIL.ImImagePlugin import number
 from unidecode import unidecode
 from datetime import datetime
 import tkinter

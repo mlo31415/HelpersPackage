@@ -356,7 +356,7 @@ def WikiUrlnameToWikiPagename(s: str) -> str:
 
 #==================================================================================
 # Make a properly formatted link to a Fancy 3 page
-# If the second argument is present, use the first as the URL and the second as the display text.
+# If the second argument is present, use the first as the LinkTargetsURL and the second as the display text.
 # If only one is present, use it for both
 def MakeFancyLink(fancyName: str, displayName: str=None) -> str:
     if displayName is None:
@@ -390,19 +390,19 @@ def RemoveFancyLink(link: str) -> str:
 
 #==================================================================================
 # Return a properly formatted link
-# Depending on flags, the URL may get 'https://' or 'http://' prepended.
+# Depending on flags, the LinkTargetsURL may get 'https://' or 'http://' prepended.
 # If it is a PDF it will get view=Fit appended
 # PDFs may have #page=nn attached
 def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=False, QuoteChars=False) -> str:
     # TODO: Do we need to deal with turning blanks into %20 whatsits?
 
-    # If a null URL is provided, don't return a hyperlink
+    # If a null LinkTargetsURL is provided, don't return a hyperlink
     if url is None or url == "":
         return text
 
     # '#' can't be part of an href as it is misinterpreted
     # But it *can* be part of a link to an anchor on a page or a part of a pdf reference.
-    # Look for #s in a URL *before* a .pdf extension and convert them to %23s
+    # Look for #s in a LinkTargetsURL *before* a .pdf extension and convert them to %23s
     if '#' in url:
         m=re.match(r"(.*)(\.pdf.*)", url, re.IGNORECASE)
         if m is not None:
@@ -1098,7 +1098,7 @@ def CaseInsensitiveCompare(s1: str, s2: str) -> bool:
 
 
 # =============================================================================
-#   Change the filename in a URL
+#   Change the filename in a LinkTargetsURL
 def ChangeFileInURL(url: str, newFileName: str) -> str:
     u=urllib.parse.urlparse(url)
     p=u[2].split("/")   # Split the path (which may include a filename) into components

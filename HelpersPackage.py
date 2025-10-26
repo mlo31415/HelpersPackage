@@ -208,11 +208,18 @@ def FindLinkInString(s: str) -> tuple[str, str, str, str]:
 def FindHrefInString(s: str) -> tuple[str, str, str, str]:
     # Get rid of any class=stuff crud
     s=re.sub(r'class=".+?"', "", s, count=10, flags=re.IGNORECASE)
-    pat=r"^(.*?)href=['\"](https?:)?(.*?)['\"](.*)$"
-    m=re.match(pat, s, flags=re.IGNORECASE|re.DOTALL)
+    m=re.match(r"^(.*?)<a +href=['\"](https?:)?(.*?)['\"]>(.*)</a>.*$", s, flags=re.IGNORECASE|re.DOTALL)
     if m is None:
-        return s, "", "", ""
-    return m.groups()[0], m.groups()[2], m.groups()[3], m.groups()[4]
+        m=re.match(r"^(.*?)<a +href=['\"](https?:)?(.*?)['\"]>(.*)$", s, flags=re.IGNORECASE|re.DOTALL)     # Some rows lack the trailing "</A>" !
+        if m is None:
+            return s, "", "", ""
+    if len(m.groups()) == 5:
+        return m.groups()[0], m.groups()[2], m.groups()[3], m.groups()[4]
+    elif len(m.groups()) == 4:
+        return m.groups()[0], m.groups()[2], m.groups()[3], ""
+
+    assert False
+
 
 
 # ==================================================================================

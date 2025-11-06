@@ -376,7 +376,6 @@ def MakeFancyLink(fancyName: str, displayName: str=None) -> str:
 # link|display text (if they are different
 # display text (if they are the same
 def UnmakeFancyLink(link: str) -> [str]:
-    m=re.match(r"^(.*?)<a href=\"?http[s]?://fancyclopedia.org/(.*?)\"?>(.*?)</a>(.*)$", link)
     m=re.match(r"^(.*?)<a href=\"?https?://fancyclopedia.org/(.*?)\"?>(.*?)</a>(.*)$", link)
     if m is None:
         return WikiUrlnameToWikiPagename(link)

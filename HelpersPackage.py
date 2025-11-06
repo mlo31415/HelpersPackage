@@ -2452,7 +2452,7 @@ def DropTrailingSequenceNumber(s: str) -> str:
     val=ExtractTrailingSequenceNumber(s, complete=True, IgnoreRomanNumerals=True)
 
     # If we find anything, return it
-    if val[0] == "" and len(val[1]) > 0 and len(val[2] > 0) and val[3] == "":
+    if val[0] == "" and len(val[1]) > 0 and len(val[2]) > 0 and val[3] == "":
         return val[1]
 
     # Now look for a single trailing decimal number, possibly preceded by a #

@@ -1150,7 +1150,7 @@ def ChangeFileInURL(url: str, newFileName: str) -> str:
         p="/".join(p)+"/"+newFileName
 
     u=(u[0], u[1], p, u[3], u[4], u[5])
-    return urllib.parse.urlunparse(u)
+    return str(urllib.parse.urlunparse(u))
 
 
 # =============================================================================

@@ -375,7 +375,7 @@ def MakeFancyLink(fancyName: str, displayName: str=None) -> str:
 # Take a string containing a fancy link and convert the link's url back to ordinary text, returning:
 # link|display text (if they are different
 # display text (if they are the same
-def UnmakeFancyLink(link: str) -> [str]:
+def UnmakeFancyLink(link: str) -> list[str]:
     m=re.match(r"^(.*?)<a href=\"?https?://fancyclopedia.org/(.*?)\"?>(.*?)</a>(.*)$", link)
     if m is None:
         return WikiUrlnameToWikiPagename(link)
@@ -964,7 +964,7 @@ def MergeURLs(dirURL: str, pageFilename: str) -> str:
 # =====================================================================================
 # Function to find the index of one or more strings in a list of strings.  Stop with the first one found.
 #  E.g., find the first occurance of "Mailing" or "Mailings" or "APA Mailing" in a list of possible column headers
-def FindIndexOfStringInList(lst: list[str], s: [str, list[str]], IgnoreCase=False) -> int|None:
+def FindIndexOfStringInList(lst: list[str], s: str|list[str], IgnoreCase=False) -> int|None:
     if isinstance(s, str):  # If it's a single string, just go with it!
         return FindIndexOfStringInList2(lst, s)
 
@@ -1341,7 +1341,7 @@ def SplitFilepath(filepath: str) -> tuple[str, list[str], str]:
 
 # =============================================================================
 # Check to see if an argument (int, float or string) is a number
-def IsInt(arg: any) -> bool:
+def IsInt(arg: Any) -> bool:
     if isinstance(arg, int):
         return True
 
@@ -1369,7 +1369,7 @@ def Int0(val: str|int) -> int:
 
 # =============================================================================
 # Convert a string to float, returning 0 when uninterpretable
-def Float0(arg: any) -> float:
+def Float0(arg: Any) -> float:
     if isinstance(arg, float) or isinstance(arg, int):
         return float(arg)
 
@@ -1387,7 +1387,7 @@ def ZeroIfNone(x: int|None) -> int:
 
 # =============================================================================
 # Check to see if an argument (int, float or string) is a number
-def IsNumeric(arg: any) -> bool:
+def IsNumeric(arg: Any) -> bool:
     if isinstance(arg, float) or isinstance(arg, int):
         return True
 
@@ -1407,7 +1407,7 @@ def IsNumeric(arg: any) -> bool:
 # Newcol is the target position to which oldrow is moved.
 # Note: to Swap cols 5 and 6, the arguments would be 5, 1, 6: Take 1 column starting at col 5 and move it to where col 6 is.
 # NOTE: Does not do a move in place
-def ListBlockMove(lst: [], startingIndex: int, numElements: int, targetIndex: int) -> list:
+def ListBlockMove(lst: list[str], startingIndex: int, numElements: int, targetIndex: int) -> list[str]:
     numCols=len(lst)
     #print(f"{startingIndex=}  {numElements=}  {targetIndex=}  {numCols=}")
     if startingIndex < 0 or targetIndex < 0 or startingIndex+numElements > numCols or targetIndex+numElements > numCols:
@@ -2364,7 +2364,7 @@ def SplitOnSpansOfLineBreaks(s: str) -> list[str]:
 #
 #  Return value: Leading stuff (presumably a name), Vol#, Num, NumSuffix
 #       If it is not Vol/num, it's a whole number witch is returned in Num with Vol=""
-def ExtractTrailingSequenceNumber(s: str, complete: bool = False, IgnoreRomanNumerals=False) -> (str, str, str, str):
+def ExtractTrailingSequenceNumber(s: str, complete: bool = False, IgnoreRomanNumerals=False) -> tuple[str, str, str, str]:
     s=s.strip()  # Remove leading and trailing whitespace
     #Log(f"ExtractTrailingSequenceNumber({s})")
 

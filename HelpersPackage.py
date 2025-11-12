@@ -915,7 +915,7 @@ def UnicodeToHtml(s: str) -> str:
 #=====================================================================================
 # Convert the unicode of a str to a string which can be used in an HTML file
 def UnicodeToHtml2(s: str) -> str:
-    # Convert the text to ascii and then used decode to turn it back into a str
+    # Convert the text to ascii and then use decode to turn it back into a str
     return s.encode(encoding='ascii', errors="xmlcharrefreplace").decode()
 
 def HtmlToUnicode2(s: str) -> str:

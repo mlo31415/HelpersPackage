@@ -1998,11 +1998,11 @@ def UnscrambleListOfNames(input: str) -> list[str]:
     # We want to return a list of names in the normal format: John W. Campbell, Jr.
 
     # We may need to deal with html that should not be treated as syntax o as part of the name
-    needsEncoding=False
-    encoded=HtmlToUnicode2(input)
-    if input != encoded:
-        needsEncoding=True
-        input=encoded
+    # needsEncoding=False
+    # encoded=HtmlToUnicode2(input)
+    # if input != encoded:
+    #     needsEncoding=True
+    #     input=encoded
 
     # Commas are very confusing, so begin by hiding certain constructs which are part of the last name
     input=HidePrefixsAndSuffixes(input)
@@ -2020,15 +2020,15 @@ def UnscrambleListOfNames(input: str) -> list[str]:
             name=" ".join(tokens[1:])+" "+tokens[0]     # Create a name in normal order
             # Restore the prefixes & suffixes
             name=UnhidePrefixsAndSuffixes(name)
-            if needsEncoding:
-                name=UnicodeToHtml2(name)
+            # if needsEncoding:
+            #     name=UnicodeToHtml2(name)
             return [name]   # Return a list of the one name
 
     # Now deal with a list of names
     names=re.split(", and |, |/| and|&", input)       # delimiters=[", ", "/", " and ", ", and",  "&"]
     names=[UnhidePrefixsAndSuffixes(x.strip()) for x in names]
-    if needsEncoding:
-        names=[UnicodeToHtml2(x) for x in names]
+    # if needsEncoding:
+    #     names=[UnicodeToHtml2(x) for x in names]
     # In certain cases (e.g., "Del Coger") the first name is interpreted as a prefix and is left with a trailing '_'.  Turn it into a space
     return [x.replace("_", " ") for x in names]
 

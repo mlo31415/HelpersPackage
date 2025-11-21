@@ -378,7 +378,7 @@ def MakeFancyLink(fancyName: str, displayName: str=None) -> str:
 def UnmakeFancyLink(link: str) -> list[str]:
     m=re.match(r"^(.*?)<a href=\"?https?://fancyclopedia.org/(.*?)\"?>(.*?)</a>(.*)$", link)
     if m is None:
-        return WikiUrlnameToWikiPagename(link)
+        return [WikiUrlnameToWikiPagename(link)]
 
     link=m.groups()[1]
     text=m.groups()[2]

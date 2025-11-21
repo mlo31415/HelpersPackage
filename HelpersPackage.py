@@ -2317,7 +2317,7 @@ def WikiExtractLink(s: str) -> str:
 #-----------------------------------------------------------------
 # Split a string into a list of string.  The split is done on *spans* of the input characters.
 def SplitOnSpan(chars: str, s: str) -> list[str]:
-    pattern=re.compile("["+chars+"]")
+    pattern=re.compile(rf"[{chars}]")
     # replace the matched span of <chars> with a single char from the span string
     return [x for x in re.sub(pattern, chars[0], s).split(chars[0]) if len(x) > 0]
 

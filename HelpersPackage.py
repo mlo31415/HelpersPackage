@@ -2436,7 +2436,7 @@ def ExtractTrailingSequenceNumber(s: str, complete: bool = False, IgnoreRomanNum
         # Leading stuff + nnn + optional single alphabetic character suffix + whitespace
         m=re.match(r"^(.*?)([0-9]+)([a-zA-Z]?)\s*$", s)
         if m is not None and len(m.groups()) in [2, 3]:
-            ws=None
+            ws=""
             if len(m.groups()) == 3:
                 ws=m.groups()[1].strip()
             return m.groups()[0].strip(), "", m.groups()[1], ws

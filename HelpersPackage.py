@@ -2322,8 +2322,8 @@ def SplitOnSpan(chars: str, s: str) -> list[str]:
     return [x for x in re.sub(pattern, chars[0], s).split(chars[0]) if len(x) > 0]
 
 
-def SplitOnAnyChar(chars: str, s: str) -> list[str]:
-    return re.split(rf"[{chars}]*", s)
+def SplitOnAnySingleChar(chars: str, s: str) -> list[str]:
+    return re.split(rf"[{chars}]+", s)
 
 
 #------------------------------------------------------------------

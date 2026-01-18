@@ -34,7 +34,7 @@ def AddStyleToDocument(document: DocumentObject, styleName: str, faceName: str, 
 def AppendStyledParaToDoc(doc: DocumentObject, txt: str, style="Normal"):
     para=doc.add_paragraph(txt, style=style)
 
-
+# Appen text to the last paragrapjhy in the dociument without changing style
 def AppendTextToPara(para: docx.text.paragraph.Paragraph, txt: str):
     para.add_run(txt)
 

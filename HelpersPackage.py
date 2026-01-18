@@ -398,16 +398,16 @@ def RemoveFancyLink(link: str) -> str:
 #==================================================================================
 # Return a properly formatted link
 # Depending on flags, the LinkTargetsURL may get 'https://' or 'http://' prepended.
-# If it is a PDF it will get view=Fit appended (unless the NoFit flag is set to False)
+# If it is a PDF it will get view=Fit appended
 # PDFs may have #page=nn attached
-def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=False, NoFit: bool=False, QuoteChars=False) -> str:
+def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=False, QuoteChars=False) -> str:
     # TODO: Do we need to deal with turning blanks into %20 whatsits?
 
-    # If a null LinkTargetsURL is provided, don't return a hyperlink but just the supplied text
+    # If a null LinkTargetsURL is provided, don't return a hyperlink
     if url is None or url == "":
         return text
 
-    # '#' can't be part of an href as it is misinterpreted and must be represented as %23
+    # '#' can't be part of an href as it is misinterpreted
     # But it *can* be part of a link to an anchor on a page or a part of a pdf reference.
     # Look for #s in a LinkTargetsURL *before* a .pdf extension and convert them to %23s
     if '#' in url:
@@ -419,13 +419,6 @@ def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=Fals
     if QuoteChars:
         url=urllib.parse.quote(url)
 
-    # Does this link require an http: or https:?  I.e., is it a non-local link
-    # Note that we try to figure this out by looking for a xxx.org or similar bit before the first "/" in the url
-    requiresHTTP=False
-    if "/" in url:
-        startUrl=url[:url.index("/")]       # Get the url just up to the first "/"
-        requiresHTTP=any([x.lower() in startUrl for x in [".org", ".com", ".net"]])
-
     # If the url points to a pdf, add '#view=Fit' to the end to force the PDF to scale to the page
     if ".pdf" in url and not "view=Fit" in url:
         # Note that if there's already a #whatzit at the end, this gets added as &view=Fit and not as #view=Fit
@@ -434,26 +427,14 @@ def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=Fals
         else:
             url+="#view=Fit"
 
-    # These two will be ignored if no http is needed.
-    if requiresHTTP:
-        if ForceHTTP:
-            if not url.lower().startswith("http"):
-                url=f"http://{url}"
-        elif ForceHTTPS:
-            if not url.lower().startswith("https"):
-                url=f"https://{url}"
-
-    # Form the <a> stuff
-    if requiresHTTP:
-        # First we must make sure that any pre-existing http is gone
-        url=url.removeprefix("http://").removeprefix("http:/").removeprefix("https://").removeprefix("http:/")
-        if ForceHTTP:
+    if ForceHTTP:
+        if not url.lower().startswith("http"):
             url="http://"+url
-        elif ForceHTTPS:
+    elif ForceHTTPS:
+        if not url.lower().startswith("https"):
             url="https://"+url
-    ret=f'<a href="{url}">{text}</a>'
 
-    return ret
+    return '<a href="'+url+'">'+text+'</a>'
 
 
 def FormatLink2(url: str, text: str, ForceHTTP: bool=False) -> str:

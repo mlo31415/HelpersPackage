@@ -1407,7 +1407,7 @@ def IsNumeric(arg: Any) -> bool:
 # Newcol is the target position to which oldrow is moved.
 # Note: to Swap cols 5 and 6, the arguments would be 5, 1, 6: Take 1 column starting at col 5 and move it to where col 6 is.
 # NOTE: Does not do a move in place
-def ListBlockMove(lst: list[str], startingIndex: int, numElements: int, targetIndex: int) -> list[str]:
+def ListBlockMove(lst: list[str|tuple[int, int]], startingIndex: int, numElements: int, targetIndex: int) -> list[str]:
     numCols=len(lst)
     #print(f"{startingIndex=}  {numElements=}  {targetIndex=}  {numCols=}")
     if startingIndex < 0 or targetIndex < 0 or startingIndex+numElements > numCols or targetIndex+numElements > numCols:
@@ -1438,7 +1438,7 @@ def ListBlockMove(lst: list[str], startingIndex: int, numElements: int, targetIn
 
     if isinstance(lst, list) and len(lst) > 0:
         if isinstance(lst[0], tuple):
-            # The input is a list of (cols, col) tuples (e.g., AllowCellEdits)
+            # The input is a list of tuples(cols, col)  (e.g., AllowCellEdits)
             for i, (row, col) in enumerate(lst):
                 try:
                     lst[i]=(permuter[row], col)

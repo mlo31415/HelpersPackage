@@ -11,16 +11,16 @@ from Log import Log, LogError
 def AddMissingMetadata(filename: str, newmetadata: dict[str, str], keywords: str="") -> bool:
     if filename.lower().endswith(".pdf"):
 
-        # Open the existing pdf file
-        file_in=open(filename, 'rb')
-        reader=PdfReader(file_in)
-
-        # Try to create a writer which is filled with a clone of the input odf
+        # Try to create a writer which is filled with a clone of the input pdf
         try:
             writer=PdfWriter(clone_from=filename)
         except FileNotFoundError:
             LogError(f"SetPDFMetadata: Unable to open file {filename}")
             return False
+
+        # # Open the existing pdf file
+        # file_in=open(filename, 'rb')
+        # reader=PdfReader(file_in)
 
         # If keywords are supplied, add them to the new metadata
         if keywords != "":

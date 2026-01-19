@@ -388,7 +388,7 @@ def UnmakeFancyLink(link: str) -> list[str]:
 
 # Take a string containing a fancy link and remove the link, leaving the link text
 def RemoveFancyLink(link: str) -> str:
-    m=re.match(r"^(.*?)<a href=\"?http[s]?://fancyclopedia.org/.*?\"?>(.*?)</a>(.*)$", link)
+    m=re.match(r"^(.*?)<a href=\"?https?://fancyclopedia.org/.*?\"?>(.*?)</a>(.*)$", link)
     if m is None:
         return link
 

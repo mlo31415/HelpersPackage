@@ -40,7 +40,7 @@ def AddMissingMetadata(filename: str, newmetadata: dict[str, str], keywords: str
         writer.write(file_out)
 
         # Close both the old and new pdfs, delete the old and rename the new to the old's name
-        file_in.close()
+        #file_in.close()
         file_out.close()
         os.remove(filename)
         os.rename(newfile, filename)

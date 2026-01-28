@@ -219,7 +219,7 @@ def FindHrefInString(s: str) -> tuple[str, str, str, str]:
     elif len(m.groups()) == 4:
         return m.groups()[0], m.groups()[2], m.groups()[3], ""
 
-    assert False
+    raise Exception(f"FindHrefInString({s}): Unexpected number of groups in string")
 
 
 

@@ -76,7 +76,7 @@ def PyiResourcePath(relative_path) -> str:
     except Exception:
         base_path=os.environ.get("_MEIPASS2", os.path.abspath("."))
 
-    return os.path.join(base_path, relative_path)
+    return str(os.path.join(base_path, relative_path))
 
 #=======================================================
 # Locate and return a chunk of text bounded by two patterns

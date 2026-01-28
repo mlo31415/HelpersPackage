@@ -1,8 +1,7 @@
 import bs4
-from bs4 import dammit
 
 #=====================================================================================
-def HtmlEscapesToUnicode(s: str, isURL=False) -> str:
+def HtmlEscapesToUnicode(s: str, isURL: bool=False) -> str:
     if isURL:
         s=s.replace("%23", "#").replace( "%26", "&").replace( "%20", " ")
     s=str(bs4.BeautifulSoup(s, features="html.parser")).strip()

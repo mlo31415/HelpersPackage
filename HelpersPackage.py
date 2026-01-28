@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, DefaultDict
+from typing import Any, DefaultDict, TypeVar
 import os
 import sys
 import ctypes
@@ -62,7 +62,7 @@ def SearchAndReplace(pattern: str, inputstr: str, replacement: str, numGroups: i
 #=======================================================
 # When a python program has been frozen using Pyinstaller, some of its resource files may be frozen with it
 # PyiResourcePath takes a path *relative to the python source files* and turns it into the resource path if we're running frozen.
-def PyiResourcePath(relative_path):
+def PyiResourcePath(relative_path) -> str:
     frozen=getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
 
     # If we're not frozen, just use the local path
@@ -1407,7 +1407,8 @@ def IsNumeric(arg: Any) -> bool:
 # Newcol is the target position to which oldrow is moved.
 # Note: to Swap cols 5 and 6, the arguments would be 5, 1, 6: Take 1 column starting at col 5 and move it to where col 6 is.
 # NOTE: Does not do a move in place
-def ListBlockMove(lst: list[str|tuple[int, int]], startingIndex: int, numElements: int, targetIndex: int) -> list[str]:
+T=TypeVar("T")
+def ListBlockMove(lst: list[T], startingIndex: int, numElements: int, targetIndex: int) -> list[T]:
     numCols=len(lst)
     #print(f"{startingIndex=}  {numElements=}  {targetIndex=}  {numCols=}")
     if startingIndex < 0 or targetIndex < 0 or startingIndex+numElements > numCols or targetIndex+numElements > numCols:

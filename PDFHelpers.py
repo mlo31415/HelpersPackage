@@ -9,42 +9,43 @@ from Log import Log, LogError
 
 # =============================================================================
 def AddMissingMetadata(filename: str, newmetadata: dict[str, str], keywords: str="") -> bool:
-    if filename.lower().endswith(".pdf"):
+    if not filename.lower().endswith(".pdf"):
+        return False
 
-        # Try to create a writer which is filled with a clone of the input pdf
-        try:
-            writer=PdfWriter(clone_from=filename)
-        except FileNotFoundError:
-            LogError(f"SetPDFMetadata: Unable to open file {filename}")
-            return False
+    # Try to create a writer which is filled with a clone of the input pdf
+    try:
+        writer=PdfWriter(clone_from=filename)
+    except FileNotFoundError:
+        LogError(f"SetPDFMetadata: Unable to open file {filename}")
+        return False
 
-        # # Open the existing pdf file
-        # file_in=open(filename, 'rb')
-        # reader=PdfReader(file_in)
+    # # Open the existing pdf file
+    # file_in=open(filename, 'rb')
+    # reader=PdfReader(file_in)
 
-        # If keywords are supplied, add them to the new metadata
-        if keywords != "":
-            newmetadata["/Keywords"]=keywords
+    # If keywords are supplied, add them to the new metadata
+    if keywords != "":
+        newmetadata["/Keywords"]=keywords
 
-        # Add the new metadata to the cloned pdf.
-        try:
-            writer.add_metadata(newmetadata)
-        except:
-            LogError(f"SetPDFMetadata().writer.add_metadata(metadata) with file {filename} threw an exception: Ignored")
+    # Add the new metadata to the cloned pdf.
+    try:
+        writer.add_metadata(newmetadata)
+    except:
+        LogError(f"SetPDFMetadata().writer.add_metadata(metadata) with file {filename} threw an exception: Ignored")
 
-        # Write out the new pdf using the existing pdf's name with " added" appended to it.
-        path, ext=os.path.splitext(filename)
-        newfile=path+" added"+ext
-        file_out=open(newfile, 'wb')
+    # Write out the new pdf using the existing pdf's name with " added" appended to it.
+    path, ext=os.path.splitext(filename)
+    newfile=path+" added"+ext
+    file_out=open(newfile, 'wb')
 
-        writer.write(file_out)
+    writer.write(file_out)
 
-        # Close both the old and new pdfs, delete the old and rename the new to the old's name
-        #file_in.close()
-        file_out.close()
-        os.remove(filename)
-        os.rename(newfile, filename)
-        return True
+    # Close both the old and new pdfs, delete the old and rename the new to the old's name
+    #file_in.close()
+    file_out.close()
+    os.remove(filename)
+    os.rename(newfile, filename)
+    return True
 
 
 # =============================================================================

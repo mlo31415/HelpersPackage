@@ -803,7 +803,7 @@ def CaseInsensitiveReplace(s: str, old: str, new: str) -> str:
         return s
     if loc == 0:
         return new+s[loc+len(old):]
-    return s[:loc]+new+s[loc++len(old)]
+    return s[:loc]+new+s[loc+len(old)]
 
 
 #=====================================================================================

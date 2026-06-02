@@ -1017,11 +1017,11 @@ def CrosscheckListElement(inputList: str |list[str], checkList: list[str]) -> in
 def CompressName(name: str) -> str:
     name=name.lower()
     if name.startswith("the "):
-        name=name[:4]+"the"
+        name=name[4:]+"the"
     if name.startswith("a "):
-        name=name[:2]+"a"
+        name=name[2:]+"a"
     if name.startswith("an "):
-        name=name[:3]+"an"
+        name=name[3:]+"an"
     return name.replace(" ", "").replace(",", "").replace("-", "").replace("'", "").replace(".", "").replace("’", "")
 
 

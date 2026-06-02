@@ -434,7 +434,7 @@ def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=Fals
         if not url.lower().startswith("https"):
             url="https://"+url
 
-    return '<a href="'+url+'">'+text+'</a>'
+    return '<a href="'+url+'">'+escape(text)+'</a>'
 
 
 def FormatLink2(url: str, text: str, ForceHTTP: bool=False) -> str:
@@ -832,7 +832,9 @@ def RemoveFunnyWhitespace(s: str) -> str:
 #=====================================================================================
 # Replace certain strings which amount to whitespace in html with whitespace
 def RemoveHTMLishWhitespace(s: str, replacement: str=" ") -> str:
-    return re.sub(r"<br>|</br>|<br/>|&nbsp;", replacement, s, flags=re.IGNORECASE)
+    s=unescape(s)                                           # decode all HTML entities first (e.g. &nbsp; → \xa0, &amp; → &)
+    s=s.replace("\xa0", replacement)                        # non-breaking space → replacement
+    return re.sub(r"<br>|</br>|<br/>", replacement, s, flags=re.IGNORECASE)
 
 def RemoveLinebreaks(s: str, replacement: str="") -> str:
     return re.sub(r"<br>|</br>|<br/>|\n", replacement, s, flags=re.IGNORECASE | re.DOTALL)

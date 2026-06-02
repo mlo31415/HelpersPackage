@@ -453,7 +453,7 @@ def UnformatLinks(s: str) -> str|None:
 
         # And then there are Mediawiki redirects
         s=re.sub(r'(<a\s+class=".+?">)(.+?)(</a>)', "\\2", s)
-    except:
+    except Exception:
         pass
     return s
 
@@ -521,7 +521,7 @@ def CanonicizeColumnHeaders(header: str) -> str:
         return ""
     try:
         return translationTable[header.replace(" ", "").replace("/", "").lower()]
-    except:
+    except KeyError:
         return header[0].upper()+header[1:]
 
 

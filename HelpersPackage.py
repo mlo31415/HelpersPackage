@@ -170,7 +170,7 @@ def ToNumeric(val: None | int | float | str) -> None | int | float:
     # Last chance is to try to convert val into an int or float.
     try:
         return int(val)
-    except:
+    except (ValueError, TypeError):
         with suppress(Exception):
             return float(val)
 
@@ -981,7 +981,7 @@ def FindIndexOfStringInList2(lst: list[str], s: str, IgnoreCase=False) -> int|No
     if not IgnoreCase:
         try:
             return lst.index(s)
-        except:
+        except ValueError:
             return None
 
     # Do it the hard way
@@ -1443,7 +1443,7 @@ def ListBlockMove(lst: list[T], startingIndex: int, numElements: int, targetInde
             for i, (row, col) in enumerate(lst):
                 try:
                     lst[i]=(permuter[row], col)
-                except:
+                except IndexError:
                     pass
         else:
             # The inout is a list of cells (like a cols)

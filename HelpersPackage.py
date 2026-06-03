@@ -15,6 +15,11 @@ import tkinter
 from tkinter import Tk, messagebox
 from tkinter.simpledialog import askstring
 import urllib.parse
+
+try:
+    import wx as _wx
+except ImportError:
+    _wx = None
 from html import escape, unescape
 from contextlib import suppress
 from collections import defaultdict
@@ -2107,9 +2112,12 @@ def MessageLog(s: str) -> None:
 # It does nothing in the debug version
 def MessageBox(s: str, ignoredebugger: bool=False, Title=None) -> None:
     if not DebuggerIsRunning() or ignoredebugger:
-        root = Tk()
-        root.withdraw()
-        messagebox.showinfo(title=Title, message=s)
+        if _wx is not None:
+            _wx.MessageBox(s, Title or "", _wx.OK | _wx.ICON_INFORMATION)
+        else:
+            root = Tk()
+            root.withdraw()
+            messagebox.showinfo(title=Title, message=s)
 
 # =============================================================================
 # Display a message box (needed only for the built/packaged version)
@@ -2117,17 +2125,29 @@ def MessageBox(s: str, ignoredebugger: bool=False, Title=None) -> None:
 # It does nothing in the debug version
 def MessageBoxInput(s: str, ignoredebugger: bool=False) -> str:
     if not DebuggerIsRunning() or ignoredebugger:
+        if _wx is not None:
+            dlg=_wx.TextEntryDialog(None, s)
+            result=dlg.ShowModal()
+            val=dlg.GetValue()
+            dlg.Destroy()
+            return val if result == _wx.ID_OK else ""
         root = Tk()
         root.withdraw()
-        return tkinter.simpledialog.askstring("xxx", s)
+        return tkinter.simpledialog.askstring("xxx", s) or ""
     return ""
 
 # Same thing with more control
 def MessageBoxInput2(title: str="", prompt: str="", ignoredebugger: bool=False, **kwds) -> str:
     if not DebuggerIsRunning() or ignoredebugger:
+        if _wx is not None:
+            dlg=_wx.TextEntryDialog(None, prompt, title)
+            result=dlg.ShowModal()
+            val=dlg.GetValue()
+            dlg.Destroy()
+            return val if result == _wx.ID_OK else ""
         root = Tk()
         root.withdraw()
-        return tkinter.simpledialog.askstring(title, prompt, **kwds)
+        return tkinter.simpledialog.askstring(title, prompt, **kwds) or ""
     return ""
 
 

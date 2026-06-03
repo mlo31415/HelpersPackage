@@ -914,10 +914,9 @@ def ChangeNBSPToSpace(s: None | str) -> None | str | list[str]:
 #=====================================================================================
 # Convert the unicode of a str to a string which can be used in an HTML file
 def UnicodeToHtml(s: str) -> str:
-    # Convert the text to ascii and then used decode to turn it back into a str
-    s=escape(s).encode('ascii', 'xmlcharrefreplace').decode()
-    # But this overachieves and converts <, > and & to html.  Reverse this.
-    return s.replace("&gt;", ">").replace("&lt;", "<").replace("&amp;", "&")
+    # Convert non-ASCII chars to XML character references and escape for HTML attribute context.
+    # escape() handles & → &amp; (required in href attributes); xmlcharrefreplace handles non-ASCII.
+    return escape(s).encode('ascii', 'xmlcharrefreplace').decode()
 
 
 #=====================================================================================

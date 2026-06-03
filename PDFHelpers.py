@@ -153,13 +153,13 @@ def AddMissingMetadata(filename: str, newmetadata: dict[str, str], keywords: str
     # Write out the new pdf using the existing pdf's name with " added" appended to it.
     path, ext=os.path.splitext(filename)
     newfile=path+" added"+ext
-    file_out=open(newfile, 'wb')
+    try:
+        with open(newfile, 'wb') as file_out:
+            writer.write(file_out)
+    except Exception as e:
+        LogError(f"AddMissingMetadata: failed to write '{newfile}': {e}")
+        return False
 
-    writer.write(file_out)
-
-    # Close both the old and new pdfs, delete the old and rename the new to the old's name
-    #file_in.close()
-    file_out.close()
     os.remove(filename)
     os.rename(newfile, filename)
     return True
@@ -198,9 +198,13 @@ def AddStdMetadata(filename: str, title: str="", author: str="", subject: str=""
 
     path, ext = os.path.splitext(filename)
     newfile = path+" added"+ext
-    file_out = open(newfile, 'wb')
-    writer.write(file_out)
-    file_out.close()
+    try:
+        with open(newfile, 'wb') as file_out:
+            writer.write(file_out)
+    except Exception as e:
+        LogError(f"AddStdMetadata: failed to write '{newfile}': {e}")
+        return False
+
     os.remove(filename)
     os.rename(newfile, filename)
     return True

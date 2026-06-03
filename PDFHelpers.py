@@ -147,8 +147,8 @@ def AddMissingMetadata(filename: str, newmetadata: dict[str, str], keywords: str
     # Add the new metadata to the cloned pdf.
     try:
         writer.add_metadata(newmetadata)
-    except:
-        LogError(f"SetPDFMetadata().writer.add_metadata(metadata) with file {filename} threw an exception: Ignored")
+    except Exception:
+        LogError(f"AddMissingMetadata: writer.add_metadata() failed for {filename}: ignored")
 
     # Write out the new pdf using the existing pdf's name with " added" appended to it.
     path, ext=os.path.splitext(filename)

@@ -1910,7 +1910,7 @@ def SortPersonsName(name: str, IsLowerCaseOnly=False) -> str:
     name=HidePrefixsAndSuffixes(name, IsLowerCaseOnly=IsLowerCaseOnly)   # Need to hide things like Warner, Jr.
 
     if "," in name:     # If name has a comma, it's probably already in lname, fname  order
-        return UnhidePrefixsAndSuffixes(name, IsLowerCaseOnly-IsLowerCaseOnly)
+        return UnhidePrefixsAndSuffixes(name, IsLowerCaseOnly=IsLowerCaseOnly)
 
     if " " not in name:     # If it's all non-whitespace characters, there's not much to be done
         return UnhidePrefixsAndSuffixes(name, IsLowerCaseOnly=IsLowerCaseOnly)

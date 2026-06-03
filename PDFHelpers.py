@@ -212,7 +212,7 @@ def AddStdMetadata(filename: str, title: str="", author: str="", subject: str=""
 
 # =============================================================================
 # Get the file's page count if it's a pdf
-# Bonus: Return 1 if it's a .jpd, png, or gif.
+# Bonus: Return 1 if it's a .jpj, jpeg, png or gif.
 def GetPdfPageCount(pathname: str) -> int|None:
     if ExtensionMatches(pathname, [".jpg", ".jpeg", ".png", ".gif"]):
         return 1

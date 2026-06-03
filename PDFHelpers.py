@@ -133,7 +133,7 @@ def AddMissingMetadata(filename: str, newmetadata: dict[str, str], keywords: str
     try:
         writer=PdfWriter(clone_from=filename)
     except FileNotFoundError:
-        LogError(f"SetPDFMetadata: Unable to open file {filename}")
+        LogError(f"AddMissingMetadata: Unable to open file {filename}")
         return False
 
     # # Open the existing pdf file

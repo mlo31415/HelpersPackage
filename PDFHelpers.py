@@ -207,6 +207,18 @@ def AddStdMetadata(filename: str, title: str="", author: str="", subject: str=""
 
     os.remove(filename)
     os.rename(newfile, filename)
+
+    # Remove any stale XMP metadata (e.g. a scanner-written dc:title) so the DocInfo values we just
+    # set are what viewers actually display -- many viewers prefer the XMP packet over the /Info dict.
+    try:
+        import fitz
+        doc=fitz.open(filename)
+        doc.del_xml_metadata()
+        doc.saveIncr()
+        doc.close()
+    except Exception as e:
+        LogError(f"AddStdMetadata: could not remove XMP metadata from '{filename}': {e}")
+
     return True
 
 
@@ -229,3 +241,291 @@ def GetPdfPageCount(pathname: str) -> int|None:
         Log(f"GetPdfPageCount: Exception {e} raised while getting page count for '{pathname}'")
         Log(f"GetPdfPageCount: {os.getcwd()=}")
     return None
+
+
+# =============================================================================
+# PDF page-header support (requires PyMuPDF / fitz)
+#
+# AddPdfPageHeader(pdf_path, format_string, items)
+#
+#   Adds (or replaces) a centered, single-line header at the top of the first
+#   page of a PDF, expanding the page height on first use.
+#
+#   format_string  -- template with {} placeholders, e.g.
+#                     "{} #1, May 1952, by {} and {}  ——  from {}"
+#   items          -- list of strings consumed left-to-right into the {}s.
+#                     If an item looks like a URL (starts with http/https/ftp)
+#                     it silently consumes the next item too as the display
+#                     text, and that text is rendered in blue as a hyperlink.
+#                     Non-URL items are rendered as plain black text.
+#
+#   The page is expanded by _EXTRA points on the first call.  Subsequent calls
+#   detect the existing header (by the presence of a URI link in the top band),
+#   clear it, and write the new one without re-expanding the page.
+
+# ── layout constants (PDF points; PyMuPDF coords: top-left origin, y-down) ──
+# Prefer Calibri (full Unicode, correct advance widths) over the base-14 Helvetica,
+# which lacks em-dashes and other non-ASCII characters and causes mis-centering.
+_FONT_FILE = r"C:\Windows\Fonts\calibri.ttf"
+_FONT_FILE = _FONT_FILE if os.path.exists(_FONT_FILE) else None   # graceful fallback
+_FONT_FALLBACK = "helv"   # used only when Calibri is not found
+_FONT_NAME = "cali"       # internal id under which Calibri is embedded
+# kwargs passed to insert_textbox so it uses the same font the wrap/layout code measures with
+_FONT_KW = {"fontname": _FONT_NAME, "fontfile": _FONT_FILE} if _FONT_FILE else {"fontname": _FONT_FALLBACK}
+
+_FONT_SIZE = 11            # header text point size
+_BAND_Y0   = 8              # top of label band
+_LINE_H    = 16             # height of label band
+_PAD       = 6              # extra textbox length so a tight segment is never clipped
+_SIDE      = 6              # left/right margin kept clear when wrapping the header
+_GAP       = 4              # whitespace below label before page content
+_EXTRA     = _BAND_Y0 + _LINE_H + _GAP   # points added to page height = 28
+
+_COLOR_TEXT = (0, 0, 0)     # black
+_COLOR_LINK = (0, 0, 0.8)   # blue
+
+_EXTENT_KEY = "FanacHdrPts" # page-dict key recording how many points a previously-added header added
+
+
+def _make_font(fitz):
+    """Return a fitz.Font using Calibri if available, otherwise Helvetica."""
+    if _FONT_FILE:
+        return fitz.Font(fontfile=_FONT_FILE)
+    return fitz.Font(_FONT_FALLBACK)
+
+
+# ── parsing ──────────────────────────────────────────────────────────────────
+
+def _is_url(s):
+    return isinstance(s, str) and s.startswith(("http://", "https://", "ftp://"))
+
+
+def _parse(format_string, items):
+    """
+    Return a list of (display_text, url_or_None) segments built by
+    substituting items into the {} placeholders of format_string.
+    """
+    parts    = format_string.split("{}")
+    n_slots  = len(parts) - 1
+    it       = iter(items)
+    segments = []
+
+    for i, literal in enumerate(parts):
+        if literal:
+            segments.append((literal, None))
+
+        if i == n_slots:          # no {} follows the last literal
+            break
+
+        try:
+            item = next(it)
+        except StopIteration:
+            raise ValueError(
+                f"format_string has {n_slots} placeholder(s) but items ran out at slot {i + 1}"
+            )
+
+        if _is_url(item):
+            try:
+                display = next(it)
+            except StopIteration:
+                raise ValueError(f"URL {item!r} at slot {i + 1} has no following display text")
+            segments.append((display, item))
+        else:
+            segments.append((item, None))
+
+    return segments
+
+
+# ── PDF helpers ───────────────────────────────────────────────────────────────
+
+def _band(page, fitz, nlines=1):
+    # Display-coords band covering nlines header lines; spans the full width even when x0 != 0.
+    return fitz.Rect(page.rect.x0, _BAND_Y0, page.rect.x1, _BAND_Y0 + nlines * _LINE_H)
+
+
+def _tokenize(segments):
+    # Flatten segments into (text, url) tokens, each a maximal run of spaces or non-spaces.
+    # Preserving exact spacing keeps a non-wrapped header identical to before.
+    tokens = []
+    for text, url in segments:
+        for m in re.finditer(r"\s+|\S+", text):
+            tokens.append((m.group(), url))
+    return tokens
+
+
+def _wrap(segments, font, max_width):
+    """Greedily wrap the header into lines that fit within max_width (display points).
+    Returns a list of lines, each a list of (text, url) tokens with end whitespace trimmed.
+    A single token wider than max_width is left on its own line (it may overflow)."""
+    def w(tok):
+        return font.text_length(tok[0], fontsize=_FONT_SIZE)
+    lines, cur, cur_w = [], [], 0.0
+    for tok in _tokenize(segments):
+        space = tok[0].isspace()
+        if cur and not space and cur_w + w(tok) > max_width:
+            while cur and cur[-1][0].isspace():      # trim trailing space before wrapping
+                cur_w -= w(cur.pop())
+            lines.append(cur)
+            cur, cur_w = [], 0.0
+        if not cur and space:
+            continue                                 # drop leading space on a new line
+        cur.append(tok)
+        cur_w += w(tok)
+    while cur and cur[-1][0].isspace():
+        cur_w -= w(cur.pop())
+    if cur:
+        lines.append(cur)
+    return lines or [[]]
+
+
+def _already_labeled(page, fitz):
+    band = _band(page, fitz)
+    return any(
+        fitz.Rect(lnk["from"]).intersects(band)
+        for lnk in page.get_links()
+        if lnk.get("kind") == fitz.LINK_URI
+    )
+
+
+def _grow(box, rot, amount, fitz):
+    """Return box grown by `amount` points on the edge (in PDF y-up MediaBox coords) that maps
+    to the VISUAL top for the given page rotation (0/90/180/270, clockwise)."""
+    x0, y0, x1, y1 = box.x0, box.y0, box.x1, box.y1
+    if   rot == 0:   y1 += amount
+    elif rot == 90:  x1 += amount
+    elif rot == 180: y0 -= amount
+    elif rot == 270: x0 -= amount
+    return fitz.Rect(x0, y0, x1, y1)
+
+
+def _expand_top(page, fitz, nlines=1):
+    """Expand the page at the VISUAL top by enough for `nlines` header lines (MediaBox + CropBox),
+    accounting for page rotation so the band always lands above the displayed top."""
+    amount = _EXTRA + (nlines - 1) * _LINE_H
+    rot = page.rotation
+    mb  = fitz.Rect(page.mediabox)
+    cb  = fitz.Rect(page.cropbox)
+    page.set_mediabox(_grow(mb, rot, amount, fitz))
+    # Grow the cropbox on the same edge so the new band is visible, then clamp it to the
+    # new mediabox to avoid a 'CropBox not in MediaBox' error. (Comparing cb==mb exactly is
+    # unreliable: scans often have sub-point differences between the two boxes.)
+    nc  = _grow(cb, rot, amount, fitz)
+    nmb = fitz.Rect(page.mediabox)
+    nc  = fitz.Rect(max(nc.x0, nmb.x0), max(nc.y0, nmb.y0),
+                    min(nc.x1, nmb.x1), min(nc.y1, nmb.y1))
+    page.set_cropbox(nc)
+
+
+def _read_extent(doc, page):
+    """Return the point-height a previously-added header added to this page, or None."""
+    try:
+        typ, val = doc.xref_get_key(page.xref, _EXTENT_KEY)
+        if typ in ("int", "real", "float"):
+            return float(val)
+    except Exception:
+        pass
+    return None
+
+
+def _write_extent(doc, page, amount):
+    """Record on the page how many points the header just added (so a later update can undo it)."""
+    try:
+        doc.xref_set_key(page.xref, _EXTENT_KEY, str(int(round(amount))))
+    except Exception:
+        pass
+
+
+def _remove_header(page, amount, fitz):
+    """Undo a previously-added header: erase its band (graphics + links) and shrink the page back
+    to its pre-header size by `amount` points on the visual-top edge. After this the page is in the
+    same state as if the header had never been added, so a fresh header can be applied de novo."""
+    rot = page.rotation
+    # The header occupies the top `amount` points (display coords); paint it out and drop its links.
+    band = fitz.Rect(page.rect.x0, 0, page.rect.x1, amount)
+    un   = band * page.derotation_matrix
+    un.normalize()
+    page.draw_rect(un, color=(1, 1, 1), fill=(1, 1, 1))
+    for a in [a for a in page.annots() if a.rect.intersects(band)]:
+        page.delete_annot(a)
+    for lnk in [lnk for lnk in page.get_links() if fitz.Rect(lnk["from"]).intersects(band)]:
+        page.delete_link(lnk)
+    # Shrink MediaBox/CropBox back by `amount` on the same (visual-top) edge. Capture the cropbox
+    # before set_mediabox, which itself auto-shrinks the cropbox (reading it after would double up).
+    mb  = fitz.Rect(page.mediabox)
+    cb  = fitz.Rect(page.cropbox)
+    page.set_mediabox(_grow(mb, rot, -amount, fitz))
+    nc  = _grow(cb, rot, -amount, fitz)
+    nmb = fitz.Rect(page.mediabox)
+    nc  = fitz.Rect(max(nc.x0, nmb.x0), max(nc.y0, nmb.y0),
+                    min(nc.x1, nmb.x1), min(nc.y1, nmb.y1))
+    page.set_cropbox(nc)
+
+
+def _add_label(page, lines, fitz):
+    font = _make_font(fitz)
+    dm   = page.derotation_matrix
+    rot  = page.rotation
+    for i, line in enumerate(lines):
+        y0      = _BAND_Y0 + i * _LINE_H
+        total_w = sum(font.text_length(t, fontsize=_FONT_SIZE) for t, _ in line)
+        x       = page.rect.x0 + (page.rect.width - total_w) / 2.0
+        links   = []   # consecutive same-url runs on this line: [url, x0, x1]
+        for text, url in line:
+            w = font.text_length(text, fontsize=_FONT_SIZE)
+            # Lay each token out in display coords, then map to the unrotated page space that
+            # PyMuPDF's write methods use; rotate=rot keeps text upright on rotated pages.
+            box = fitz.Rect(x, y0, x + w + _PAD, y0 + _LINE_H) * dm
+            box.normalize()
+            page.insert_textbox(box, text, fontsize=_FONT_SIZE,
+                                color=_COLOR_LINK if url else _COLOR_TEXT, rotate=rot, **_FONT_KW)
+            if url:
+                if links and links[-1][0] == url and abs(links[-1][2] - x) < 0.5:
+                    links[-1][2] = x + w               # extend the current run
+                else:
+                    links.append([url, x, x + w])
+            x += w
+        for url, lx0, lx1 in links:
+            link = fitz.Rect(lx0, y0, lx1, y0 + _LINE_H) * dm
+            link.normalize()
+            page.insert_link({"kind": fitz.LINK_URI, "from": link, "uri": url})
+
+
+# ── public API ────────────────────────────────────────────────────────────────
+
+def AddPdfPageHeader(pdf_path: str, format_string: str, items: list) -> None:
+    """
+    Add or replace a header on the first page of pdf_path.
+    See module docstring for format_string / items conventions.
+    Requires PyMuPDF: install with  pip install pymupdf
+    """
+    try:
+        import fitz
+    except ImportError:
+        raise ImportError(
+            "PyMuPDF is required for AddPdfPageHeader but is not installed.\n"
+            "Install it with:  pip install pymupdf"
+        )
+
+    segments = _parse(format_string, items)
+
+    doc  = fitz.open(pdf_path)
+    page = doc[0]
+
+    # Updating a header must yield the same result as removing the old header entirely and then
+    # adding the new one. So first restore the page to its pre-header state, then add de novo.
+    old_amount = _read_extent(doc, page)
+    if old_amount is None and _already_labeled(page, fitz):
+        old_amount = _EXTRA          # legacy header (pre-multi-line) was always a single line
+    if old_amount:
+        _remove_header(page, old_amount, fitz)
+
+    # Wrap the header to as many lines as needed to fit the page width (page rotation does not
+    # change the displayed width, so this is valid before expanding the page).
+    lines  = _wrap(segments, _make_font(fitz), page.rect.width - 2 * _SIDE)
+    amount = _EXTRA + (len(lines) - 1) * _LINE_H
+    _expand_top(page, fitz, len(lines))
+    _add_label(page, lines, fitz)
+    _write_extent(doc, page, amount)
+
+    doc.saveIncr()
+    doc.close()

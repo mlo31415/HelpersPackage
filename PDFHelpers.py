@@ -1,5 +1,6 @@
 import os
 import re
+import time
 from enum import IntEnum
 
 from pypdf import PdfReader, PdfWriter
@@ -185,10 +186,20 @@ def AddStdMetadata(filename: str, title: str="", author: str="", subject: str=""
     if not metadata:
         return True  # Nothing to do
 
-    try:
-        writer = PdfWriter(clone_from=filename)
-    except FileNotFoundError:
-        LogError(f"AddStdMetadata: Unable to open file {filename}")
+    # Open with a short retry: a just-written temp file can be transiently locked on Windows
+    # (e.g. antivirus scanning %TEMP%), which surfaces as PermissionError on open.
+    writer = None
+    for attempt in range(6):
+        try:
+            writer = PdfWriter(clone_from=filename)
+            break
+        except FileNotFoundError:
+            LogError(f"AddStdMetadata: Unable to open file {filename}")
+            return False
+        except PermissionError:
+            time.sleep(0.25)
+    if writer is None:
+        LogError(f"AddStdMetadata: '{filename}' stayed locked (PermissionError) after retries")
         return False
 
     try:
@@ -205,7 +216,22 @@ def AddStdMetadata(filename: str, title: str="", author: str="", subject: str=""
         LogError(f"AddStdMetadata: failed to write '{newfile}': {e}")
         return False
 
-    os.remove(filename)
+    # Replace the original with the updated copy. The remove can hit the same transient lock, so retry.
+    for attempt in range(6):
+        try:
+            os.remove(filename)
+            break
+        except FileNotFoundError:
+            break
+        except PermissionError:
+            if attempt == 5:
+                LogError(f"AddStdMetadata: '{filename}' stayed locked (PermissionError); could not replace it")
+                try:
+                    os.remove(newfile)
+                except Exception:
+                    pass
+                return False
+            time.sleep(0.25)
     os.rename(newfile, filename)
 
     # Remove any stale XMP metadata (e.g. a scanner-written dc:title) so the DocInfo values we just
@@ -388,13 +414,14 @@ def _already_labeled(page, fitz):
 
 
 def _grow(box, rot, amount, fitz):
-    """Return box grown by `amount` points on the edge (in PDF y-up MediaBox coords) that maps
-    to the VISUAL top for the given page rotation (0/90/180/270, clockwise)."""
+    """Return box grown by `amount` points on the edge (in PyMuPDF MediaBox coords) that maps to the
+    VISUAL top for the given page rotation (0/90/180/270, clockwise). Edges verified empirically --
+    note that both 90 and 270 grow the x1 edge (the displayed top of a side-rotated page)."""
     x0, y0, x1, y1 = box.x0, box.y0, box.x1, box.y1
     if   rot == 0:   y1 += amount
     elif rot == 90:  x1 += amount
     elif rot == 180: y0 -= amount
-    elif rot == 270: x0 -= amount
+    elif rot == 270: x1 += amount
     return fitz.Rect(x0, y0, x1, y1)
 
 
@@ -413,7 +440,10 @@ def _expand_top(page, fitz, nlines=1):
     nmb = fitz.Rect(page.mediabox)
     nc  = fitz.Rect(max(nc.x0, nmb.x0), max(nc.y0, nmb.y0),
                     min(nc.x1, nmb.x1), min(nc.y1, nmb.y1))
-    page.set_cropbox(nc)
+    try:
+        page.set_cropbox(nc)
+    except Exception:
+        pass   # set_mediabox already auto-adjusted the cropbox to cover the new extent
 
 
 def _read_extent(doc, page):
@@ -458,7 +488,10 @@ def _remove_header(page, amount, fitz):
     nmb = fitz.Rect(page.mediabox)
     nc  = fitz.Rect(max(nc.x0, nmb.x0), max(nc.y0, nmb.y0),
                     min(nc.x1, nmb.x1), min(nc.y1, nmb.y1))
-    page.set_cropbox(nc)
+    try:
+        page.set_cropbox(nc)
+    except Exception:
+        pass   # set_mediabox already auto-adjusted the cropbox to cover the new extent
 
 
 def _add_label(page, lines, fitz):
@@ -508,7 +541,17 @@ def AddPdfPageHeader(pdf_path: str, format_string: str, items: list) -> None:
 
     segments = _parse(format_string, items)
 
-    doc  = fitz.open(pdf_path)
+    # Retry the open: a just-written temp file can be transiently locked on Windows (antivirus
+    # scanning %TEMP%), surfacing as PermissionError.
+    doc = None
+    for attempt in range(6):
+        try:
+            doc = fitz.open(pdf_path)
+            break
+        except Exception:
+            if attempt == 5:
+                raise
+            time.sleep(0.25)
     page = doc[0]
 
     # Updating a header must yield the same result as removing the old header entirely and then

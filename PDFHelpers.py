@@ -570,5 +570,41 @@ def AddPdfPageHeader(pdf_path: str, format_string: str, items: list) -> None:
     _add_label(page, lines, fitz)
     _write_extent(doc, page, amount)
 
-    doc.saveIncr()
+    # Subset the just-embedded header font and rewrite the file compactly. Embedding the full Calibri
+    # TTF (~1.6 MB) otherwise bloats even tiny PDFs. A full, garbage-collected save is required to drop
+    # the original full-font stream (an incremental save can only append). If the compact path isn't
+    # available, fall back to an incremental save -- correct, just larger.
+    try:
+        doc.subset_fonts()
+    except Exception as e:
+        LogError(f"AddPdfPageHeader: subset_fonts() failed (continuing without subsetting): {e}")
+    tmp_out = pdf_path + ".min.pdf"
+    try:
+        doc.save(tmp_out, garbage=4, deflate=True)
+    except Exception as e:
+        LogError(f"AddPdfPageHeader: compact save failed ({e}); using incremental save instead")
+        try:
+            doc.saveIncr()
+        finally:
+            doc.close()
+        try:
+            if os.path.exists(tmp_out):
+                os.remove(tmp_out)
+        except Exception:
+            pass
+        return
     doc.close()
+    # Replace the original with the compact version, retrying past transient Windows file locks.
+    for attempt in range(6):
+        try:
+            os.replace(tmp_out, pdf_path)
+            return
+        except PermissionError:
+            if attempt == 5:
+                LogError(f"AddPdfPageHeader: could not replace '{pdf_path}' with the compact version (locked)")
+                try:
+                    os.remove(tmp_out)
+                except Exception:
+                    pass
+                return
+            time.sleep(0.25)

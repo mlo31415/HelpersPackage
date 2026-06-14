@@ -1,3 +1,4 @@
+import io
 import os
 import re
 import time
@@ -272,7 +273,7 @@ def GetPdfPageCount(pathname: str) -> int|None:
 # =============================================================================
 # PDF page-header support (requires PyMuPDF / fitz)
 #
-# AddPdfPageHeader(pdf_path, format_string, items)
+# AddPdfPageHeader(pdf_path, format_string, items, logo=None)
 #
 #   Adds (or replaces) a centered, single-line header at the top of the first
 #   page of a PDF, expanding the page height on first use.
@@ -284,6 +285,10 @@ def GetPdfPageCount(pathname: str) -> int|None:
 #                     it silently consumes the next item too as the display
 #                     text, and that text is rendered in blue as a hyperlink.
 #                     Non-URL items are rendered as plain black text.
+#   logo           -- optional logo art supplied by the CALLER, as raw image
+#                     bytes or a path to an image file. PDFHelpers owns no
+#                     artwork of its own. When given (and Pillow is available)
+#                     it is drawn band-tall just right of the text; None = none.
 #
 #   The page is expanded by _EXTRA points on the first call.  Subsequent calls
 #   detect the existing header (by the presence of a URI link in the top band),
@@ -311,6 +316,15 @@ _COLOR_TEXT = (0, 0, 0)     # black
 _COLOR_LINK = (0, 0, 0.8)   # blue
 
 _EXTENT_KEY = "FanacHdrPts" # page-dict key recording how many points a previously-added header added
+
+# ── header logo (experimental) ─────────────────────────────────────────────
+# The logo is supplied by the CALLER of AddPdfPageHeader (as image bytes or a path); PDFHelpers owns
+# no artwork of its own. It is placed just to the right of the header text and sized to the FULL
+# white-band height (not the smaller text height) so it is as large as possible without making the
+# header any taller. Requires Pillow. If the supplied art can't be loaded (no Pillow, bad data), the
+# logo is logged ONCE and then quietly skipped for the rest of the run.
+_LOGO_VPAD     = 1       # display points of breathing room above/below the logo within the band
+_logo_disabled = False   # set once a load failure has been logged, to suppress retries + repeat logs
 
 
 def _make_font(fitz):
@@ -415,11 +429,13 @@ def _already_labeled(page, fitz):
 
 def _grow(box, rot, amount, fitz):
     """Return box grown by `amount` points on the edge (in PyMuPDF MediaBox coords) that maps to the
-    VISUAL top for the given page rotation (0/90/180/270, clockwise). Edges verified empirically --
-    note that both 90 and 270 grow the x1 edge (the displayed top of a side-rotated page)."""
+    VISUAL top for the given page rotation (0/90/180/270, clockwise). /Rotate is clockwise, so the
+    unrotated-LEFT edge (x0) becomes the displayed top at 90 and the unrotated-RIGHT edge (x1) at 270
+    -- they are opposite edges. (Verified by rendering: growing x0 on a /Rotate 90 page adds the blank
+    band at the displayed top; growing x1 added it at the bottom.)"""
     x0, y0, x1, y1 = box.x0, box.y0, box.x1, box.y1
     if   rot == 0:   y1 += amount
-    elif rot == 90:  x1 += amount
+    elif rot == 90:  x0 -= amount
     elif rot == 180: y0 -= amount
     elif rot == 270: x1 += amount
     return fitz.Rect(x0, y0, x1, y1)
@@ -494,14 +510,16 @@ def _remove_header(page, amount, fitz):
         pass   # set_mediabox already auto-adjusted the cropbox to cover the new extent
 
 
-def _add_label(page, lines, fitz):
+def _add_label(page, lines, fitz, block_x0, block_w):
+    # Each line is centered within the text block [block_x0, block_x0+block_w]. The block is positioned
+    # by the caller so that (block + gap + logo) is centered on the page.
     font = _make_font(fitz)
     dm   = page.derotation_matrix
     rot  = page.rotation
     for i, line in enumerate(lines):
         y0      = _BAND_Y0 + i * _LINE_H
         total_w = sum(font.text_length(t, fontsize=_FONT_SIZE) for t, _ in line)
-        x       = page.rect.x0 + (page.rect.width - total_w) / 2.0
+        x       = block_x0 + (block_w - total_w) / 2.0
         links   = []   # consecutive same-url runs on this line: [url, x0, x1]
         for text, url in line:
             w = font.text_length(text, fontsize=_FONT_SIZE)
@@ -523,9 +541,59 @@ def _add_label(page, lines, fitz):
             page.insert_link({"kind": fitz.LINK_URI, "from": link, "uri": url})
 
 
+def _load_logo(logo):
+    """Return the CALLER-supplied logo as a PIL RGBA Image (upright), or None. `logo` may be raw image
+    bytes or a path to an image file. Any failure (logo None, no Pillow, unreadable data) is logged
+    ONCE; after that the logo is skipped silently for the rest of the run."""
+    global _logo_disabled
+    if logo is None or _logo_disabled:
+        return None
+    try:
+        from PIL import Image
+        if isinstance(logo, (bytes, bytearray)):
+            data = bytes(logo)
+        else:
+            with open(logo, "rb") as f:
+                data = f.read()
+        return Image.open(io.BytesIO(data)).convert("RGBA")
+    except Exception as e:
+        LogError(f"PDF header logo unavailable; disabling it for this run: {e}")
+        _logo_disabled = True
+        return None
+
+
+def _add_logo(page, fitz, band_h, x0, im):
+    """Place the already-loaded PIL logo `im` with its left edge at display-x `x0`, sized to the FULL
+    band height `band_h` (so it is as large as the white space allows without enlarging the header),
+    pre-rotated to stay upright on a sideways-scanned page."""
+    from PIL import Image
+    rot    = page.rotation
+    aspect = im.size[0] / im.size[1]                    # upright (display) aspect
+    h      = band_h - 2 * _LOGO_VPAD                    # fill the band, leaving a little breathing room
+    w      = h * aspect
+    if rot:
+        im = im.rotate((-rot) % 360, expand=True)       # counter the page's display rotation
+    cap = max(8, int(round(h)) * 4)                     # deresolve: ~4x the slot height is plenty
+    im.thumbnail((cap, cap), Image.LANCZOS)
+    buf = io.BytesIO(); im.save(buf, "PNG"); data = buf.getvalue()
+    y0   = (band_h - h) / 2.0                           # vertically centered in the band
+    disp = fitz.Rect(x0, y0, x0 + w, y0 + h)
+    # insert_image takes the rect in the page's unrotated coordinate system, measured from the MediaBox
+    # origin -- so derotate (handles rotation) and then add the MediaBox origin (handles the negative
+    # origin the page picked up when it was expanded). rotate=0: the raster is already pre-rotated.
+    r = disp * page.derotation_matrix
+    r.normalize()
+    mb = page.mediabox
+    r = fitz.Rect(r.x0 + mb.x0, r.y0 + mb.y0, r.x1 + mb.x0, r.y1 + mb.y0)
+    try:
+        page.insert_image(r, stream=data, rotate=0, keep_proportion=True, overlay=True)
+    except Exception as e:
+        LogError(f"AddPdfPageHeader: insert header logo failed: {e}")
+
+
 # ── public API ────────────────────────────────────────────────────────────────
 
-def AddPdfPageHeader(pdf_path: str, format_string: str, items: list) -> None:
+def AddPdfPageHeader(pdf_path: str, format_string: str, items: list, logo=None) -> None:
     """
     Add or replace a header on the first page of pdf_path.
     See module docstring for format_string / items conventions.
@@ -562,12 +630,30 @@ def AddPdfPageHeader(pdf_path: str, format_string: str, items: list) -> None:
     if old_amount:
         _remove_header(page, old_amount, fitz)
 
+    # The header is laid out as one centered group: [text block] [gap] [logo]. The logo sits a fixed
+    # gap -- about the width of "conpubs" -- to the right of the text, and is band-tall. Reserve that
+    # block when wrapping so the text fits beside it.
+    font    = _make_font(fitz)
+    logo_im = _load_logo(logo)
+    aspect  = (logo_im.size[0] / logo_im.size[1]) if logo_im else None
+    gap     = font.text_length("conpubs", fontsize=_FONT_SIZE) if aspect else 0.0
+
     # Wrap the header to as many lines as needed to fit the page width (page rotation does not
-    # change the displayed width, so this is valid before expanding the page).
-    lines  = _wrap(segments, _make_font(fitz), page.rect.width - 2 * _SIDE)
+    # change the displayed width, so this is valid before expanding the page). Estimate the logo's
+    # width from the single-line band height for the reservation (exact for a one-line header).
+    est_logo_w = ((_EXTRA - 2 * _LOGO_VPAD) * aspect) if aspect else 0.0
+    lines  = _wrap(segments, font, page.rect.width - 2 * _SIDE - gap - est_logo_w)
     amount = _EXTRA + (len(lines) - 1) * _LINE_H
     _expand_top(page, fitz, len(lines))
-    _add_label(page, lines, fitz)
+
+    # Now that the (possibly multi-line) band height is known, center [text | gap | logo] as a group.
+    logo_w = ((amount - 2 * _LOGO_VPAD) * aspect) if aspect else 0.0
+    block_w = max((sum(font.text_length(t, fontsize=_FONT_SIZE) for t, _ in ln) for ln in lines), default=0.0)
+    group_w = block_w + (gap + logo_w if aspect else 0.0)
+    block_x0 = max(page.rect.x0 + _SIDE, page.rect.x0 + (page.rect.width - group_w) / 2.0)
+    _add_label(page, lines, fitz, block_x0, block_w)
+    if aspect:
+        _add_logo(page, fitz, amount, block_x0 + block_w + gap, logo_im)
     _write_extent(doc, page, amount)
 
     # Subset the just-embedded header font and rewrite the file compactly. Embedding the full Calibri

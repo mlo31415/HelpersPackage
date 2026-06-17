@@ -4,7 +4,7 @@ import re
 import time
 from enum import IntEnum
 
-from pypdf import PdfReader, PdfWriter
+from pypdf import PdfReader
 
 from HelpersPackage import ExtensionMatches
 from Log import Log, LogError
@@ -14,6 +14,26 @@ try:
     _spell = _SpellChecker()
 except ImportError:
     _spell = None
+
+
+# =============================================================================
+# PyMuPDF (imported as 'fitz') is required for the metadata and page-header operations in this module.
+# It is a Python *package* (a compiled binding to the MuPDF library), NOT a separate program. Load it
+# lazily through this helper so a caller that needs it gets one clear, actionable message when it is
+# missing -- while the pypdf-only helpers here keep working without it.
+def _require_fitz():
+    try:
+        import fitz
+        return fitz
+    except ImportError as e:
+        raise ImportError(
+            "PyMuPDF is required for this PDF operation but is not installed.\n"
+            "PyMuPDF is a Python package (imported as 'fitz'), not a separate program.\n"
+            "Install it into the Python environment running this tool:\n"
+            "    pip install pymupdf\n"
+            "or, in a virtual environment:\n"
+            "    <venv>\\Scripts\\pip install pymupdf"
+        ) from e
 
 
 # =============================================================================
@@ -127,126 +147,92 @@ def LowQualityScan(reader: PdfReader,
 
 
 # =============================================================================
-def AddMissingMetadata(filename: str, newmetadata: dict[str, str], keywords: str="") -> bool:
-    if not filename.lower().endswith(".pdf"):
-        return False
-
-    # Try to create a writer which is filled with a clone of the input pdf
-    try:
-        writer=PdfWriter(clone_from=filename)
-    except FileNotFoundError:
-        LogError(f"AddMissingMetadata: Unable to open file {filename}")
-        return False
-
-    # # Open the existing pdf file
-    # file_in=open(filename, 'rb')
-    # reader=PdfReader(file_in)
-
-    # If keywords are supplied, add them to the new metadata
-    if keywords != "":
-        newmetadata["/Keywords"]=keywords
-
-    # Add the new metadata to the cloned pdf.
-    try:
-        writer.add_metadata(newmetadata)
-    except Exception:
-        LogError(f"AddMissingMetadata: writer.add_metadata() failed for {filename}: ignored")
-
-    # Write out the new pdf using the existing pdf's name with " added" appended to it.
-    path, ext=os.path.splitext(filename)
-    newfile=path+" added"+ext
-    try:
-        with open(newfile, 'wb') as file_out:
-            writer.write(file_out)
-    except Exception as e:
-        LogError(f"AddMissingMetadata: failed to write '{newfile}': {e}")
-        return False
-
-    os.remove(filename)
-    os.rename(newfile, filename)
-    return True
-
-
-# =============================================================================
 # Add standard bibliographic metadata fields to a PDF.
 # Only fields supplied with a non-empty value are written; omitted or empty fields are left unchanged.
 def AddStdMetadata(filename: str, title: str="", author: str="", subject: str="", keywords: str="") -> bool:
     if not filename.lower().endswith(".pdf"):
         return False
 
-    metadata: dict[str, str] = {}
+    fields: dict[str, str] = {}
     if title:
-        metadata["/Title"] = title
+        fields["title"] = title
     if author:
-        metadata["/Author"] = author
+        fields["author"] = author
     if subject:
-        metadata["/Subject"] = subject
+        fields["subject"] = subject
     if keywords:
-        metadata["/Keywords"] = keywords
+        fields["keywords"] = keywords
 
-    if not metadata:
+    if not fields:
         return True  # Nothing to do
+
+    try:
+        fitz = _require_fitz()
+    except ImportError as e:
+        LogError(str(e))
+        return False
 
     # Open with a short retry: a just-written temp file can be transiently locked on Windows
     # (e.g. antivirus scanning %TEMP%), which surfaces as PermissionError on open.
-    writer = None
+    doc = None
     for attempt in range(6):
         try:
-            writer = PdfWriter(clone_from=filename)
+            doc = fitz.open(filename)
             break
         except FileNotFoundError:
             LogError(f"AddStdMetadata: Unable to open file {filename}")
             return False
         except PermissionError:
             time.sleep(0.25)
-    if writer is None:
+    if doc is None:
         LogError(f"AddStdMetadata: '{filename}' stayed locked (PermissionError) after retries")
         return False
 
+    # set_metadata REPLACES the whole DocInfo dict, so seed from the existing writable fields and override
+    # only the ones supplied -- that keeps the "omitted fields unchanged" contract. del_xml_metadata drops
+    # any competing XMP packet (many viewers prefer XMP over /Info, e.g. a scanner-written dc:title), and
+    # the full garbage-collected save then actually removes the dead XMP bytes from the file.
+    tmp_out = filename + ".min.pdf"
+    saved_compact = False
     try:
-        writer.add_metadata(metadata)
-    except Exception:
-        LogError(f"AddStdMetadata: writer.add_metadata() failed for {filename}: ignored")
+        _writable = ("title", "author", "subject", "keywords", "creator", "producer", "creationDate", "modDate")
+        existing = doc.metadata or {}
+        md = {k: existing.get(k, "") for k in _writable}
+        md.update(fields)
+        doc.set_metadata(md)
+        doc.del_xml_metadata()
+        try:
+            doc.save(tmp_out, garbage=4, deflate=True)
+            saved_compact = True
+        except Exception as e:
+            LogError(f"AddStdMetadata: compact save failed ({e}); using incremental save instead")
+            doc.saveIncr()
+    finally:
+        doc.close()
 
-    path, ext = os.path.splitext(filename)
-    newfile = path+" added"+ext
-    try:
-        with open(newfile, 'wb') as file_out:
-            writer.write(file_out)
-    except Exception as e:
-        LogError(f"AddStdMetadata: failed to write '{newfile}': {e}")
-        return False
+    if not saved_compact:
+        # The incremental save already updated the file in place; discard any partial compact file.
+        try:
+            if os.path.exists(tmp_out):
+                os.remove(tmp_out)
+        except Exception:
+            pass
+        return True
 
-    # Replace the original with the updated copy. The remove can hit the same transient lock, so retry.
+    # Replace the original with the compact copy, retrying past transient Windows file locks.
     for attempt in range(6):
         try:
-            os.remove(filename)
-            break
-        except FileNotFoundError:
-            break
+            os.replace(tmp_out, filename)
+            return True
         except PermissionError:
             if attempt == 5:
-                LogError(f"AddStdMetadata: '{filename}' stayed locked (PermissionError); could not replace it")
+                LogError(f"AddStdMetadata: could not replace '{filename}' with the updated copy (locked)")
                 try:
-                    os.remove(newfile)
+                    os.remove(tmp_out)
                 except Exception:
                     pass
                 return False
             time.sleep(0.25)
-    os.rename(newfile, filename)
-
-    # Remove any stale XMP metadata (e.g. a scanner-written dc:title) so the DocInfo values we just
-    # set are what viewers actually display -- many viewers prefer the XMP packet over the /Info dict.
-    try:
-        import fitz
-        doc=fitz.open(filename)
-        doc.del_xml_metadata()
-        doc.saveIncr()
-        doc.close()
-    except Exception as e:
-        LogError(f"AddStdMetadata: could not remove XMP metadata from '{filename}': {e}")
-
-    return True
 
 
 # =============================================================================
@@ -266,7 +252,6 @@ def GetPdfPageCount(pathname: str) -> int|None:
             return len(reader.pages)
     except Exception as e:
         Log(f"GetPdfPageCount: Exception {e} raised while getting page count for '{pathname}'")
-        Log(f"GetPdfPageCount: {os.getcwd()=}")
     return None
 
 
@@ -297,6 +282,11 @@ def GetPdfPageCount(pathname: str) -> int|None:
 # ── layout constants (PDF points; PyMuPDF coords: top-left origin, y-down) ──
 # Prefer Calibri (full Unicode, correct advance widths) over the base-14 Helvetica,
 # which lacks em-dashes and other non-ASCII characters and causes mis-centering.
+# NOTE (latent, Windows-only today): if Calibri is not found we fall back to base-14 Helvetica ("helv"),
+# which lacks em-dashes and other non-ASCII glyphs -- the very characters the header format uses (e.g.
+# "--"/"——"). On the fallback path those glyphs drop out and the centering math (which measures with the
+# fallback font) drifts slightly. Accepted because CE runs on Windows where Calibri is present; if this
+# ever ships off-Windows, bundle a Unicode TTF via PyiResourcePath rather than relying on a host font.
 _FONT_FILE = r"C:\Windows\Fonts\calibri.ttf"
 _FONT_FILE = _FONT_FILE if os.path.exists(_FONT_FILE) else None   # graceful fallback
 _FONT_FALLBACK = "helv"   # used only when Calibri is not found
@@ -419,11 +409,15 @@ def _wrap(segments, font, max_width):
 
 
 def _already_labeled(page, fitz):
+    # Fallback header detection for pages that predate the _EXTENT_KEY marker. A header WE added always
+    # carries a fanac.org link (the con-instance page and the conpubs root), so require the URI to be a
+    # fanac.org link. Without that restriction, an unrelated top-of-page hyperlink in a never-headered
+    # PDF would be mistaken for our header and trigger an erroneous remove-and-shrink (content loss).
     band = _band(page, fitz)
     return any(
         fitz.Rect(lnk["from"]).intersects(band)
         for lnk in page.get_links()
-        if lnk.get("kind") == fitz.LINK_URI
+        if lnk.get("kind") == fitz.LINK_URI and "fanac.org" in (lnk.get("uri") or "").lower()
     )
 
 
@@ -599,18 +593,16 @@ def AddPdfPageHeader(pdf_path: str, format_string: str, items: list, logo=None) 
     See module docstring for format_string / items conventions.
     Requires PyMuPDF: install with  pip install pymupdf
     """
-    try:
-        import fitz
-    except ImportError:
-        raise ImportError(
-            "PyMuPDF is required for AddPdfPageHeader but is not installed.\n"
-            "Install it with:  pip install pymupdf"
-        )
+    fitz = _require_fitz()
 
     segments = _parse(format_string, items)
 
-    # Retry the open: a just-written temp file can be transiently locked on Windows (antivirus
-    # scanning %TEMP%), surfacing as PermissionError.
+    # Fail fast on a genuinely missing file rather than spending the whole lock-retry loop on it.
+    if not os.path.exists(pdf_path):
+        raise FileNotFoundError(f"AddPdfPageHeader: '{pdf_path}' does not exist")
+
+    # Retry the open: a just-written temp file can be transiently locked on Windows (antivirus scanning
+    # %TEMP%). The lock can surface as more than one exception type, so retry broadly.
     doc = None
     for attempt in range(6):
         try:
@@ -620,66 +612,78 @@ def AddPdfPageHeader(pdf_path: str, format_string: str, items: list, logo=None) 
             if attempt == 5:
                 raise
             time.sleep(0.25)
-    page = doc[0]
 
-    # Updating a header must yield the same result as removing the old header entirely and then
-    # adding the new one. So first restore the page to its pre-header state, then add de novo.
-    old_amount = _read_extent(doc, page)
-    if old_amount is None and _already_labeled(page, fitz):
-        old_amount = _EXTRA          # legacy header (pre-multi-line) was always a single line
-    if old_amount:
-        _remove_header(page, old_amount, fitz)
-
-    # The header is laid out as one centered group: [text block] [gap] [logo]. The logo sits a fixed
-    # gap -- about the width of "conpubs" -- to the right of the text, and is band-tall. Reserve that
-    # block when wrapping so the text fits beside it.
-    font    = _make_font(fitz)
-    logo_im = _load_logo(logo)
-    aspect  = (logo_im.size[0] / logo_im.size[1]) if logo_im else None
-    gap     = font.text_length("conpubs", fontsize=_FONT_SIZE) if aspect else 0.0
-
-    # Wrap the header to as many lines as needed to fit the page width (page rotation does not
-    # change the displayed width, so this is valid before expanding the page). Estimate the logo's
-    # width from the single-line band height for the reservation (exact for a one-line header).
-    est_logo_w = ((_EXTRA - 2 * _LOGO_VPAD) * aspect) if aspect else 0.0
-    lines  = _wrap(segments, font, page.rect.width - 2 * _SIDE - gap - est_logo_w)
-    amount = _EXTRA + (len(lines) - 1) * _LINE_H
-    _expand_top(page, fitz, len(lines))
-
-    # Now that the (possibly multi-line) band height is known, center [text | gap | logo] as a group.
-    logo_w = ((amount - 2 * _LOGO_VPAD) * aspect) if aspect else 0.0
-    block_w = max((sum(font.text_length(t, fontsize=_FONT_SIZE) for t, _ in ln) for ln in lines), default=0.0)
-    group_w = block_w + (gap + logo_w if aspect else 0.0)
-    block_x0 = max(page.rect.x0 + _SIDE, page.rect.x0 + (page.rect.width - group_w) / 2.0)
-    _add_label(page, lines, fitz, block_x0, block_w)
-    if aspect:
-        _add_logo(page, fitz, amount, block_x0 + block_w + gap, logo_im)
-    _write_extent(doc, page, amount)
-
-    # Subset the just-embedded header font and rewrite the file compactly. Embedding the full Calibri
-    # TTF (~1.6 MB) otherwise bloats even tiny PDFs. A full, garbage-collected save is required to drop
-    # the original full-font stream (an incremental save can only append). If the compact path isn't
-    # available, fall back to an incremental save -- correct, just larger.
-    try:
-        doc.subset_fonts()
-    except Exception as e:
-        LogError(f"AddPdfPageHeader: subset_fonts() failed (continuing without subsetting): {e}")
+    # Everything past the open runs under try/finally so the document is ALWAYS closed -- an un-closed
+    # fitz document keeps the file locked on Windows, which would block the caller's temp-file cleanup.
     tmp_out = pdf_path + ".min.pdf"
+    saved_compact = False
     try:
-        doc.save(tmp_out, garbage=4, deflate=True)
-    except Exception as e:
-        LogError(f"AddPdfPageHeader: compact save failed ({e}); using incremental save instead")
+        if doc.page_count == 0:
+            LogError(f"AddPdfPageHeader: '{pdf_path}' has no pages; header skipped")
+            return
+        page = doc[0]
+
+        # Updating a header must yield the same result as removing the old header entirely and then
+        # adding the new one. So first restore the page to its pre-header state, then add de novo.
+        old_amount = _read_extent(doc, page)
+        if old_amount is None and _already_labeled(page, fitz):
+            old_amount = _EXTRA          # legacy header (pre-multi-line) was always a single line
+        if old_amount:
+            _remove_header(page, old_amount, fitz)
+
+        # The header is laid out as one centered group: [text block] [gap] [logo]. The logo sits a fixed
+        # gap -- about the width of "conpubs" -- to the right of the text, and is band-tall. Reserve that
+        # block when wrapping so the text fits beside it.
+        font    = _make_font(fitz)
+        logo_im = _load_logo(logo)
+        aspect  = (logo_im.size[0] / logo_im.size[1]) if logo_im else None
+        gap     = font.text_length("conpubs", fontsize=_FONT_SIZE) if aspect else 0.0
+
+        # Wrap the header to as many lines as needed to fit the page width (page rotation does not
+        # change the displayed width, so this is valid before expanding the page). Estimate the logo's
+        # width from the single-line band height for the reservation (exact for a one-line header).
+        est_logo_w = ((_EXTRA - 2 * _LOGO_VPAD) * aspect) if aspect else 0.0
+        lines  = _wrap(segments, font, page.rect.width - 2 * _SIDE - gap - est_logo_w)
+        amount = _EXTRA + (len(lines) - 1) * _LINE_H
+        _expand_top(page, fitz, len(lines))
+
+        # Now that the (possibly multi-line) band height is known, center [text | gap | logo] as a group.
+        logo_w = ((amount - 2 * _LOGO_VPAD) * aspect) if aspect else 0.0
+        block_w = max((sum(font.text_length(t, fontsize=_FONT_SIZE) for t, _ in ln) for ln in lines), default=0.0)
+        group_w = block_w + (gap + logo_w if aspect else 0.0)
+        block_x0 = max(page.rect.x0 + _SIDE, page.rect.x0 + (page.rect.width - group_w) / 2.0)
+        _add_label(page, lines, fitz, block_x0, block_w)
+        if aspect:
+            _add_logo(page, fitz, amount, block_x0 + block_w + gap, logo_im)
+        _write_extent(doc, page, amount)
+
+        # Subset the just-embedded header font and rewrite the file compactly. Embedding the full Calibri
+        # TTF (~1.6 MB) otherwise bloats even tiny PDFs. A full, garbage-collected save is required to drop
+        # the original full-font stream (an incremental save can only append). If the compact path isn't
+        # available, fall back to an incremental save -- correct, just larger.
         try:
+            doc.subset_fonts()
+        except Exception as e:
+            LogError(f"AddPdfPageHeader: subset_fonts() failed (continuing without subsetting): {e}")
+        try:
+            doc.save(tmp_out, garbage=4, deflate=True)
+            saved_compact = True
+        except Exception as e:
+            LogError(f"AddPdfPageHeader: compact save failed ({e}); using incremental save instead")
             doc.saveIncr()
-        finally:
-            doc.close()
+    finally:
+        doc.close()
+
+    # The document handle is now closed, so the on-disk swap is safe.
+    if not saved_compact:
+        # The incremental save already updated pdf_path in place; discard any partial compact file.
         try:
             if os.path.exists(tmp_out):
                 os.remove(tmp_out)
         except Exception:
             pass
         return
-    doc.close()
+
     # Replace the original with the compact version, retrying past transient Windows file locks.
     for attempt in range(6):
         try:

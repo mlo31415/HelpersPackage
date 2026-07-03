@@ -411,7 +411,10 @@ def FormatLink(url: str, text: str, ForceHTTP: bool=False, ForceHTTPS: bool=Fals
         return text
 
     # Percent-encode spaces (and only spaces — other encoding is handled by UnicodeToHtml below).
-    url=url.replace(" ", "%20")
+    # When QuoteChars is set, urllib.parse.quote (below) already encodes spaces, so skip this
+    # replacement to avoid double-encoding "%20" into "%2520".
+    if not QuoteChars:
+        url=url.replace(" ", "%20")
 
     # '#' can't be part of an href as it is misinterpreted
     # But it *can* be part of a link to an anchor on a page or a part of a pdf reference.

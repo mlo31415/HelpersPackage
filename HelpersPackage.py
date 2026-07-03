@@ -2413,8 +2413,14 @@ def ExtractTrailingSequenceNumber(s: str, complete: bool = False, IgnoreRomanNum
     if m is not None and len(m.groups()) in [3, 4]:
         ns=None
         if len(m.groups()) == 4:
-            ns=m.groups()[2]
+            ns=m.groups()[3]
         return m.groups()[0].strip(), m.groups()[1], m.groups()[2], ns
+
+    # Now the written-out form: Vol/Vol./Volume + nnn + optional comma/semicolon + No/No./Number/# + mmm
+    # + optional single alphabetic character suffix.  E.g. "MT Void Vol. 39, No. 45"
+    m=re.match(r"^(.*?)[Vv][oO][lL](?:[uU][mM][eE])?\.?\s*(\d+)\s*[,;]?\s*(?:#|[Nn][uU][mM][bB][eE][rR]|[Nn][oO]\.?)\s*(\d+)([a-zA-Z]?)\s*$", s)
+    if m is not None:
+        return m.groups()[0].strip(), m.groups()[1], m.groups()[2], m.groups()[3]
 
     # Now look for nnn nnn/nnn (fractions!)
     # nnn + mandatory whitespace + nnn + slash + nnn * optional whitespace
@@ -2461,7 +2467,7 @@ def ExtractTrailingSequenceNumber(s: str, complete: bool = False, IgnoreRomanNum
         if m is not None and len(m.groups()) in [2, 3]:
             ws=""
             if len(m.groups()) == 3:
-                ws=m.groups()[1].strip()
+                ws=m.groups()[2].strip()
             return m.groups()[0].strip(), "", m.groups()[1], ws
 
         # Now look for trailing Roman numerals

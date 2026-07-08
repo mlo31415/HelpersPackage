@@ -24,7 +24,6 @@ except ImportError:
 def _require_fitz():
     try:
         import fitz
-        return fitz
     except ImportError as e:
         raise ImportError(
             "PyMuPDF is required for this PDF operation but is not installed.\n"
@@ -34,6 +33,26 @@ def _require_fitz():
             "or, in a virtual environment:\n"
             "    <venv>\\Scripts\\pip install pymupdf"
         ) from e
+    # Keep MuPDF's own diagnostics off the console and route them to the error log instead (see
+    # _LogFitzWarnings): silence its direct stderr writes, and clear the warning buffer so that warnings
+    # read after an operation belong to that operation.
+    try:
+        fitz.TOOLS.mupdf_display_errors(False)
+        fitz.TOOLS.reset_mupdf_warnings()
+    except Exception:
+        pass
+    return fitz
+
+
+# Route any accumulated MuPDF warnings (e.g. an auto-repaired malformed xref) to the error log instead of
+# letting the C library write them straight to the console. Best-effort; reading clears the buffer.
+def _LogFitzWarnings(fitz, context: str) -> None:
+    try:
+        w = fitz.TOOLS.mupdf_warnings()
+    except Exception:
+        return
+    if w and w.strip():
+        LogError(f"MuPDF reported (and auto-repaired) structural issues in '{context}' -- the file may be worth re-scanning:\n{w.strip()}")
 
 
 # =============================================================================
@@ -209,6 +228,7 @@ def AddStdMetadata(filename: str, title: str="", author: str="", subject: str=""
             doc.saveIncr()
     finally:
         doc.close()
+        _LogFitzWarnings(fitz, filename)
 
     if not saved_compact:
         # The incremental save already updated the file in place; discard any partial compact file.
@@ -673,6 +693,7 @@ def AddPdfPageHeader(pdf_path: str, format_string: str, items: list, logo=None) 
             doc.saveIncr()
     finally:
         doc.close()
+        _LogFitzWarnings(fitz, pdf_path)
 
     # The document handle is now closed, so the on-disk swap is safe.
     if not saved_compact:

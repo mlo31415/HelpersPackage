@@ -1,2 +1,18 @@
-# Project exclude paths
-/venv/
+# Python virtual environment
+.venv/
+
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+
+# PyInstaller build artifacts
+build/
+dist/
+*.exe
+*.spec
+
+# IDE
+.idea/
+
+# Runtime logs
+*.log

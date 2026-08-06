@@ -23,3 +23,4 @@ dist/
 # broken stubs elsewhere. The master copies live in the FanzineIssueSpecPackage repo.
 FanzineDateTime.py
 FanzineIssueSpecPackage.py
+mklinks FIS Only.bat

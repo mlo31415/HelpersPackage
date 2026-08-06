@@ -1,5 +1,6 @@
 # Python virtual environment
 .venv/
+venv/
 
 # Python bytecode / caches
 __pycache__/
@@ -16,3 +17,9 @@ dist/
 
 # Runtime logs
 *.log
+
+# Symlinks to shared packages -- machine-specific, regenerated locally by the mklinks*.bat scripts.
+# Do NOT commit these: they point to absolute paths on the dev's machine and would check out as
+# broken stubs elsewhere. The master copies live in the FanzineIssueSpecPackage repo.
+FanzineDateTime.py
+FanzineIssueSpecPackage.py

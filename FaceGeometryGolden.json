@@ -1,0 +1,151 @@
+{
+  "comment": "The circle a face box is shown as: SlideShow and PhotosEditor must both agree with these numbers.  See FaceGeometry.py.",
+  "ratio": 0.65,
+  "cases": [
+    {
+      "what": "a square face",
+      "box": [
+        100,
+        100,
+        80,
+        80
+      ],
+      "circle": [
+        140.0,
+        140.0,
+        73.539105
+      ],
+      "bounds": [
+        66.460895,
+        66.460895,
+        213.539105,
+        213.539105
+      ]
+    },
+    {
+      "what": "a tall face",
+      "box": [
+        412,
+        88,
+        60,
+        74
+      ],
+      "circle": [
+        442.0,
+        125.0,
+        61.924228
+      ],
+      "bounds": [
+        380.075772,
+        63.075772,
+        503.924228,
+        186.924228
+      ]
+    },
+    {
+      "what": "a face at the top-left corner",
+      "box": [
+        0,
+        0,
+        50,
+        50
+      ],
+      "circle": [
+        25.0,
+        25.0,
+        45.961941
+      ],
+      "bounds": [
+        -20.961941,
+        -20.961941,
+        70.961941,
+        70.961941
+      ]
+    },
+    {
+      "what": "a big face",
+      "box": [
+        10,
+        20,
+        300,
+        200
+      ],
+      "circle": [
+        160.0,
+        120.0,
+        234.360833
+      ],
+      "bounds": [
+        -74.360833,
+        -114.360833,
+        394.360833,
+        354.360833
+      ]
+    }
+  ],
+  "on display": {
+    "what": "a face on a photo shown at half size, offset by (5, 7)",
+    "box": [
+      412,
+      88,
+      60,
+      74
+    ],
+    "original size": [
+      1000,
+      800
+    ],
+    "display rect": [
+      5,
+      7,
+      505,
+      407
+    ],
+    "circle": [
+      195.037886,
+      38.537886,
+      256.962114,
+      100.462114
+    ]
+  },
+  "refused": [
+    {
+      "what": "a box hanging off the edge of the photo",
+      "box": [
+        990,
+        10,
+        60,
+        60
+      ],
+      "original size": [
+        1000,
+        800
+      ],
+      "display rect": [
+        0,
+        0,
+        100,
+        80
+      ]
+    },
+    {
+      "what": "a box with no size",
+      "box": [
+        10,
+        10,
+        0,
+        40
+      ],
+      "original size": [
+        1000,
+        800
+      ],
+      "display rect": [
+        0,
+        0,
+        100,
+        80
+      ]
+    }
+  ]
+}

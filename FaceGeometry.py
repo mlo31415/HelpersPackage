@@ -9,10 +9,42 @@ would be cropped one way and ringed another, so there is one copy of it here.
 
 The circle is centred on the box and its radius is 0.65 of the box's diagonal,
 which takes in the whole head rather than the detector's tighter box.
+
+Which faces are worth showing at all is here too, so that every program that
+extracts faces discards the same strays: see DropTinyFaces.
 """
 from PIL import Image, ImageDraw
 
 FACE_CIRCLE_RATIO=0.65          # of the box's diagonal
+
+# A detector will find faces far back in a crowd that nobody could put a name
+# to.  They are dropped by comparing each against the third-largest face in the
+# same photo -- the third rather than the largest, so that one head close to the
+# camera cannot set the bar for everybody behind it.
+SMALL_FACE_RATIO=0.20           # of the third-largest face, measured across
+
+
+# How big a face is, for comparing one against another in the same photo: the
+# box's diagonal, the same measure the display circle is built on.  This is a
+# length, not an area, so a face at SMALL_FACE_RATIO is a fifth as wide -- a
+# speck -- rather than a person merely standing further back.
+def FaceSize(box) -> float:
+    _, _, w, h=(float(v) for v in box)
+    return (w*w+h*h)**0.5
+
+
+# The faces worth offering for identification, smallest strays removed.
+#
+# Fewer than three faces are returned untouched: there is no third-largest to
+# measure against, nothing to declutter, and dropping one of two would be worse
+# than leaving a small one in.  The third-largest face itself always survives.
+def DropTinyFaces(boxes, ratio: float=SMALL_FACE_RATIO) -> list:
+    boxes=list(boxes)
+    if len(boxes) < 3:
+        return boxes
+    thirdLargest=sorted((FaceSize(b) for b in boxes), reverse=True)[2]
+    cutoff=thirdLargest*ratio
+    return [b for b in boxes if FaceSize(b) >= cutoff]
 
 
 # The circle a face box is shown as: (centre x, centre y, radius), in whatever

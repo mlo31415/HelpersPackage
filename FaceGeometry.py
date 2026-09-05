@@ -33,17 +33,27 @@ def FaceSize(box) -> float:
     return (w*w+h*h)**0.5
 
 
-# The faces worth offering for identification, smallest strays removed.
+# The size a face in this photo has to reach to be worth identifying, or 0.0
+# when none of them should be dropped.
 #
-# Fewer than three faces are returned untouched: there is no third-largest to
-# measure against, nothing to declutter, and dropping one of two would be worse
-# than leaving a small one in.  The third-largest face itself always survives.
+# Fewer than three faces gives 0.0: there is no third-largest to measure
+# against, nothing to declutter, and dropping one of two would be worse than
+# leaving a small one in.  The third-largest face itself always reaches it.
+#
+# Programs that extract faces use DropTinyFaces below; this is here for a
+# program that has to say which of the faces it was *given* are the small ones
+# -- PhotosEditor, reading back reports written before the extractor filtered.
+def SmallFaceCutoff(boxes, ratio: float=SMALL_FACE_RATIO) -> float:
+    sizes=sorted((FaceSize(b) for b in boxes), reverse=True)
+    if len(sizes) < 3:
+        return 0.0
+    return sizes[2]*ratio
+
+
+# The faces worth offering for identification, smallest strays removed
 def DropTinyFaces(boxes, ratio: float=SMALL_FACE_RATIO) -> list:
     boxes=list(boxes)
-    if len(boxes) < 3:
-        return boxes
-    thirdLargest=sorted((FaceSize(b) for b in boxes), reverse=True)[2]
-    cutoff=thirdLargest*ratio
+    cutoff=SmallFaceCutoff(boxes, ratio)
     return [b for b in boxes if FaceSize(b) >= cutoff]
 
 

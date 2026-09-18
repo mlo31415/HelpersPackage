@@ -1,17 +1,23 @@
-import warnings
+import html
 
 import bs4
-from bs4 import MarkupResemblesLocatorWarning
 
 #=====================================================================================
+# Turn HTML character escapes back into the characters they stand for.
+# This must handle "&amp;", "&lt;" and "&gt;".  (The previous implementation round-tripped the string through
+# BeautifulSoup, whose serializer re-escapes exactly those three, so they came back unchanged -- meaning an
+# ampersand in, say, a fanzine name picked up another "amp;" on each download/upload cycle.)
+# The decode is repeated to a fixpoint so values already escalated by that bug ("Sweetness &amp;amp; Light")
+# are repaired when they are read.
 def HtmlEscapesToUnicode(s: str, isURL: bool=False) -> str:
     if isURL:
         s=s.replace("%23", "#").replace( "%26", "&").replace( "%20", " ")
-    # This helper is routinely called on short URL/filename strings, which BeautifulSoup mistakes for
-    # filenames and warns about. The parse is fine; the warning is spurious, so suppress it for this call only.
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=MarkupResemblesLocatorWarning)
-        s=str(bs4.BeautifulSoup(s, features="html.parser")).strip()
+    for _ in range(4):
+        t=html.unescape(s)
+        if t == s:
+            break
+        s=t
+    s=s.strip()
     if isURL:
         s=s.replace("%23", "#").replace( "%26", "&").replace( "%20", " ")
     return s

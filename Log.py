@@ -130,13 +130,21 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
         print(text, file=g_logErrorFile, end=newlinechar)
         LogFlush()  # Always flush after an error message
 
+    # Note the -topmost: on Windows these are native dialogs, and one popped off a withdrawn root opens *behind* the IDE
+    # with no taskbar button, leaving the process sitting in the modal message loop looking exactly like a hang.
     if isWarning:
         root=Tk()
         root.withdraw()
-        messagebox.showwarning(title="Warning", message=text)
+        root.attributes("-topmost", True)
+        messagebox.showwarning(title="Warning", message=text, parent=root)
+        root.destroy()
 
     if isCritical:
-        messagebox.showerror(title="Critical Error", message=text)
+        root=Tk()
+        root.withdraw()
+        root.attributes("-topmost", True)
+        messagebox.showerror(title="Critical Error", message=text, parent=root)
+        root.destroy()
         sys.exit()
 
 

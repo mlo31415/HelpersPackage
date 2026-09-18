@@ -1977,10 +1977,13 @@ def FlattenPersonsNameForSorting(s: str) -> str:
 
 
 def FlattenTextForSorting(s: str, RemoveLeadingArticles: bool=False) -> str:
-    s=RemoveNonAlphanumericChars(unidecode(s.casefold()))     # Since we don't care about O'Neil, we don't need to fuss about single quotes
+    s=s.casefold()
     if RemoveLeadingArticles:
-        s=RemoveArticles(s)
-    return s
+        # The articles must come off *before* unidecode(), which turns the "á" of "á Bas" into a bare "a" that
+        # RemoveArticles() then strips as an English article, filing the fanzine under B instead of A.
+        # The punctuation comes off first so that a title like '"The Zed"' is still recognized as article-led.
+        s=RemoveArticles(RemoveNonAlphanumericChars(s))
+    return RemoveNonAlphanumericChars(unidecode(s))     # Since we don't care about O'Neil, we don't need to fuss about single quotes
 
 
 def RemoveNonAlphanumericChars(s: str, LeaveSingleQuote: bool=False) -> str:

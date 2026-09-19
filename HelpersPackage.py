@@ -1502,13 +1502,17 @@ def ReadList(filename: str, isFatal: bool=False) -> list[str]:
             raise FileNotFoundError
         Log(f"ReadList can't find {os.getcwd()}/{filename}")
         return []
-    with open(filename, "r") as f:
+    with open(filename, "r", encoding="utf-8") as f:
         lst=f.readlines()
 
     lst=[l.strip() for l in lst]  # Strip leading and trailing whitespace
     lst=[l for l in lst if len(l)>0 and l[0]!= "#"]   # Drop empty lines and lines starting with "#"
 
-    lst=[l for l in lst if l.find(" #") == -1] + [l[:l.find(" #")].strip() for l in lst if l.find(" #") > 0]    # (all members not containing " #") +(the rest with the trailing # stripped)
+    # Drop any trailing comment.  This looks for whitespace followed by "#" and not just a space followed by "#":
+    # a control file lining its comments up with tabs would otherwise keep them as part of the value, so that
+    # "Monster<tab># The No-Eyed Monster" in control-skippers.txt did not match the directory "Monster" at all.
+    lst=[re.split(r"\s#", l, maxsplit=1)[0].strip() for l in lst]
+    lst=[l for l in lst if len(l) > 0]
 
     return lst
 

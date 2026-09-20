@@ -115,10 +115,15 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
 
     # Print the log entry itself
     if Print:
-        if text.endswith(newlinechar):
-            print(text, end="") # Don't add a newline to lines already having one
-        else:
-            print(text, end=newlinechar)
+        # Guarded the same way the write to the log file below is: echoing to the console is a convenience, and must
+        # never be what ends a long run.  LogOpen() asks stdout for UTF-8, but it cannot always get it.
+        try:
+            if text.endswith(newlinechar):
+                print(text, end="") # Don't add a newline to lines already having one
+            else:
+                print(text, end=newlinechar)
+        except Exception:
+            pass
     if g_logFile is not None and isinstance(g_logFile, io.TextIOWrapper):
         try:
             print(text, file=g_logFile, end=newlinechar)
@@ -206,6 +211,16 @@ def LogSetHeader(name: str) -> None:
 #=============================================================================
 # This really doesn't do the open, but just caches the filenames.  They'll be opened by Log() only if needed.
 def LogOpen(logfilename: str, errorfilename: str=None, dated: bool=False) -> None:
+
+    # Log() echoes every line to the console as well as to the log file.  On Windows a *redirected* stdout defaults to
+    # the ANSI codepage, which cannot encode the accented names which are all over this data, and print() then raises
+    # UnicodeEncodeError and kills the run partway through -- invisibly, because an interactive console is UTF-8 and
+    # never shows the problem.  Ask stdout for UTF-8, and for anything it still cannot encode to be replaced rather
+    # than fatal.  It is wrapped because sys.stdout is None in a --windowed build and need not be reconfigurable.
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
     if os.path.splitext(logfilename)[1] == "":
         logfilename+=".txt"

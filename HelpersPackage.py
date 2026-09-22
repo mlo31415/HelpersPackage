@@ -198,14 +198,20 @@ def ToNumeric(val: None | int | float | str) -> None | int | float:
 # Take a string and find the first hyperlink.
 # Return a tuple of: <material before>, <link>, <display text>, <material after>
 # This version does not require
-def FindLinkInString(s: str) -> tuple[str, str, str, str]:
+def FindLinkInString(s: str, KeepScheme: bool=False) -> tuple[str, str, str, str]:
     # Get rid of any class=stuff crud
     s=re.sub(r'class=".+?"', "", s, count=10, flags=re.IGNORECASE)
     pat=r"^(.*?)<a\s+href=['\"](https?:)?(.*?)['\"]>(.*?)</a>(.*)$"
     m=re.match(pat, s, flags=re.IGNORECASE|re.DOTALL)
     if m is None:
         return s, "", "", ""
-    return m.groups()[0], m.groups()[2], m.groups()[3], m.groups()[4]
+    # The scheme is matched by its own group and has always been dropped, so "https://x" is returned as "//x".
+    # That is a protocol-relative URL, so it still resolves -- which is why the loss went unnoticed -- but an
+    # editor that stores the result and writes it back silently discards the scheme the user typed.
+    # The default keeps the old behaviour because ConEditor relies on it: it uses the leading "//" to tell an
+    # external link from a relative sub-page link. Pass KeepScheme=True to get the href back unchanged.
+    scheme=m.groups()[1] if KeepScheme and m.groups()[1] else ""
+    return m.groups()[0], scheme+m.groups()[2], m.groups()[3], m.groups()[4]
 
 
 # Take a string and find the first href.

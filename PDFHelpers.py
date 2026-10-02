@@ -513,6 +513,14 @@ def _remove_header(page, amount, fitz):
     to its pre-header size by `amount` points on the visual-top edge. After this the page is in the
     same state as if the header had never been added, so a fresh header can be applied de novo."""
     rot = page.rotation
+    # Remove the old header's text for real. Painting it out (below) only hides it: it would still be in the file,
+    # readable by anything that extracts text -- e.g. a search engine indexing the PDF. The redaction covers only the
+    # header's text lines, stopping _GAP short of the original page (which starts `amount` down), so nothing of the page
+    # itself can be caught. Images and line art are left alone; the old logo is just painted out with the rest.
+    text_band = fitz.Rect(page.rect.x0, 0, page.rect.x1, amount - _GAP) * page.derotation_matrix
+    text_band.normalize()
+    page.add_redact_annot(text_band, fill=False)
+    page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_NONE, graphics=fitz.PDF_REDACT_LINE_ART_NONE)
     # The header occupies the top `amount` points (display coords); paint it out and drop its links.
     band = fitz.Rect(page.rect.x0, 0, page.rect.x1, amount)
     un   = band * page.derotation_matrix

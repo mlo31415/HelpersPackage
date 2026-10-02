@@ -310,9 +310,22 @@ def GetPdfPageCount(pathname: str) -> int|None:
 _FONT_FILE = r"C:\Windows\Fonts\calibri.ttf"
 _FONT_FILE = _FONT_FILE if os.path.exists(_FONT_FILE) else None   # graceful fallback
 _FONT_FALLBACK = "helv"   # used only when Calibri is not found
-_FONT_NAME = "cali"       # internal id under which Calibri is embedded
-# kwargs passed to insert_textbox so it uses the same font the wrap/layout code measures with
-_FONT_KW = {"fontname": _FONT_NAME, "fontfile": _FONT_FILE} if _FONT_FILE else {"fontname": _FONT_FALLBACK}
+_FONT_NAME = "cali"       # internal id under which Calibri is embedded (see _font_kw)
+
+
+def _font_kw(page):
+    """The kwargs passed to insert_textbox so it uses the same font the wrap/layout code measures with.
+    Calibri is embedded under a resource name the page doesn't already use: a header added earlier left its
+    *subset* of Calibri on the page under the old name, and PyMuPDF would reuse that subset -- which lacks every
+    glyph the earlier header didn't need, so a replacement header came out as a row of empty boxes."""
+    if not _FONT_FILE:
+        return {"fontname": _FONT_FALLBACK}
+    used = {f[4] for f in page.get_fonts()}
+    name, n = _FONT_NAME, 1
+    while name in used:
+        name = f"{_FONT_NAME}{n}"
+        n += 1
+    return {"fontname": name, "fontfile": _FONT_FILE}
 
 _FONT_SIZE = 11            # header text point size
 _BAND_Y0   = 8              # top of label band
@@ -528,6 +541,7 @@ def _add_label(page, lines, fitz, block_x0, block_w):
     # Each line is centered within the text block [block_x0, block_x0+block_w]. The block is positioned
     # by the caller so that (block + gap + logo) is centered on the page.
     font = _make_font(fitz)
+    kw   = _font_kw(page)
     dm   = page.derotation_matrix
     rot  = page.rotation
     for i, line in enumerate(lines):
@@ -542,7 +556,7 @@ def _add_label(page, lines, fitz, block_x0, block_w):
             box = fitz.Rect(x, y0, x + w + _PAD, y0 + _LINE_H) * dm
             box.normalize()
             page.insert_textbox(box, text, fontsize=_FONT_SIZE,
-                                color=_COLOR_LINK if url else _COLOR_TEXT, rotate=rot, **_FONT_KW)
+                                color=_COLOR_LINK if url else _COLOR_TEXT, rotate=rot, **kw)
             if url:
                 if links and links[-1][0] == url and abs(links[-1][2] - x) < 0.5:
                     links[-1][2] = x + w               # extend the current run

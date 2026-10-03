@@ -294,6 +294,9 @@ def GetPdfPageCount(pathname: str) -> int|None:
 #                     bytes or a path to an image file. PDFHelpers owns no
 #                     artwork of its own. When given (and Pillow is available)
 #                     it is drawn band-tall just right of the text; None = none.
+#   subline        -- optional plain text for a smaller line below the header (e.g. "ed: Lee Hoffman"). It starts
+#                     where the header's first line starts and is cut short with "..." rather than run past
+#                     that line's right end. It adds _SUB_EXTRA points to the header. None/"" = none.
 #
 #   The page is expanded by _EXTRA points on the first call.  Subsequent calls
 #   detect the existing header (by the presence of a URI link in the top band),
@@ -334,6 +337,13 @@ _PAD       = 6              # extra textbox length so a tight segment is never c
 _SIDE      = 6              # left/right margin kept clear when wrapping the header
 _GAP       = 4              # whitespace below label before page content
 _EXTRA     = _BAND_Y0 + _LINE_H + _GAP   # points added to page height = 28
+
+# The optional plain-text line below the header (e.g. a fanzine's editors), in smaller type. It is tucked up under the last
+# header line -- the 11pt line's box has room below its descenders -- so it adds only _SUB_EXTRA points to the header.
+_SUB_SIZE  = 9              # its point size
+_SUB_DY    = 12             # its box's top, below the top of the last header line's box
+_SUB_H     = 14             # its box's height (insert_textbox needs about 1.45 x the point size)
+_SUB_EXTRA = _SUB_DY + _SUB_SIZE - _LINE_H   # extra points it adds to the header = 5
 
 _COLOR_TEXT = (0, 0, 0)     # black
 _COLOR_LINK = (0, 0, 0.8)   # blue
@@ -468,10 +478,9 @@ def _grow(box, rot, amount, fitz):
     return fitz.Rect(x0, y0, x1, y1)
 
 
-def _expand_top(page, fitz, nlines=1):
-    """Expand the page at the VISUAL top by enough for `nlines` header lines (MediaBox + CropBox),
+def _expand_top(page, fitz, amount):
+    """Expand the page at the VISUAL top by `amount` points (MediaBox + CropBox),
     accounting for page rotation so the band always lands above the displayed top."""
-    amount = _EXTRA + (nlines - 1) * _LINE_H
     rot = page.rotation
     mb  = fitz.Rect(page.mediabox)
     cb  = fitz.Rect(page.cropbox)
@@ -545,9 +554,23 @@ def _remove_header(page, amount, fitz):
         pass   # set_mediabox already auto-adjusted the cropbox to cover the new extent
 
 
-def _add_label(page, lines, fitz, block_x0, block_w):
+def _fit(text, font, fontsize, max_width):
+    """Return text, cut short and ended with "..." if needed so it fits within max_width (display points)."""
+    if font.text_length(text, fontsize=fontsize) <= max_width:
+        return text
+    while text:
+        text = text[:-1]
+        short = text.rstrip(" ,;") + "..."
+        if font.text_length(short, fontsize=fontsize) <= max_width:
+            return short
+    return ""
+
+
+def _add_label(page, lines, fitz, block_x0, block_w, subline=None):
     # Each line is centered within the text block [block_x0, block_x0+block_w]. The block is positioned
     # by the caller so that (block + gap + logo) is centered on the page.
+    # The optional subline goes below the lines in smaller black type, starting where the first line starts and cut
+    # short with "..." rather than running past the first line's right end.
     font = _make_font(fitz)
     kw   = _font_kw(page)
     dm   = page.derotation_matrix
@@ -575,6 +598,15 @@ def _add_label(page, lines, fitz, block_x0, block_w):
             link = fitz.Rect(lx0, y0, lx1, y0 + _LINE_H) * dm
             link.normalize()
             page.insert_link({"kind": fitz.LINK_URI, "from": link, "uri": url})
+    if subline:
+        w0   = sum(font.text_length(t, fontsize=_FONT_SIZE) for t, _ in lines[0])
+        x0   = block_x0 + (block_w - w0) / 2.0
+        text = _fit(subline, font, _SUB_SIZE, w0)
+        if text:
+            y0  = _BAND_Y0 + (len(lines) - 1) * _LINE_H + _SUB_DY
+            box = fitz.Rect(x0, y0, x0 + font.text_length(text, fontsize=_SUB_SIZE) + _PAD, y0 + _SUB_H) * dm
+            box.normalize()
+            page.insert_textbox(box, text, fontsize=_SUB_SIZE, color=_COLOR_TEXT, rotate=rot, **kw)
 
 
 def _load_logo(logo):
@@ -629,7 +661,7 @@ def _add_logo(page, fitz, band_h, x0, im):
 
 # ── public API ────────────────────────────────────────────────────────────────
 
-def AddPdfPageHeader(pdf_path: str, format_string: str, items: list, logo=None) -> None:
+def AddPdfPageHeader(pdf_path: str, format_string: str, items: list, logo=None, subline: str|None=None) -> None:
     """
     Add or replace a header on the first page of pdf_path.
     See module docstring for format_string / items conventions.
@@ -684,17 +716,18 @@ def AddPdfPageHeader(pdf_path: str, format_string: str, items: list, logo=None) 
         # Wrap the header to as many lines as needed to fit the page width (page rotation does not
         # change the displayed width, so this is valid before expanding the page). Estimate the logo's
         # width from the single-line band height for the reservation (exact for a one-line header).
-        est_logo_w = ((_EXTRA - 2 * _LOGO_VPAD) * aspect) if aspect else 0.0
+        sub_extra  = _SUB_EXTRA if subline else 0
+        est_logo_w = ((_EXTRA + sub_extra - 2 * _LOGO_VPAD) * aspect) if aspect else 0.0
         lines  = _wrap(segments, font, page.rect.width - 2 * _SIDE - gap - est_logo_w)
-        amount = _EXTRA + (len(lines) - 1) * _LINE_H
-        _expand_top(page, fitz, len(lines))
+        amount = _EXTRA + (len(lines) - 1) * _LINE_H + sub_extra
+        _expand_top(page, fitz, amount)
 
         # Now that the (possibly multi-line) band height is known, center [text | gap | logo] as a group.
         logo_w = ((amount - 2 * _LOGO_VPAD) * aspect) if aspect else 0.0
         block_w = max((sum(font.text_length(t, fontsize=_FONT_SIZE) for t, _ in ln) for ln in lines), default=0.0)
         group_w = block_w + (gap + logo_w if aspect else 0.0)
         block_x0 = max(page.rect.x0 + _SIDE, page.rect.x0 + (page.rect.width - group_w) / 2.0)
-        _add_label(page, lines, fitz, block_x0, block_w)
+        _add_label(page, lines, fitz, block_x0, block_w, subline)
         if aspect:
             _add_logo(page, fitz, amount, block_x0 + block_w + gap, logo_im)
         _write_extent(doc, page, amount)

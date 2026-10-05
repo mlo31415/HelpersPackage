@@ -774,3 +774,38 @@ def AddPdfPageHeader(pdf_path: str, format_string: str, items: list, logo=None, 
                     pass
                 return
             time.sleep(0.25)
+
+
+# ── header inspection (read-only) ────────────────────────────────────────────
+
+def PdfPageHeaderDisplayText(format_string: str, items: list) -> str:
+    """The plain display text a header built from (format_string, items) shows: the same
+    item-consumption rules as AddPdfPageHeader (a URL item takes the following item as its display
+    text), with the link targets dropped. For comparing against GetPdfPageHeaderText."""
+    return "".join(t for t, _ in _parse(format_string, items))
+
+
+def GetPdfPageHeaderText(pdf_path: str) -> str|None:
+    """Return the text of the fanac page header on the first page of pdf_path, or None when the
+    page carries no header. Read-only -- the file is never modified. A header is recognized the
+    same way AddPdfPageHeader's replace path recognizes one: by the extent marker a modern header
+    records on the page, or (legacy single-line headers) by a fanac.org link in the top band.
+    A wrapped header's line breaks come back as newlines; callers should whitespace-normalize
+    both sides before comparing."""
+    fitz = _require_fitz()
+    doc = fitz.open(pdf_path)
+    try:
+        if doc.page_count == 0:
+            return None
+        page = doc[0]
+        amount = _read_extent(doc, page)
+        if amount is None:
+            if not _already_labeled(page, fitz):
+                return None
+            amount = _EXTRA        # legacy header: always a single line
+        # Invert amount = _EXTRA + (nlines-1)*_LINE_H (+ a subline's few extra points) for the line count.
+        nlines = max(1, 1 + int(round((amount - _EXTRA) / _LINE_H)))
+        return page.get_text("text", clip=_band(page, fitz, nlines))
+    finally:
+        doc.close()
+        _LogFitzWarnings(fitz, pdf_path)

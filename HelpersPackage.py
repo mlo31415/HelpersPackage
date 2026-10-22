@@ -1794,12 +1794,14 @@ def InterpretNumber(inputstring: str|None) -> None | int | float:
         return int(m.groups()[0])        # We just sorta ignore n2...
 
     # nn.nn (Decimal number)
-    m=re.match("^([0-9]+.[0-9]+)$", inputstring)
+    m=re.match(r"^([0-9]+\.[0-9]+)$", inputstring)
     if m is not None and len(m.groups()) == 1:
         return float(m.groups()[0])
 
     # .nn (Decimal number -- no leading digits)
-    m=re.match("^(.[0-9]+)$", inputstring)
+    # The dot needs escaping: unescaped it matches any character, so 'a18' was captured whole and float() threw
+    # instead of this returning None, taking a whole FanacAnalyzer run down with it.
+    m=re.match(r"^(\.[0-9]+)$", inputstring)
     if m is not None and len(m.groups()) == 1:
         return float(m.groups()[0])
 

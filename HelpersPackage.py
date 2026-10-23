@@ -1853,6 +1853,16 @@ def SortMessyNumber(inputstring: str) -> float:
 
     number=m.groups()[0].strip()
     alpha=m.groups()[1].strip()
+
+    # The number half of that pattern keeps any separator that ran up against the letters, so '32.b' splits into
+    # '32.' and 'b'.  InterpretNumber can't read a number with a separator hanging off the end, so trim it and let
+    # the heuristic below treat it as the integer followed by letters it plainly is.
+    # Only when something is left of it: '.' and '..' are not numbers at all and must still sort last, and an
+    # empty <number> is taken below as a hint to read <alpha> as Roman numerals.
+    trimmed=number.rstrip(",.-/ ")
+    if trimmed != "":
+        number=trimmed
+
     if len(number) == 0:
         # We have no leading Arabic numerals, but just *maybe* the text part is Roman numerals
         val=InterpretRoman(alpha)

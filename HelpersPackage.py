@@ -1860,6 +1860,13 @@ def SortMessyNumber(inputstring: str) -> float:
             return val
         # Apparently it's just letters.  These sort last
         return 99999999
+    # The leading numerals still may not be a number we can read: the pattern above allows commas, slashes and
+    # spaces, so '1,500' and '1/2' get this far.  InterpretNumber returns None for those, and None must not escape
+    # a function the callers sort with -- uninterpretable sorts last, as everywhere else here.
+    num=InterpretNumber(number)
+    if num is None:
+        return 99999999
+
     # OK, we have leading numerals.  Do we have trailing letters?
     if len(alpha) > 0:
         # This is a fast-and-loose heuristic.  We'll just look at the first two characters and come up with a number which sorts in the same order
@@ -1868,11 +1875,11 @@ def SortMessyNumber(inputstring: str) -> float:
             return 99999999
         o1=ordering.index(alpha[0])
         if len(alpha) == 1 or alpha[1] not in ordering:
-            return InterpretNumber(number)+o1/100
+            return num+o1/100
         o2=ordering.index(alpha[1])
-        return InterpretNumber(number)+o1/100+o2/10000
+        return num+o1/100+o2/10000
     # So it appears we have a more-or-less pure number
-    return InterpretNumber(number)
+    return num
 
 
 # A sort function (to be passed in to sorted() or sort()) which sorts into a sensible alphabetic order

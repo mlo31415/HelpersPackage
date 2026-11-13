@@ -168,6 +168,11 @@ def LowQualityScan(reader: PdfReader,
 # =============================================================================
 # Add standard bibliographic metadata fields to a PDF.
 # Only fields supplied with a non-empty value are written; omitted or empty fields are left unchanged.
+# The settings for the compact rewrites below. garbage=2 drops unused objects (e.g. a full font stream replaced by its
+# subset) and use_objstms packs the small objects together. Not garbage=3/4: their duplicate-object merging is far
+# slower than linear, and on a PDF exported from Excel (124,400 objects) it ran for many minutes, freezing the caller.
+_COMPACT_SAVE = dict(garbage=2, use_objstms=1, deflate=True)
+
 def AddStdMetadata(filename: str, title: str="", author: str="", subject: str="", keywords: str="") -> bool:
     if not filename.lower().endswith(".pdf"):
         return False
@@ -221,7 +226,7 @@ def AddStdMetadata(filename: str, title: str="", author: str="", subject: str=""
         doc.set_metadata(md)
         doc.del_xml_metadata()
         try:
-            doc.save(tmp_out, garbage=4, deflate=True)
+            doc.save(tmp_out, **_COMPACT_SAVE)
             saved_compact = True
         except Exception as e:
             LogError(f"AddStdMetadata: compact save failed ({e}); using incremental save instead")
@@ -741,7 +746,7 @@ def AddPdfPageHeader(pdf_path: str, format_string: str, items: list, logo=None, 
         except Exception as e:
             LogError(f"AddPdfPageHeader: subset_fonts() failed (continuing without subsetting): {e}")
         try:
-            doc.save(tmp_out, garbage=4, deflate=True)
+            doc.save(tmp_out, **_COMPACT_SAVE)
             saved_compact = True
         except Exception as e:
             LogError(f"AddPdfPageHeader: compact save failed ({e}); using incremental save instead")
